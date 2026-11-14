@@ -21,9 +21,7 @@ const RAD_DOSE_START = 120 // mSv accumulated before the simulation starts
 /** Unit symbol of an indicator, taken from the seed catalog (single source of truth). */
 function unitOf(code) {
   const indicator = catalogs.indicators.find((row) => row.code === code)
-  const unit = indicator && catalogs.units.find((row) => row.id === indicator.unitId)
-  if (!unit) throw new Error(`[simulator] Unknown indicator or unit in catalogs.json: ${code}`)
-  return unit.symbol
+  return catalogs.units.find((unit) => unit.id === indicator.unitId).symbol
 }
 
 // Baseline ("normal") center and noise amplitude per indicator (codes as in catalogs.json).
@@ -110,11 +108,15 @@ function nextValue(code, now) {
 }
 
 /** Stores one reading and runs the rules engine on it. Never throws. */
+ alexis/fix-db
 async function emit(indicatorCode, value) {
+  const unit = unitOf(indicatorCode)
+
+async function emit(indicatorCode, value, unit) {
   recordLive(indicatorCode, value)
+ main
+  const reading = createReading({ userId, indicatorCode, value, unit, source: 'simulated' })
   try {
-    const unit = unitOf(indicatorCode)
-    const reading = createReading({ userId, indicatorCode, value, unit, source: 'simulated' })
     await db.readings.add(reading)
     await evaluateReading(reading)
   } catch (error) {
@@ -139,8 +141,12 @@ function slowTick() {
   tick(SLOW_CODES)
   // One simulated day has passed: add today's dose to the cumulative dose.
   radCumulative += centerOf('RAD_D', Date.now()) + state.RAD_D.offset
+ alexis/fix-db
   emit('RAD_DOSE', round(radCumulative, RAD_DOSE.decimals))
+
+  emit('RAD_C', round(radCumulative, RAD_C.decimals), RAD_C.unit)
   notify()
+ main
 }
 
 // ---------- Public API ----------
@@ -208,7 +214,7 @@ const DEFAULT_USER_ID = '00000000-0000-4000-8000-000000000901'
 const HISTORY_CODES = ['HR', 'SPO2', 'TSKIN', 'RR', 'RAD_D', 'SBP']
 const HISTORY_LENGTH = 25
 
-const latest = { RAD_DOSE: RAD_DOSE_START }
+const latest = { RAD_C: RAD_C_START }
 const liveHistory = Object.fromEntries(HISTORY_CODES.map((code) => [code, []]))
 const subscribers = new Set()
 
@@ -252,12 +258,12 @@ function snapshot() {
     BMD: valueOf('BMD'),
     MUSCLE_MASS: valueOf('MUSCLE'),
     RAD_DAILY: valueOf('RAD_D'),
-    RAD_CUMULATIVE: latest.RAD_DOSE,
+    RAD_CUMULATIVE: latest.RAD_C,
     PVT: valueOf('PVT'),
-    SLEEP_HOURS: valueOf('SLEEP_H'),
+    SLEEP_HOURS: valueOf('SLEEP'),
     WBC: valueOf('WBC'),
     IL6: valueOf('IL6'),
-    CORTISOL: valueOf('CORTISOL'),
+    CORTISOL: valueOf('CORT'),
   }
 }
 
@@ -342,12 +348,7 @@ export const simulator = {
 
 /** Builds (without storing) a reading with the latest simulated value of an indicator. */
 export function generateReading(forUserId, indicatorCode) {
-  let unit = ''
-  try {
-    unit = unitOf(indicatorCode)
-  } catch {
-    unit = ''
-  }
+  const unit = INDICATORS[indicatorCode]?.unit ?? (indicatorCode === 'RAD_C' ? RAD_C.unit : '')
   return createReading({
     userId: forUserId,
     indicatorCode,
