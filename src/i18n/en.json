@@ -19,10 +19,19 @@
     "offline": "No signal"
   },
   "comms": {
-    "loading": "Checking pending records…",
-    "pendingCount_one": "{{count}} record pending sync",
-    "pendingCount_other": "{{count}} records pending sync"
-  },
+  "loading": "Checking pending records.",
+  "pendingCount_one": "{{count}} record pending sync",
+  "pendingCount_other": "{{count}} records pending sync",
+  "syncNow": "Sync now",
+  "syncing": "Syncing…",
+  "notConfigured": "The Supabase connection is not configured.",
+  "offline": "You are offline. Try again when the connection returns.",
+  "signInRequired": "Sign in with your astronaut account to sync.",
+  "sent_one": "{{count}} reading synced.",
+  "sent_other": "{{count}} readings synced.",
+  "nothingToSend": "There are no pending heart rate readings for this profile.",
+  "syncError": "Sync could not be completed. Check the console and try again."
+},
   "common": {
     "underConstruction": "Under construction",
     "language": "Language",
