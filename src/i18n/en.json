@@ -261,5 +261,10 @@
       "high": "went up",
       "low": "went down"
     }
+  },
+  "security": {
+    "insecureTitle": "Insecure connection (http://).",
+    "insecureBody": "This page must be opened over https://. Without HTTPS, installing the app, offline mode, notifications, Bluetooth and PIN login do not work.",
+    "openHttps": "Open over https://"
   }
 }

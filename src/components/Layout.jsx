@@ -6,6 +6,7 @@ import { stop as stopSimulator } from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { SUPPORTED_LANGUAGES } from '../i18n/index.js'
 import ConnectionStatus from './ConnectionStatus.jsx'
+import InsecureContextWarning from './InsecureContextWarning.jsx'
 
 // `roleCode`: the link is only shown to users with that role
 // (`allowMedicalOfficer`: and to the crew medical officer).
@@ -42,6 +43,7 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
+      <InsecureContextWarning />
       <header className="top-bar">
         <span className="app-name">{t('app.name')}</span>
         <div className="top-bar-actions">

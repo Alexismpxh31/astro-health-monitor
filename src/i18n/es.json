@@ -261,5 +261,10 @@
       "high": "subió",
       "low": "bajó"
     }
+  },
+  "security": {
+    "insecureTitle": "Conexión no segura (http://).",
+    "insecureBody": "Esta página debe abrirse por https://. Sin HTTPS no funcionan la instalación de la app, el modo sin conexión, las notificaciones, el Bluetooth ni el inicio de sesión con PIN.",
+    "openHttps": "Abrir por https://"
   }
 }
