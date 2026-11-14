@@ -25,6 +25,7 @@ import {
 
 import { useSession } from '../auth/session.js'
 import TrafficLight from '../components/TrafficLight.jsx'
+import { defaultUserId } from '../data/demoUser.js'
 import { isRunning, start as startSimulator, stop as stopSimulator } from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { classifyValue, effectiveThreshold, LEVEL } from './crew/crewStatus.js'
@@ -48,11 +49,7 @@ export default function Vitals() {
   const [isSimRunning, setIsSimRunning] = useState(isRunning())
 
   const vitalsData = useLiveQuery(async () => {
-    let userId = session?.userId
-    if (!userId) {
-      const demoAstronaut = await db.users.where('roleId').equals('00000000-0000-4000-8000-000000000101').first()
-      userId = demoAstronaut?.id
-    }
+    const userId = defaultUserId()
     if (!userId) return null
 
     const [user, indicators, thresholds, readings] = await Promise.all([
@@ -111,7 +108,7 @@ export default function Vitals() {
       stopSimulator()
       setIsSimRunning(false)
     } else {
-      let targetUserId = session?.userId
+      const targetUserId = defaultUserId()
       startSimulator(targetUserId)
       setIsSimRunning(true)
     }

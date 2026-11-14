@@ -5,6 +5,7 @@ import { AlertCircle, AlertTriangle, CheckCircle2, ShieldCheck, Check } from 'lu
 
 import { useSession } from '../auth/session.js'
 import TrafficLight from '../components/TrafficLight.jsx'
+import { defaultUserId } from '../data/demoUser.js'
 import { db } from '../db/db.js'
 import { recommendationText } from '../rules/engine.js'
 import { LEVEL } from './crew/crewStatus.js'
@@ -20,11 +21,7 @@ export default function Alerts() {
   const [filter, setFilter] = useState('open') // 'open' | 'all' | 'attended'
 
   const alertsData = useLiveQuery(async () => {
-    let userId = session?.userId
-    if (!userId) {
-      const demoAstronaut = await db.users.where('roleId').equals('00000000-0000-4000-8000-000000000101').first()
-      userId = demoAstronaut?.id
-    }
+    const userId = defaultUserId()
 
     const [alerts, levels, indicators] = await Promise.all([
       db.alerts.orderBy('generatedAt').reverse().limit(150).toArray(),

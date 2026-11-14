@@ -19,6 +19,7 @@ import {
 import { useSession } from '../auth/session.js'
 import AstronautModel3D from '../components/AstronautModel3D.jsx'
 import TrafficLight from '../components/TrafficLight.jsx'
+import { defaultUserId } from '../data/demoUser.js'
 import { db } from '../db/db.js'
 import { classifyValue, effectiveThreshold, LEVEL, severityOf } from './crew/crewStatus.js'
 import './Home.css'
@@ -106,11 +107,7 @@ export default function Home() {
   // Reactive Dexie query for current astronaut's readings, catalogs and thresholds
   const dbData = useLiveQuery(async () => {
     // Resolve target user: logged in user or default demo astronaut
-    let userId = session?.userId
-    if (!userId) {
-      const demoAstronaut = await db.users.where('roleId').equals('00000000-0000-4000-8000-000000000101').first()
-      userId = demoAstronaut?.id
-    }
+    const userId = defaultUserId()
     if (!userId) return null
 
     const [user, indicators, thresholds, readings] = await Promise.all([
