@@ -206,8 +206,8 @@ export default function AstronautModel3D({
 
     const camera = new THREE.PerspectiveCamera(40, width / heightPx, 0.1, 50);
     // Far enough to keep the helmet below the HUD and the boots above the controls.
-    const initialCamPos = new THREE.Vector3(0, 1.2, 3.3);
-    const cameraTarget = new THREE.Vector3(0, 1.0, 0);
+    const initialCamPos = new THREE.Vector3(0, 1.5, 3.9);
+    const cameraTarget = new THREE.Vector3(0, 1.1, 0);
     camera.position.copy(initialCamPos);
 
     // 2. Renderer PBR con ToneMapping
@@ -534,12 +534,16 @@ export default function AstronautModel3D({
       renderer.setSize(w, h);
     };
     window.addEventListener('resize', handleResize);
+    // The stage also changes size without a window resize (layout breakpoints, sidebar).
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(handleResize);
+    resizeObserver?.observe(container);
 
     return () => {
       isDisposed = true;
       clearTimeout(glbTimeoutId);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
+      resizeObserver?.disconnect();
       dom.removeEventListener('pointermove', onPointerMove);
       dom.removeEventListener('click', onClick);
 
