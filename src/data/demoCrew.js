@@ -2,13 +2,14 @@ import { db, seedIfEmpty } from '../db/db.js'
 import { createReading } from '../models/reading.js'
 import demoCrew from './seed/demoCrew.json'
 
-// Simulated crew for the flight surgeon panel demo.
-// Adds three fictional astronauts to the demo mission and gives each one a short
-// history of simulated readings (source: 'simulated'). The baselines in
-// seed/demoCrew.json are invented so that one member is normal, one is in
-// "warning" and one is "critical" against the team thresholds. They are NOT real
-// medical data.
-// TODO: replace with src/data/simulator.js output once it is implemented.
+// Simulated vital signs for the flight surgeon panel demo.
+// Feeds two of the official demo astronauts from src/data/seed/users.json with a
+// short history of simulated readings (source: 'simulated'):
+//   - Astronaut Two (…0003): heart rate in "caution"
+//   - Astronaut Three (…0004): SpO2 in "critical"
+// Astronaut One (…0002) is left to src/data/simulator.js (the /sensors screen),
+// so no astronaut gets readings from two simulators at once.
+// The baselines in seed/demoCrew.json are invented for the demo: NOT real medical data.
 
 // 12 points cover the 10 readings the personal baseline needs (src/rules/baseline.js).
 const HISTORY_POINTS = 12
@@ -46,16 +47,15 @@ function buildSnapshot(unitByCode, measuredAt) {
   )
 }
 
+/** Official demo astronauts that receive readings from this module. */
+export const DEMO_CREW_USER_IDS = Object.keys(demoCrew.baselines)
+
 async function seedDemoCrew() {
-  // The catalogs must exist first; otherwise seedIfEmpty() would see our users and skip them.
+  // The users, crew and catalogs come from the team seed (users.json, catalogs.json).
   await seedIfEmpty()
 
-  await db.transaction('rw', [db.users, db.crew, db.readings, db.indicators, db.units], async () => {
-    await db.users.bulkPut(demoCrew.users)
-    await db.crew.bulkPut(demoCrew.crew)
-
-    const demoUserIds = demoCrew.users.map((user) => user.id)
-    if ((await db.readings.where('userId').anyOf(demoUserIds).count()) > 0) return
+  await db.transaction('rw', [db.readings, db.indicators, db.units], async () => {
+    if ((await db.readings.where('userId').anyOf(DEMO_CREW_USER_IDS).count()) > 0) return
 
     const unitByCode = await getUnitByIndicatorCode()
     const now = Date.now()
@@ -67,9 +67,6 @@ async function seedDemoCrew() {
     await db.readings.bulkAdd(history)
   })
 }
-
-/** Ids of the simulated demo astronauts (the crew table may be rebuilt by seedIfEmpty()). */
-export const DEMO_CREW_USER_IDS = demoCrew.users.map((user) => user.id)
 
 let ensurePromise = null
 
