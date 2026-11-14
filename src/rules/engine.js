@@ -8,12 +8,12 @@ import i18n from '../i18n/index.js'
 /**
  * @typedef {import('../models/reading.js').Reading} Reading
  *
- * @typedef {'normal'|'warning'|'critical'} Level
+ * @typedef {'normal'|'caution'|'critical'} Level - Same codes as alertLevels.code.
  *
  * @typedef {Object} Threshold
  * @property {number|null} minCritical - Below this -> critical. null = no limit.
- * @property {number|null} minNormal - Below this -> warning. null = no limit.
- * @property {number|null} maxNormal - Above this -> warning. null = no limit.
+ * @property {number|null} minNormal - Below this -> caution. null = no limit.
+ * @property {number|null} maxNormal - Above this -> caution. null = no limit.
  * @property {number|null} maxCritical - Above this -> critical. null = no limit.
  *
  * @typedef {'low'|'high'|null} Direction - Side of the normal range the value is on.
@@ -32,8 +32,8 @@ import i18n from '../i18n/index.js'
 // one newer than this exists.
 const ALERT_COOLDOWN_MS = 60000
 
-// Temporary defaults, used ONLY while db.thresholds is empty
-// (i.e. until src/data/seed/thresholds.json is completed).
+// Backup defaults, used ONLY while db.thresholds is empty (it is normally
+// seeded from src/data/seed/thresholds.json).
 const t = (minCritical, minNormal, maxNormal, maxCritical) => ({
   minCritical,
   minNormal,
@@ -50,12 +50,12 @@ const FALLBACK_THRESHOLDS = {
   BMD: t(-1.5, -1.0, null, null),
   MUSCLE: t(80, 90, null, null),
   RAD_D: t(null, null, 0.8, 1.8),
-  RAD_C: t(null, null, 400, 600),
+  RAD_DOSE: t(null, null, 400, 600),
   PVT: t(null, null, 300, 450),
-  SLEEP: t(4, 6.5, 9, 14),
+  SLEEP_H: t(4, 6.5, 9, 14),
   WBC: t(2.5, 4.5, 10.5, 15),
   IL6: t(null, null, 5, 12),
-  CORT: t(2, 5, 25, 45),
+  CORTISOL: t(2, 5, 25, 45),
 }
 
 // Indicator codes already reported as missing a threshold / recommendation.
@@ -88,8 +88,8 @@ export function classify(value, threshold) {
 
   if (minCritical !== null && value < minCritical) return { level: 'critical', direction: 'low' }
   if (maxCritical !== null && value > maxCritical) return { level: 'critical', direction: 'high' }
-  if (minNormal !== null && value < minNormal) return { level: 'warning', direction: 'low' }
-  if (maxNormal !== null && value > maxNormal) return { level: 'warning', direction: 'high' }
+  if (minNormal !== null && value < minNormal) return { level: 'caution', direction: 'low' }
+  if (maxNormal !== null && value > maxNormal) return { level: 'caution', direction: 'high' }
   return { level: 'normal', direction: null }
 }
 
@@ -127,6 +127,23 @@ async function findThreshold(reading, indicator) {
   )
 }
 
+/**
+ * Text of a recommendation in the given language, with the %value% and
+ * %unit% placeholders replaced by the reading that triggered it.
+ *
+ * @param {Object|null|undefined} recommendation - Row from db.recommendations.
+ * @param {Reading|null|undefined} reading
+ * @param {string} [language] - 'es' (default) or 'en'.
+ * @returns {string} '' when there is no recommendation.
+ */
+export function recommendationText(recommendation, reading, language = 'es') {
+  if (!recommendation) return ''
+  const text = (language.startsWith('es') ? recommendation.textEs : recommendation.textEn) ?? ''
+  return text
+    .replaceAll('%value%', String(reading?.value ?? ''))
+    .replaceAll('%unit%', reading?.unit ?? '')
+}
+
 // ---------- Notifications ----------
 
 let permissionRequested = false
@@ -152,7 +169,7 @@ async function notifyCritical(reading, indicator, recommendation) {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
     const spanish = i18n.language?.startsWith('es')
     const name = (spanish ? indicator?.nameEs : indicator?.nameEn) ?? reading.indicatorCode
-    const advice = (spanish ? recommendation?.textEs : recommendation?.textEn) ?? ''
+    const advice = recommendationText(recommendation, reading, i18n.language)
     new Notification(`${i18n.t('rules.criticalTitle')}: ${name}`, {
       body: `${reading.value} ${reading.unit}${advice ? ` — ${advice}` : ''}`,
       tag: `critical-${reading.indicatorCode}`,
@@ -187,7 +204,7 @@ export async function evaluateReading(reading) {
   if (level === 'normal') return { level, direction, alert: null }
 
   const alertLevel = (await db.alertLevels.toArray()).find(
-    (row) => row.code === level.toUpperCase(),
+    (row) => row.code === level,
   )
   const recommendation = await findRecommendation(indicator, alertLevel, direction)
   if (!recommendation) {

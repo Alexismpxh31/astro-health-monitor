@@ -30,39 +30,60 @@ db.version(1).stores({
   messages: 'id, senderId, recipientId, sentAt, syncStatus',
 })
 
-// Reference data (table name -> seed rows). Rows have fixed IDs, so they are
-// upserted on every start: devices seeded with an older catalog get the new rows.
+// Reference data (table name -> seed rows). The JSON files in src/data/seed/
+// are the single source of truth (supabase/setup_final.sql is generated from
+// them), so these tables are synchronized with the seed on every start:
+// devices seeded with an older catalog get the new rows and lose the stale ones.
 const REFERENCE_SEED = {
   ...catalogs, // roles, bodySystems, units, indicators, alertLevels, symptoms, sensorTypes, missions
-  thresholds,
   recommendations,
 }
 
-// Demo data (table name -> seed rows). Only loaded on first run so local
-// changes (e.g. a PIN set on this device) are never overwritten.
-const DEMO_SEED = {
-  users: usersSeed.users,
-  crew: usersSeed.crew,
+/** Makes a reference table match its seed rows exactly (upsert + delete stale rows). */
+async function syncReferenceTable(name, rows) {
+  const table = db.table(name)
+  const seedIds = new Set(rows.map((row) => row.id))
+  const staleIds = (await table.toCollection().primaryKeys()).filter((id) => !seedIds.has(id))
+  await table.bulkDelete(staleIds)
+  await table.bulkPut(rows)
+}
+
+/**
+ * Refreshes the general thresholds (userId null) from the seed. Personal
+ * thresholds (userId set) are never touched.
+ */
+async function syncGeneralThresholds() {
+  const seedIds = new Set(thresholds.map((row) => row.id))
+  const staleIds = await db.thresholds
+    .filter((row) => row.userId == null && !seedIds.has(row.id))
+    .primaryKeys()
+  await db.thresholds.bulkDelete(staleIds)
+  await db.thresholds.bulkPut(thresholds)
 }
 
 /**
  * Loads the JSON files in src/data/seed/ into IndexedDB.
- * - Reference data (catalogs, default thresholds, recommendations) is
- *   refreshed on every call.
- * - Demo users and crew are only inserted when the users table is empty
- *   (first run on this device).
+ * - Reference data (catalogs, general thresholds, recommendations, demo crew)
+ *   is synchronized with the seed on every call.
+ * - Demo users are only added when missing, so local changes to an existing
+ *   user (e.g. a PIN set on this device) are never overwritten.
  *
- * @returns {Promise<boolean>} true if the demo users were inserted.
+ * @returns {Promise<boolean>} true if any demo user was inserted.
  */
 export async function seedIfEmpty() {
-  const referenceTables = Object.keys(REFERENCE_SEED)
-  const demoTables = Object.keys(DEMO_SEED)
-  return db.transaction('rw', [...referenceTables, ...demoTables], async () => {
-    await Promise.all(
-      referenceTables.map((name) => db.table(name).bulkPut(REFERENCE_SEED[name])),
-    )
-    if ((await db.users.count()) > 0) return false
-    await Promise.all(demoTables.map((name) => db.table(name).bulkPut(DEMO_SEED[name])))
-    return true
+  const tableNames = [...Object.keys(REFERENCE_SEED), 'thresholds', 'users', 'crew']
+  return db.transaction('rw', tableNames, async () => {
+    for (const [name, rows] of Object.entries(REFERENCE_SEED)) {
+      await syncReferenceTable(name, rows)
+    }
+    await syncGeneralThresholds()
+
+    await db.crew.clear()
+    await db.crew.bulkPut(usersSeed.crew)
+
+    const existingIds = new Set(await db.users.toCollection().primaryKeys())
+    const missingUsers = usersSeed.users.filter((user) => !existingIds.has(user.id))
+    await db.users.bulkAdd(missingUsers)
+    return missingUsers.length > 0
   })
 }
