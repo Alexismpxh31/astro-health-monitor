@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
-import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
+import { addDemoReadings, addLiveDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
 import { db } from '../db/db.js'
 import { buildCrewStatus, LEVEL } from './crew/crewStatus.js'
 import './Crew.css'
@@ -11,8 +11,11 @@ import './Crew.css'
 const ASTRONAUT_ROLE_CODE = 'ASTRONAUT'
 const SUMMARY_LEVELS = [LEVEL.CRITICAL, LEVEL.WARNING, LEVEL.NORMAL]
 const DISPLAY_CODE = { SPO2: 'SpO₂', TSKIN: 'T piel', RAD_DOSE: 'Dosis' }
+const LIVE_INTERVAL_MS = 2500
 
 // Reads everything from IndexedDB (offline-first); re-runs whenever those tables change.
+// TODO(perf): this scans every reading of the crew. If it gets slow, add a
+// [userId+indicatorCode+measuredAt] index in a new db.version() and read only the latest.
 async function loadCrewData() {
   const [roles, crew, users, missions, bodySystems, indicators, thresholds] = await Promise.all([
     db.roles.toArray(),
@@ -38,12 +41,36 @@ async function loadCrewData() {
   }
 }
 
+// Adds live readings on a timer while `enabled` is true. Skips a tick if the previous one is still writing.
+function useLiveSimulation(enabled, onError) {
+  useEffect(() => {
+    if (!enabled) return undefined
+    let isWriting = false
+    const tick = async () => {
+      if (isWriting) return
+      isWriting = true
+      try {
+        await addLiveDemoReadings()
+      } catch (error) {
+        onError(error)
+      } finally {
+        isWriting = false
+      }
+    }
+    tick()
+    const intervalId = setInterval(tick, LIVE_INTERVAL_MS)
+    return () => clearInterval(intervalId)
+  }, [enabled, onError])
+}
+
 export default function Crew() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const data = useLiveQuery(loadCrewData)
   const [errorKey, setErrorKey] = useState(null)
   const [isSimulating, setIsSimulating] = useState(false)
+  const [isLive, setIsLive] = useState(false)
+  const [levelFilter, setLevelFilter] = useState(null)
 
   useEffect(() => {
     ensureDemoCrew().catch((error) => {
@@ -52,13 +79,20 @@ export default function Crew() {
     })
   }, [])
 
+  const handleLiveError = useCallback((error) => {
+    console.error('[crew] Live simulation failed', error)
+    setIsLive(false)
+    setErrorKey('crew.simulateError')
+  }, [])
+  useLiveSimulation(isLive, handleLiveError)
+
   const localName = (row) => (lang === 'en' ? row.nameEn : row.nameEs) ?? row.name ?? row.code
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
-  const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' })
+  const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   const formatReading = (reading) =>
     `${DISPLAY_CODE[reading.indicatorCode] ?? reading.indicatorCode} ${numberFormat.format(reading.value)} ${reading.unit}`
 
-  async function handleSimulate() {
+  async function handleSimulateOnce() {
     setIsSimulating(true)
     try {
       await addDemoReadings()
@@ -69,6 +103,10 @@ export default function Crew() {
     } finally {
       setIsSimulating(false)
     }
+  }
+
+  function toggleLevelFilter(level) {
+    setLevelFilter((current) => (current === level ? null : level))
   }
 
   if (!data) {
@@ -85,6 +123,7 @@ export default function Crew() {
   const countByLevel = Object.fromEntries(
     SUMMARY_LEVELS.map((level) => [level, rows.filter((row) => row.overall === level).length]),
   )
+  const visibleRows = levelFilter ? rows.filter((row) => row.overall === levelFilter) : rows
 
   return (
     <section className="page crew-page">
@@ -95,9 +134,20 @@ export default function Crew() {
             {t('crew.subtitle', { count: rows.length, mission: mission?.name ?? '' })}
           </p>
         </div>
-        <button type="button" onClick={handleSimulate} disabled={isSimulating}>
-          {isSimulating ? t('crew.simulating') : t('crew.simulate')}
-        </button>
+        <div className="crew-actions">
+          <button
+            type="button"
+            className="crew-live-toggle"
+            aria-pressed={isLive}
+            onClick={() => setIsLive((value) => !value)}
+          >
+            <span className="crew-live-dot" aria-hidden="true" />
+            {isLive ? t('crew.liveOn') : t('crew.liveOff')}
+          </button>
+          <button type="button" onClick={handleSimulateOnce} disabled={isSimulating || isLive}>
+            {isSimulating ? t('crew.simulating') : t('crew.simulate')}
+          </button>
+        </div>
       </header>
 
       {errorKey && (
@@ -112,66 +162,87 @@ export default function Crew() {
         <p className="muted">{t('crew.empty')}</p>
       ) : (
         <>
-          <ul className="crew-summary" aria-label={t('crew.summaryLabel')}>
+          <div className="crew-filters" role="group" aria-label={t('crew.filterLabel')}>
             {SUMMARY_LEVELS.map((level) => (
-              <li key={level}>
-                <span className="crew-summary-count">{countByLevel[level]}</span>
+              <button
+                key={level}
+                type="button"
+                className="crew-filter"
+                aria-pressed={levelFilter === level}
+                onClick={() => toggleLevelFilter(level)}
+              >
+                <span className="crew-filter-count">{countByLevel[level]}</span>
                 <TrafficLight level={level} />
-              </li>
+              </button>
             ))}
-          </ul>
-
-          <div className="crew-table-wrap">
-            <table className="crew-table">
-              <caption className="crew-visually-hidden">{t('crew.tableCaption')}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{t('crew.member')}</th>
-                  <th scope="col">{t('crew.overall')}</th>
-                  {bodySystems.map((system) => (
-                    <th key={system.id} scope="col">
-                      {localName(system)}
-                    </th>
-                  ))}
-                  <th scope="col">{t('crew.lastReading')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.user.id} className={`crew-row is-${row.overall.toLowerCase().replace('_', '-')}`}>
-                    <th scope="row">
-                      <Link to={`/crew/${row.user.id}`} className="crew-member-link">
-                        {row.user.name}
-                      </Link>
-                    </th>
-                    <td data-label={t('crew.overall')}>
-                      <span className="crew-cell">
-                        <TrafficLight level={row.overall} />
-                      </span>
-                    </td>
-                    {bodySystems.map((system) => {
-                      const status = row.systems[system.id]
-                      return (
-                        <td key={system.id} data-label={localName(system)}>
-                          <span className="crew-cell">
-                            <TrafficLight level={status.level} />
-                            {status.reading && (
-                              <span className="crew-cell-value">{formatReading(status.reading)}</span>
-                            )}
-                          </span>
-                        </td>
-                      )
-                    })}
-                    <td data-label={t('crew.lastReading')}>
-                      <span className="crew-cell crew-time">
-                        {row.lastMeasuredAt ? timeFormat.format(new Date(row.lastMeasuredAt)) : '—'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {levelFilter && (
+              <button type="button" className="crew-filter-clear" onClick={() => setLevelFilter(null)}>
+                {t('crew.showAll')}
+              </button>
+            )}
           </div>
+
+          <p className="crew-visually-hidden" role="status" aria-live="polite">
+            {t('crew.visibleCount', { count: visibleRows.length })}
+          </p>
+
+          {visibleRows.length === 0 ? (
+            <p className="crew-empty-filter muted">
+              {t('crew.emptyFilter', { level: t(`trafficLight.${levelFilter}`) })}
+            </p>
+          ) : (
+            <div className="crew-table-wrap">
+              <table className="crew-table">
+                <caption className="crew-visually-hidden">{t('crew.tableCaption')}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{t('crew.member')}</th>
+                    <th scope="col">{t('crew.overall')}</th>
+                    {bodySystems.map((system) => (
+                      <th key={system.id} scope="col">
+                        {localName(system)}
+                      </th>
+                    ))}
+                    <th scope="col">{t('crew.lastReading')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleRows.map((row) => (
+                    <tr key={row.user.id} className={`crew-row is-${row.overall.toLowerCase().replace('_', '-')}`}>
+                      <th scope="row">
+                        <Link to={`/crew/${row.user.id}`} className="crew-member-link">
+                          {row.user.name}
+                        </Link>
+                      </th>
+                      <td data-label={t('crew.overall')}>
+                        <span className="crew-cell">
+                          <TrafficLight level={row.overall} />
+                        </span>
+                      </td>
+                      {bodySystems.map((system) => {
+                        const status = row.systems[system.id]
+                        return (
+                          <td key={system.id} data-label={localName(system)}>
+                            <span className="crew-cell">
+                              <TrafficLight level={status.level} />
+                              {status.reading && (
+                                <span className="crew-cell-value">{formatReading(status.reading)}</span>
+                              )}
+                            </span>
+                          </td>
+                        )
+                      })}
+                      <td data-label={t('crew.lastReading')}>
+                        <span className="crew-cell crew-time">
+                          {row.lastMeasuredAt ? timeFormat.format(new Date(row.lastMeasuredAt)) : '—'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
     </section>

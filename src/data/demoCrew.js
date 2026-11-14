@@ -90,3 +90,78 @@ export async function addDemoReadings() {
   const unitByCode = await getUnitByIndicatorCode()
   await db.readings.bulkAdd(buildSnapshot(unitByCode, new Date().toISOString()))
 }
+
+// ---------- Live mode ----------
+// Each value drifts back toward its baseline with noise. Now and then a crew member
+// gets a temporary "event" that moves one indicator to a new target for a few ticks
+// (some push it out of range, some bring it back to normal), so traffic lights
+// change during the demo. Invented dynamics, not physiology.
+
+const DRIFT = 0.35
+const EVENT_CHANCE_PER_TICK = 0.08
+const EVENT_TICKS = { min: 5, max: 10 }
+const DEMO_EVENTS = [
+  { indicatorCode: 'HR', target: 108 },
+  { indicatorCode: 'HR', target: 138 },
+  { indicatorCode: 'HR', target: 72 },
+  { indicatorCode: 'SPO2', target: 92 },
+  { indicatorCode: 'SPO2', target: 87 },
+  { indicatorCode: 'SPO2', target: 97 },
+  { indicatorCode: 'SBP', target: 140 },
+]
+
+/** userId -> { values: { [code]: number }, event: { indicatorCode, target, ticksLeft } | null } */
+const liveState = new Map()
+
+function nextLiveValues(userId, baselines) {
+  let state = liveState.get(userId)
+  if (!state) {
+    state = { values: { ...baselines }, event: null }
+    liveState.set(userId, state)
+  }
+
+  if (!state.event && Math.random() < EVENT_CHANCE_PER_TICK) {
+    const event = DEMO_EVENTS[Math.floor(Math.random() * DEMO_EVENTS.length)]
+    const span = EVENT_TICKS.max - EVENT_TICKS.min
+    state.event = { ...event, ticksLeft: EVENT_TICKS.min + Math.floor(Math.random() * (span + 1)) }
+  }
+
+  for (const [code, baseline] of Object.entries(baselines)) {
+    const target = state.event?.indicatorCode === code ? state.event.target : baseline
+    const current = state.values[code]
+    const drifted = current + (target - current) * DRIFT
+    state.values[code] = simulateValue(code, drifted)
+  }
+
+  if (state.event) {
+    state.event.ticksLeft -= 1
+    if (state.event.ticksLeft <= 0) state.event = null
+  }
+  return state.values
+}
+
+/**
+ * Adds one live-mode reading per indicator for every demo crew member.
+ * Call it on a timer (see the Crew page).
+ *
+ * @returns {Promise<void>}
+ */
+export async function addLiveDemoReadings() {
+  await ensureDemoCrew()
+  const unitByCode = await getUnitByIndicatorCode()
+  const measuredAt = new Date().toISOString()
+
+  const readings = Object.entries(demoCrew.baselines).flatMap(([userId, baselines]) =>
+    Object.entries(nextLiveValues(userId, baselines)).map(([indicatorCode, value]) => ({
+      ...createReading({
+        userId,
+        indicatorCode,
+        value: Math.max(0, Math.min(value, indicatorCode === 'SPO2' ? 100 : Infinity)),
+        unit: unitByCode.get(indicatorCode) ?? '',
+        source: 'simulated',
+      }),
+      measuredAt,
+    })),
+  )
+  await db.readings.bulkAdd(readings)
+}

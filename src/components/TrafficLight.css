@@ -16,22 +16,26 @@
   font-weight: 800;
   line-height: 1;
   color: var(--bg);
-  background-color: currentColor;
+  background-color: var(--traffic-light-color);
   border-radius: 50%;
 }
 
 .traffic-light.is-normal {
-  color: var(--ok);
+  --traffic-light-color: var(--ok);
 }
 
 .traffic-light.is-warning {
-  color: var(--warn);
+  --traffic-light-color: var(--warn);
 }
 
 .traffic-light.is-critical {
-  color: var(--danger);
+  --traffic-light-color: var(--danger);
 }
 
 .traffic-light.is-no-data {
-  color: var(--muted);
+  --traffic-light-color: var(--muted);
+}
+
+.traffic-light {
+  color: var(--traffic-light-color, var(--muted));
 }
