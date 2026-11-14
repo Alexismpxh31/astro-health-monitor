@@ -92,3 +92,16 @@ git checkout -b name/task
 ## AI usage
 
 Claude (Anthropic) was used as a coding assistant for the initial project setup (PWA configuration, folder structure, database schema, routing, i18n and placeholders).
+
+## Supabase database
+
+`supabase/setup_final.sql` is the only script to run (Supabase > SQL Editor). It drops and recreates every app table, so all existing data is deleted.
+
+It is generated, do not edit it by hand:
+
+- Data: `src/data/seed/*.json` (the same files the client loads into IndexedDB).
+- Schema: `scripts/schema.sql`.
+
+```bash
+npm run gen:sql   # regenerates supabase/setup_final.sql
+```

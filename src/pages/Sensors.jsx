@@ -5,17 +5,17 @@ import catalogs from '../data/seed/catalogs.json'
 import usersSeed from '../data/seed/users.json'
 import * as simulator from '../data/simulator.js'
 import { db } from '../db/db.js'
-import { requestNotificationPermission } from '../rules/engine.js'
+import { recommendationText, requestNotificationPermission } from '../rules/engine.js'
 
 // The simulator always feeds the demo astronaut from the seed.
-const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'ASTRONAUT').id
+const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'astronaut').id
 const DEMO_ASTRONAUT_ID = usersSeed.users.find((user) => user.roleId === ASTRONAUT_ROLE_ID).id
 
 // alertLevels.code -> CSS color variable. The level name is always shown as text too.
 const LEVEL_COLORS = {
-  NORMAL: 'var(--ok)',
-  WARNING: 'var(--warn)',
-  CRITICAL: 'var(--danger)',
+  normal: 'var(--ok)',
+  caution: 'var(--warn)',
+  critical: 'var(--danger)',
 }
 
 /** Latest alerts, joined with their reading, level and recommendation. */
@@ -130,8 +130,12 @@ export default function Sensors() {
       ) : (
         <ul className="sim-list">
           {alerts.map((alert) => {
-            const levelCode = alert.level?.code ?? 'WARNING'
-            const advice = spanish ? alert.recommendation?.textEs : alert.recommendation?.textEn
+            const levelCode = alert.level?.code ?? 'caution'
+            const advice = recommendationText(
+              alert.recommendation,
+              alert.reading,
+              i18n.resolvedLanguage,
+            )
             return (
               <li
                 key={alert.id}

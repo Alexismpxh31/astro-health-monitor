@@ -10,7 +10,7 @@ export default function Comms() {
 
   function addTestReading() {
     return db.readings.add(createReading({
-      userId: '00000000-0000-4000-8000-000000000901',
+      userId: 'a0000000-0000-4000-8000-000000000002',
       indicatorCode: 'HR',
       value: 72,
       unit: 'bpm',
