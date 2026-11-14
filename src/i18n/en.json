@@ -15,7 +15,8 @@
     "sensors": "Sensors",
     "comms": "Comms",
     "crew": "Crew",
-    "crewMember": "Crew member"
+    "crewMember": "Crew member",
+    "missions": "Missions"
   },
   "connection": {
     "online": "Online",
@@ -336,5 +337,19 @@
     "hint": "Tap a system to see only its indicators.",
     "showAll": "Show all indicators",
     "indicatorsOf": "Indicators: {{system}}"
+  },
+  "missions": {
+    "title": "My missions",
+    "subtitle": "Pick a mission to see its crew.",
+    "empty": "You are not assigned to any mission.",
+    "current": "Current mission",
+    "crew": "Crew",
+    "crewCount_one": "{{count}} astronaut",
+    "crewCount_other": "{{count}} astronauts",
+    "delay": "Signal delay",
+    "delayShort": "Signal to Earth: {{delay}}",
+    "status": "Crew status",
+    "open": "Open mission",
+    "change": "Change mission"
   }
 }

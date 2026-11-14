@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { to: '/vitals', labelKey: 'pages.vitals', icon: 'vitals', roles: [ROLE.ASTRONAUT] },
   { to: '/alerts', labelKey: 'pages.alerts', icon: 'bell', roles: [ROLE.ASTRONAUT] },
   { to: '/checkin', labelKey: 'pages.checkin', icon: 'checkin', roles: [ROLE.ASTRONAUT] },
+  { to: '/missions', labelKey: 'pages.missions', icon: 'missions', roles: [ROLE.FLIGHT_SURGEON] },
   { to: '/crew', labelKey: 'pages.crew', icon: 'crew', roles: [ROLE.FLIGHT_SURGEON], allowMedicalOfficer: true },
   { to: '/sensors', labelKey: 'pages.sensors', icon: 'sensors' },
   { to: '/comms', labelKey: 'pages.comms', icon: 'comms', roles: [ROLE.ASTRONAUT] },

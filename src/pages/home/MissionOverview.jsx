@@ -1,14 +1,17 @@
 import { useEffect } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { useSession } from '../../auth/session.js'
 import Icon from '../../components/icons.jsx'
 import TrafficLight from '../../components/TrafficLight.jsx'
 import { ensureDemoCrew } from '../../data/demoCrew.js'
 import { getPendingCount } from '../../sync/queue.js'
 import CrewAlerts from '../crew/CrewAlerts.jsx'
 import { loadCrewAlerts } from '../crew/crewAlerts.js'
-import { loadCrewData } from '../crew/crewData.js'
+import { formatCommDelay, loadCrewData } from '../crew/crewData.js'
+import { setCurrentMission } from '../missions/missionStore.js'
+import '../missions/Missions.css'
 import { LEVEL, severityOf } from '../crew/crewStatus.js'
 import { DISPLAY_CODE, localName } from '../crew/display.js'
 import LiveDemoToggle from '../crew/LiveDemoToggle.jsx'
@@ -44,11 +47,18 @@ function avatarLetters(names) {
   )
 }
 
-// Flight surgeon home: how the whole mission is doing at a glance.
+// Flight surgeon: how one mission (from /missions/:missionId) is doing at a glance.
 export default function MissionOverview() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
-  const data = useLiveQuery(loadCrewData)
+  const { missionId } = useParams()
+  const userId = useSession()?.userId
+  const data = useLiveQuery(() => (userId ? loadCrewData(userId, missionId) : null), [userId, missionId])
+
+  // Remember the mission, so "Crew" and the detail pages show the same one.
+  useEffect(() => {
+    if (userId && missionId) setCurrentMission(userId, missionId)
+  }, [userId, missionId])
   const userKey = data?.astronauts.map((user) => user.id).join('|') ?? ''
   const alerts = useLiveQuery(() => (data ? loadCrewAlerts(data.astronauts) : null), [userKey])
   const pending = useLiveQuery(getPendingCount, [], 0)
@@ -60,6 +70,7 @@ export default function MissionOverview() {
   if (!data) return <p className="muted">{t('crew.loading')}</p>
 
   const { mission, astronauts, rows } = data
+  const delay = formatCommDelay(mission)
   const count = (level) => rows.filter((row) => row.overall === level).length
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' })
@@ -76,8 +87,14 @@ export default function MissionOverview() {
     <section className="home mission">
       <header className="home-head mission-head">
         <div>
+          <Link to="/missions" className="mission-switch">
+            ← {t('missions.title')}
+          </Link>
           <h1>{t('overview.title')}</h1>
-          <p className="muted">{t('overview.subtitle', { mission: mission?.name ?? '', count: rows.length })}</p>
+          <p className="muted">
+            {t('overview.subtitle', { mission: mission ? localName(mission, lang) : '', count: rows.length })}{' '}
+            {delay && <span className="mission-delay">{t('missions.delayShort', { delay })}</span>}
+          </p>
         </div>
         <div className="mission-actions">
           <LiveDemoToggle />

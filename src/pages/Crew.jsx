@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
 import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
+import { useSession } from '../auth/session.js'
 import { loadCrewData } from './crew/crewData.js'
+import { useCurrentMission } from './missions/missionStore.js'
 import { LEVEL } from './crew/crewStatus.js'
 import { DISPLAY_CODE } from './crew/display.js'
 import CrewAlerts from './crew/CrewAlerts.jsx'
@@ -18,7 +20,12 @@ const SUMMARY_LEVELS = [LEVEL.CRITICAL, LEVEL.WARNING, LEVEL.NORMAL]
 export default function Crew() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
-  const data = useLiveQuery(loadCrewData)
+  const userId = useSession()?.userId
+  const currentMissionId = useCurrentMission(userId)
+  const data = useLiveQuery(
+    () => (userId ? loadCrewData(userId, currentMissionId) : null),
+    [userId, currentMissionId],
+  )
   const { isLive, hasError: liveFailed } = useLiveDemo()
   const canManage = useCanManageCrew()
   const [errorKey, setErrorKey] = useState(null)
@@ -66,7 +73,7 @@ export default function Crew() {
     )
   }
 
-  const { mission, bodySystems, astronauts, rows } = data
+  const { mission, missionCount, bodySystems, astronauts, rows } = data
   const hasSimulatedData = rows.some((row) => row.hasSimulatedData)
   const countByLevel = Object.fromEntries(
     SUMMARY_LEVELS.map((level) => [level, rows.filter((row) => row.overall === level).length]),
@@ -79,8 +86,13 @@ export default function Crew() {
         <div>
           <h1>{t('pages.crew')}</h1>
           <p className="muted">
-            {t('crew.subtitle', { count: rows.length, mission: mission?.name ?? '' })}
+            {t('crew.subtitle', { count: rows.length, mission: mission ? localName(mission) : '' })}
           </p>
+          {canManage && missionCount > 1 && (
+            <Link to="/missions" className="mission-switch">
+              {t('missions.change')}
+            </Link>
+          )}
         </div>
         {canManage && (
           <div className="crew-actions">

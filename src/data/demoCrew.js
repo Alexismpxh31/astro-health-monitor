@@ -33,8 +33,8 @@ async function getUnitByIndicatorCode() {
   return new Map(indicators.map((indicator) => [indicator.code, symbolByUnitId.get(indicator.unitId) ?? '']))
 }
 
-function buildSnapshot(unitByCode, measuredAt) {
-  return Object.entries(demoCrew.baselines).flatMap(([userId, baselines]) =>
+function buildSnapshot(unitByCode, measuredAt, userIds = Object.keys(demoCrew.baselines)) {
+  return userIds.map((userId) => [userId, demoCrew.baselines[userId]]).flatMap(([userId, baselines]) =>
     Object.entries(baselines).map(([indicatorCode, baseline]) => ({
       ...createReading({
         userId,
@@ -61,14 +61,17 @@ async function seedDemoCrew() {
   await seedIfEmpty()
 
   const latest = await db.transaction('rw', [db.readings, db.indicators, db.units], async () => {
-    if ((await db.readings.where('userId').anyOf(DEMO_CREW_USER_IDS).count()) > 0) return []
+    // Each demo astronaut gets a starting history once (new demo astronauts too).
+    const withReadings = new Set(await db.readings.where('userId').anyOf(DEMO_CREW_USER_IDS).uniqueKeys())
+    const missing = DEMO_CREW_USER_IDS.filter((userId) => !withReadings.has(userId))
+    if (missing.length === 0) return []
 
     const unitByCode = await getUnitByIndicatorCode()
     const now = Date.now()
     const history = []
     for (let step = HISTORY_POINTS - 1; step >= 0; step -= 1) {
       const measuredAt = new Date(now - step * HISTORY_STEP_MS).toISOString()
-      history.push(...buildSnapshot(unitByCode, measuredAt))
+      history.push(...buildSnapshot(unitByCode, measuredAt, missing))
     }
     await db.readings.bulkAdd(history)
     const newest = history.at(-1).measuredAt

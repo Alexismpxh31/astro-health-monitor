@@ -1,14 +1,95 @@
 {
   "users": [
-    { "id": "a0000000-0000-4000-8000-000000000001", "roleId": "00000000-0000-4000-8000-000000000102", "name": "Flight Surgeon (demo)", "firstName": "Flight", "lastName": "Surgeon (demo)", "pinSalt": "91936b3bdb47b76b", "pinHash": "0c50a14a24d6abdde0c8d65fe9a01e6e1284f64f3e75ed26fae2fae2e58489eb" },
-    { "id": "a0000000-0000-4000-8000-000000000002", "roleId": "00000000-0000-4000-8000-000000000101", "name": "Astronaut One (demo)", "firstName": "Astronaut", "lastName": "One (demo)", "pinSalt": "09a4abba40eef513", "pinHash": "f4bf96466abd6d390f6a70635ead9139bd68ed64dc7b4ec83886ba1a3c1dab06" },
-    { "id": "a0000000-0000-4000-8000-000000000003", "roleId": "00000000-0000-4000-8000-000000000101", "name": "Astronaut Two (demo)", "firstName": "Astronaut", "lastName": "Two (demo)", "pinSalt": "d1b13074e4b303b3", "pinHash": "34d97676fdc77821a058a217637fac99a4c0842ee30c7f629e89887e284a79a1" },
-    { "id": "a0000000-0000-4000-8000-000000000004", "roleId": "00000000-0000-4000-8000-000000000101", "name": "Astronaut Three (demo)", "firstName": "Astronaut", "lastName": "Three (demo)", "pinSalt": "8814fcc1fcfd1467", "pinHash": "da3e5f0b13f499c19c42985254c4a3cfe2a25490ae2ffbdbb73d64095628291b" }
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "roleId": "00000000-0000-4000-8000-000000000102",
+      "name": "Flight Surgeon (demo)",
+      "firstName": "Flight",
+      "lastName": "Surgeon (demo)",
+      "pinSalt": "91936b3bdb47b76b",
+      "pinHash": "0c50a14a24d6abdde0c8d65fe9a01e6e1284f64f3e75ed26fae2fae2e58489eb"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000002",
+      "roleId": "00000000-0000-4000-8000-000000000101",
+      "name": "Astronaut One (demo)",
+      "firstName": "Astronaut",
+      "lastName": "One (demo)",
+      "pinSalt": "09a4abba40eef513",
+      "pinHash": "f4bf96466abd6d390f6a70635ead9139bd68ed64dc7b4ec83886ba1a3c1dab06"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000003",
+      "roleId": "00000000-0000-4000-8000-000000000101",
+      "name": "Astronaut Two (demo)",
+      "firstName": "Astronaut",
+      "lastName": "Two (demo)",
+      "pinSalt": "d1b13074e4b303b3",
+      "pinHash": "34d97676fdc77821a058a217637fac99a4c0842ee30c7f629e89887e284a79a1"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000004",
+      "roleId": "00000000-0000-4000-8000-000000000101",
+      "name": "Astronaut Three (demo)",
+      "firstName": "Astronaut",
+      "lastName": "Three (demo)",
+      "pinSalt": "8814fcc1fcfd1467",
+      "pinHash": "da3e5f0b13f499c19c42985254c4a3cfe2a25490ae2ffbdbb73d64095628291b"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000005",
+      "roleId": "00000000-0000-4000-8000-000000000101",
+      "name": "Astronaut Four (demo)",
+      "firstName": "Astronaut",
+      "lastName": "Four (demo)",
+      "pinSalt": "444dd0795d4f504f",
+      "pinHash": "2ae0868709c8f2cc3aad5fdef845c6cdc73f9375deed9d94e1307c6d646337b4"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000006",
+      "roleId": "00000000-0000-4000-8000-000000000101",
+      "name": "Astronaut Five (demo)",
+      "firstName": "Astronaut",
+      "lastName": "Five (demo)",
+      "pinSalt": "5703b79779806764",
+      "pinHash": "76f50fea422fc0f9c10c1f1df97c64a1ad6d96747bd45d938a5875899058955a"
+    }
   ],
   "crew": [
-    { "missionId": "b0000000-0000-4000-8000-000000000001", "userId": "a0000000-0000-4000-8000-000000000001", "isMedicalOfficer": false },
-    { "missionId": "b0000000-0000-4000-8000-000000000001", "userId": "a0000000-0000-4000-8000-000000000002", "isMedicalOfficer": false },
-    { "missionId": "b0000000-0000-4000-8000-000000000001", "userId": "a0000000-0000-4000-8000-000000000003", "isMedicalOfficer": true },
-    { "missionId": "b0000000-0000-4000-8000-000000000001", "userId": "a0000000-0000-4000-8000-000000000004", "isMedicalOfficer": false }
+    {
+      "missionId": "b0000000-0000-4000-8000-000000000001",
+      "userId": "a0000000-0000-4000-8000-000000000001",
+      "isMedicalOfficer": false
+    },
+    {
+      "missionId": "b0000000-0000-4000-8000-000000000001",
+      "userId": "a0000000-0000-4000-8000-000000000002",
+      "isMedicalOfficer": false
+    },
+    {
+      "missionId": "b0000000-0000-4000-8000-000000000001",
+      "userId": "a0000000-0000-4000-8000-000000000003",
+      "isMedicalOfficer": true
+    },
+    {
+      "missionId": "b0000000-0000-4000-8000-000000000001",
+      "userId": "a0000000-0000-4000-8000-000000000004",
+      "isMedicalOfficer": false
+    },
+    {
+      "missionId": "b0000000-0000-4000-8000-000000000002",
+      "userId": "a0000000-0000-4000-8000-000000000001",
+      "isMedicalOfficer": false
+    },
+    {
+      "missionId": "b0000000-0000-4000-8000-000000000002",
+      "userId": "a0000000-0000-4000-8000-000000000005",
+      "isMedicalOfficer": false
+    },
+    {
+      "missionId": "b0000000-0000-4000-8000-000000000002",
+      "userId": "a0000000-0000-4000-8000-000000000006",
+      "isMedicalOfficer": true
+    }
   ]
 }

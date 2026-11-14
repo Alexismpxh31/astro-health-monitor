@@ -15,7 +15,8 @@
     "sensors": "Sensores",
     "comms": "Comunicaciones",
     "crew": "Tripulación",
-    "crewMember": "Tripulante"
+    "crewMember": "Tripulante",
+    "missions": "Misiones"
   },
   "connection": {
     "online": "En línea",
@@ -336,5 +337,19 @@
     "hint": "Toca un sistema para ver solo sus indicadores.",
     "showAll": "Mostrar todos los indicadores",
     "indicatorsOf": "Indicadores: {{system}}"
+  },
+  "missions": {
+    "title": "Mis misiones",
+    "subtitle": "Elige una misión para ver a su tripulación.",
+    "empty": "No estás asignado a ninguna misión.",
+    "current": "Misión actual",
+    "crew": "Tripulación",
+    "crewCount_one": "{{count}} astronauta",
+    "crewCount_other": "{{count}} astronautas",
+    "delay": "Retraso de señal",
+    "delayShort": "Señal con la Tierra: {{delay}}",
+    "status": "Estado de la tripulación",
+    "open": "Entrar a la misión",
+    "change": "Cambiar de misión"
   }
 }
