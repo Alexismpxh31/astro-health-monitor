@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
 import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
-import { db } from '../db/db.js'
-import { buildCrewStatus, hasRole, LEVEL } from './crew/crewStatus.js'
+import { loadCrewData } from './crew/crewData.js'
+import { LEVEL } from './crew/crewStatus.js'
 import { DISPLAY_CODE } from './crew/display.js'
 import CrewAlerts from './crew/CrewAlerts.jsx'
 import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
@@ -13,43 +13,7 @@ import { useCanManageCrew } from './crew/useCrewAccess.js'
 import { useLiveDemo } from './crew/useLiveDemo.js'
 import './Crew.css'
 
-const ASTRONAUT_ROLE_CODE = 'astronaut'
 const SUMMARY_LEVELS = [LEVEL.CRITICAL, LEVEL.WARNING, LEVEL.NORMAL]
-
-// Reads everything from IndexedDB (offline-first); re-runs whenever those tables change.
-// TODO(perf): this scans every reading of the crew. If it gets slow, add a
-// [userId+indicatorCode+measuredAt] index in a new db.version() and read only the latest.
-async function loadCrewData() {
-  const [roles, crew, users, missions, bodySystems, indicators, thresholds] = await Promise.all([
-    db.roles.toArray(),
-    db.crew.toArray(),
-    db.users.toArray(),
-    db.missions.toArray(),
-    db.bodySystems.toArray(),
-    db.indicators.toArray(),
-    db.thresholds.toArray(),
-  ])
-
-  const crewByUserId = new Map(crew.map((member) => [member.userId, member]))
-  const astronauts = users
-    .filter((user) => crewByUserId.has(user.id) && hasRole(roles, user, ASTRONAUT_ROLE_CODE))
-    .map((user) => ({ ...user, isMedicalOfficer: Boolean(crewByUserId.get(user.id).isMedicalOfficer) }))
-  const readings = astronauts.length
-    ? await db.readings.where('userId').anyOf(astronauts.map((user) => user.id)).toArray()
-    : []
-
-  // Only systems that have at least one indicator get a column.
-  const systemsWithIndicators = bodySystems.filter((system) =>
-    indicators.some((indicator) => indicator.bodySystemId === system.id),
-  )
-
-  return {
-    mission: missions[0] ?? null,
-    bodySystems: systemsWithIndicators,
-    astronauts,
-    rows: buildCrewStatus({ astronauts, bodySystems: systemsWithIndicators, indicators, thresholds, readings }),
-  }
-}
 
 export default function Crew() {
   const { t, i18n } = useTranslation()

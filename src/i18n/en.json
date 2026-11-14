@@ -312,5 +312,23 @@
         "risk": "Higher cancer risk and central nervous system effects; 600 mSv career limit."
       }
     }
+  },
+  "overview": {
+    "title": "Mission overview",
+    "subtitle_one": "{{mission}} · {{count}} astronaut",
+    "subtitle_other": "{{mission}} · {{count}} astronauts",
+    "openTable": "Open crew table",
+    "crewTitle": "Each crew member",
+    "noData": "No readings yet",
+    "kpi": {
+      "critical_one": "crew member critical",
+      "critical_other": "crew members critical",
+      "warning_one": "crew member in warning",
+      "warning_other": "crew members in warning",
+      "alerts_one": "unattended alert",
+      "alerts_other": "unattended alerts",
+      "pending_one": "item waiting to send",
+      "pending_other": "items waiting to send"
+    }
   }
 }

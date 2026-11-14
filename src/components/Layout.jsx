@@ -10,16 +10,19 @@ import ConnectionStatus from './ConnectionStatus.jsx'
 import Icon from './icons.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 
-// `roleCode`: the link is only shown to users with that role
-// (`allowMedicalOfficer`: and to the crew medical officer).
+// Menu per role. `roles`: only shown to those roles (all roles when missing);
+// `allowMedicalOfficer`: also shown to the crew medical officer.
+// The flight surgeon only sees what is useful to them: mission overview, crew and the
+// sensors page (to launch demo scenarios). Astronaut pages would store data as if the
+// surgeon were an astronaut.
 const NAV_ITEMS = [
   { to: '/', labelKey: 'pages.home', icon: 'home', end: true },
-  { to: '/vitals', labelKey: 'pages.vitals', icon: 'vitals' },
-  { to: '/alerts', labelKey: 'pages.alerts', icon: 'bell' },
-  { to: '/checkin', labelKey: 'pages.checkin', icon: 'checkin' },
+  { to: '/vitals', labelKey: 'pages.vitals', icon: 'vitals', roles: [ROLE.ASTRONAUT] },
+  { to: '/alerts', labelKey: 'pages.alerts', icon: 'bell', roles: [ROLE.ASTRONAUT] },
+  { to: '/checkin', labelKey: 'pages.checkin', icon: 'checkin', roles: [ROLE.ASTRONAUT] },
+  { to: '/crew', labelKey: 'pages.crew', icon: 'crew', roles: [ROLE.FLIGHT_SURGEON], allowMedicalOfficer: true },
   { to: '/sensors', labelKey: 'pages.sensors', icon: 'sensors' },
-  { to: '/comms', labelKey: 'pages.comms', icon: 'comms' },
-  { to: '/crew', labelKey: 'pages.crew', icon: 'crew', roleCode: ROLE.FLIGHT_SURGEON, allowMedicalOfficer: true },
+  { to: '/comms', labelKey: 'pages.comms', icon: 'comms', roles: [ROLE.ASTRONAUT] },
 ]
 
 // App shell: side navigation (bottom bar on phones) + top bar (title, connection,
@@ -33,8 +36,8 @@ export default function Layout() {
   const userName = user ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name : ''
   const navItems = NAV_ITEMS.filter(
     (item) =>
-      !item.roleCode ||
-      item.roleCode === session?.roleCode ||
+      !item.roles ||
+      item.roles.includes(session?.roleCode) ||
       (item.allowMedicalOfficer && session?.isMedicalOfficer),
   )
 

@@ -312,5 +312,23 @@
         "risk": "Mayor riesgo de cáncer y efectos en el sistema nervioso central; límite de carrera de 600 mSv."
       }
     }
+  },
+  "overview": {
+    "title": "Resumen de la misión",
+    "subtitle_one": "{{mission}} · {{count}} astronauta",
+    "subtitle_other": "{{mission}} · {{count}} astronautas",
+    "openTable": "Abrir tabla de tripulación",
+    "crewTitle": "Estado de cada tripulante",
+    "noData": "Sin lecturas todavía",
+    "kpi": {
+      "critical_one": "tripulante en estado crítico",
+      "critical_other": "tripulantes en estado crítico",
+      "warning_one": "tripulante en precaución",
+      "warning_other": "tripulantes en precaución",
+      "alerts_one": "alerta sin atender",
+      "alerts_other": "alertas sin atender",
+      "pending_one": "dato pendiente de enviar",
+      "pending_other": "datos pendientes de enviar"
+    }
   }
 }
