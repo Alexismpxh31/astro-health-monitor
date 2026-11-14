@@ -1,0 +1,23 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000b01",
+    "indicatorId": "00000000-0000-4000-8000-000000000401",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Detén la actividad, descansa 5 minutos y repite la medición.",
+    "textEn": "Stop the activity, rest for 5 minutes and measure again."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b02",
+    "indicatorId": "00000000-0000-4000-8000-000000000401",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Avisa de inmediato al médico de vuelo y permanece en reposo.",
+    "textEn": "Notify the flight surgeon immediately and stay at rest."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b03",
+    "indicatorId": "00000000-0000-4000-8000-000000000402",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Revisa el suministro de oxígeno de la cabina y avisa al médico de vuelo.",
+    "textEn": "Check the cabin oxygen supply and notify the flight surgeon."
+  }
+]

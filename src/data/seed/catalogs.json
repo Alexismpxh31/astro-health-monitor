@@ -1,0 +1,50 @@
+{
+  "roles": [
+    { "id": "00000000-0000-4000-8000-000000000101", "code": "ASTRONAUT", "nameEs": "Astronauta", "nameEn": "Astronaut" },
+    { "id": "00000000-0000-4000-8000-000000000102", "code": "FLIGHT_SURGEON", "nameEs": "Médico de vuelo", "nameEn": "Flight surgeon" }
+  ],
+  "bodySystems": [
+    { "id": "00000000-0000-4000-8000-000000000201", "code": "CARDIO", "nameEs": "Cardiovascular", "nameEn": "Cardiovascular" },
+    { "id": "00000000-0000-4000-8000-000000000202", "code": "RESP", "nameEs": "Respiratorio", "nameEn": "Respiratory" },
+    { "id": "00000000-0000-4000-8000-000000000203", "code": "MUSCULOSKELETAL", "nameEs": "Musculoesquelético", "nameEn": "Musculoskeletal" },
+    { "id": "00000000-0000-4000-8000-000000000204", "code": "RADIATION", "nameEs": "Radiación", "nameEn": "Radiation" },
+    { "id": "00000000-0000-4000-8000-000000000205", "code": "THERMAL", "nameEs": "Termorregulación", "nameEn": "Thermoregulation" }
+  ],
+  "units": [
+    { "id": "00000000-0000-4000-8000-000000000301", "symbol": "bpm", "nameEs": "Latidos por minuto", "nameEn": "Beats per minute" },
+    { "id": "00000000-0000-4000-8000-000000000302", "symbol": "%", "nameEs": "Porcentaje", "nameEn": "Percent" },
+    { "id": "00000000-0000-4000-8000-000000000303", "symbol": "mmHg", "nameEs": "Milímetros de mercurio", "nameEn": "Millimeters of mercury" },
+    { "id": "00000000-0000-4000-8000-000000000304", "symbol": "rpm", "nameEs": "Respiraciones por minuto", "nameEn": "Breaths per minute" },
+    { "id": "00000000-0000-4000-8000-000000000305", "symbol": "°C", "nameEs": "Grados Celsius", "nameEn": "Degrees Celsius" },
+    { "id": "00000000-0000-4000-8000-000000000306", "symbol": "g/cm²", "nameEs": "Gramos por centímetro cuadrado", "nameEn": "Grams per square centimeter" },
+    { "id": "00000000-0000-4000-8000-000000000307", "symbol": "mSv", "nameEs": "Milisievert", "nameEn": "Millisievert" }
+  ],
+  "indicators": [
+    { "id": "00000000-0000-4000-8000-000000000401", "code": "HR", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000301", "nameEs": "Frecuencia cardíaca", "nameEn": "Heart rate" },
+    { "id": "00000000-0000-4000-8000-000000000402", "code": "SPO2", "bodySystemId": "00000000-0000-4000-8000-000000000202", "unitId": "00000000-0000-4000-8000-000000000302", "nameEs": "Saturación de oxígeno", "nameEn": "Oxygen saturation" },
+    { "id": "00000000-0000-4000-8000-000000000403", "code": "SBP", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000303", "nameEs": "Presión sistólica", "nameEn": "Systolic blood pressure" },
+    { "id": "00000000-0000-4000-8000-000000000404", "code": "DBP", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000303", "nameEs": "Presión diastólica", "nameEn": "Diastolic blood pressure" },
+    { "id": "00000000-0000-4000-8000-000000000405", "code": "RR", "bodySystemId": "00000000-0000-4000-8000-000000000202", "unitId": "00000000-0000-4000-8000-000000000304", "nameEs": "Frecuencia respiratoria", "nameEn": "Respiratory rate" },
+    { "id": "00000000-0000-4000-8000-000000000406", "code": "TSKIN", "bodySystemId": "00000000-0000-4000-8000-000000000205", "unitId": "00000000-0000-4000-8000-000000000305", "nameEs": "Temperatura de la piel", "nameEn": "Skin temperature" },
+    { "id": "00000000-0000-4000-8000-000000000407", "code": "BMD", "bodySystemId": "00000000-0000-4000-8000-000000000203", "unitId": "00000000-0000-4000-8000-000000000306", "nameEs": "Densidad mineral ósea", "nameEn": "Bone mineral density" },
+    { "id": "00000000-0000-4000-8000-000000000408", "code": "RAD_DOSE", "bodySystemId": "00000000-0000-4000-8000-000000000204", "unitId": "00000000-0000-4000-8000-000000000307", "nameEs": "Dosis de radiación", "nameEn": "Radiation dose" }
+  ],
+  "alertLevels": [
+    { "id": "00000000-0000-4000-8000-000000000501", "code": "NORMAL", "severity": 0, "nameEs": "Normal", "nameEn": "Normal" },
+    { "id": "00000000-0000-4000-8000-000000000502", "code": "WARNING", "severity": 1, "nameEs": "Precaución", "nameEn": "Warning" },
+    { "id": "00000000-0000-4000-8000-000000000503", "code": "CRITICAL", "severity": 2, "nameEs": "Crítico", "nameEn": "Critical" }
+  ],
+  "symptoms": [
+    { "id": "00000000-0000-4000-8000-000000000601", "code": "HEADACHE", "nameEs": "Dolor de cabeza", "nameEn": "Headache" },
+    { "id": "00000000-0000-4000-8000-000000000602", "code": "NAUSEA", "nameEs": "Náusea", "nameEn": "Nausea" },
+    { "id": "00000000-0000-4000-8000-000000000603", "code": "FATIGUE", "nameEs": "Fatiga", "nameEn": "Fatigue" },
+    { "id": "00000000-0000-4000-8000-000000000604", "code": "DIZZINESS", "nameEs": "Mareo", "nameEn": "Dizziness" }
+  ],
+  "sensorTypes": [
+    { "id": "00000000-0000-4000-8000-000000000701", "code": "BLE_HEART_RATE", "nameEs": "Banda de frecuencia cardíaca (BLE)", "nameEn": "Heart rate strap (BLE)" },
+    { "id": "00000000-0000-4000-8000-000000000702", "code": "SIMULATED", "nameEs": "Sensor simulado", "nameEn": "Simulated sensor" }
+  ],
+  "missions": [
+    { "id": "00000000-0000-4000-8000-000000000801", "code": "DEMO-1", "name": "Demo Mission 1", "startDate": "2026-10-01", "endDate": null }
+  ]
+}
