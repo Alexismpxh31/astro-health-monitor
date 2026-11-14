@@ -145,7 +145,26 @@
     "latestReadings": "Latest readings",
     "latestAlerts": "Latest alerts",
     "noReadings": "No readings yet.",
-    "noAlerts": "No alerts yet."
+    "noAlerts": "No alerts yet.",
+    "ble": {
+      "title": "Real sensor (Bluetooth)",
+      "connect": "Connect heart rate monitor",
+      "disconnect": "Disconnect heart rate monitor",
+      "unnamedDevice": "heart rate monitor",
+      "status": {
+        "disconnected": "Disconnected",
+        "connecting": "Connecting… choose your heart rate monitor in the browser window.",
+        "connected": "Connected to {{name}}",
+        "reconnecting": "Connection lost. Retrying…"
+      },
+      "errors": {
+        "insecure": "Bluetooth only works when the app is opened over https://.",
+        "unsupported": "This browser does not support Web Bluetooth (Safari and Firefox do not allow it). Use Chrome or Edge on a computer or Android.",
+        "failed": "Could not connect to the heart rate monitor. Check that it is on and nearby, then try again.",
+        "lost": "The connection to the heart rate monitor was lost and the retry failed. Connect it again."
+      },
+      "exclusiveNote": "The heart rate monitor and the simulator never run together: connecting one stops the other."
+    }
   },
   "levels": {
     "normal": "Normal",

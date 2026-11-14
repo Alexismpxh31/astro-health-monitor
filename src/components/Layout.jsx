@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { logout, ROLE, useSession } from '../auth/session.js'
+import { disconnect as disconnectHeartRate } from '../bluetooth/heartRate.js'
 import { stop as stopSimulator } from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { SUPPORTED_LANGUAGES } from '../i18n/index.js'
@@ -36,8 +37,9 @@ export default function Layout() {
   )
 
   function handleLogout() {
-    // The simulator writes readings for the session user, so it must not outlive the session.
+    // The simulator and the BLE sensor write readings for the session user, so they must not outlive the session.
     stopSimulator()
+    disconnectHeartRate()
     logout()
   }
 
