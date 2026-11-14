@@ -82,6 +82,11 @@
       "sendError": "The note could not be saved. Try again."
     }
   },
+  "comms": {
+    "loading": "Checking pending records…",
+    "pendingCount_one": "{{count}} record pending sync",
+    "pendingCount_other": "{{count}} records pending sync"
+  },
   "common": {
     "underConstruction": "Under construction",
     "language": "Language",
@@ -114,5 +119,65 @@
   },
   "rules": {
     "criticalTitle": "Critical alert"
+  },
+  "checkin": {
+    "title": "Crew Daily Health Check-in",
+    "subtitle": "Local IndexedDB storage (Dexie) · Syncs with Mission Control",
+    "moodLabel": "1. Mood State (1 - 5)",
+    "moodHint": "Nominal range: 3 to 5",
+    "moodOptions": {
+      "1": "Very Low",
+      "2": "Low",
+      "3": "Stable",
+      "4": "Good",
+      "5": "Optimal"
+    },
+    "sleepLabel": "2. Sleep Hours (last 24 h)",
+    "sleepHint": "Mission nominal range: 6.0 to 9.0 h",
+    "sleepUnit": "h",
+    "stressLabel": "3. Perceived Stress Level (1 - 5)",
+    "stressHint": "Nominal range: 1 to 3",
+    "stressOptions": {
+      "1": "Minimal",
+      "2": "Mild",
+      "3": "Moderate",
+      "4": "High",
+      "5": "Critical"
+    },
+    "pvtTitle": "4. Psychomotor Vigilance Test (PVT)",
+    "pvtSubtitle": "Measures visual reaction latency (NASA Nominal: 180–300 ms)",
+    "pvtStart": "Start PVT Reflex Test",
+    "pvtWait": "Wait for cyan signal...",
+    "pvtTapNow": "TAP NOW!",
+    "pvtEarly": "False start before signal. Tap to retry.",
+    "pvtRetry": "Retake PVT Test",
+    "pvtResultLabel": "Measured latency:",
+    "symptomsLabel": "5. Symptoms Reported Today",
+    "symptomsHint": "Select all that apply (optional)",
+    "notesLabel": "6. Notes for Flight Surgeon",
+    "notesPlaceholder": "E.g., Mild nasal congestion upon waking or fatigue after exercise...",
+    "submitButton": "Save Check-in to Dexie (Offline)",
+    "savedBadge": "Saved in IndexedDB · Status: pending",
+    "evalTitle": "Onboard Autonomous Assessment",
+    "statusNormal": "NORMAL (GREEN)",
+    "statusCaution": "CAUTION (YELLOW)",
+    "statusCritical": "CRITICAL (RED)",
+    "recNominal": "Mood, sleep, stress, and reflexes are within nominal mission thresholds.",
+    "recs": {
+      "REC_SLEEP_H_LOW_CAUTION": "You slept little ({value} h). Reduce light and noise before bed and try to sleep at your mission schedule time.",
+      "REC_SLEEP_H_LOW_CRITICAL": "Severely insufficient sleep ({value} h). Avoid high-risk tasks today and tell the flight surgeon.",
+      "REC_SLEEP_H_HIGH_CAUTION": "You slept a lot ({value} h). Keep regular hours and do some physical activity today.",
+      "REC_SLEEP_H_HIGH_CRITICAL": "Excessive sleep ({value} h). Tell the flight surgeon, it may indicate fatigue or mood issues.",
+      "REC_MOOD_LOW_CAUTION": "Your mood is low. Talk to a crewmate or your family and do an activity you enjoy.",
+      "REC_MOOD_LOW_CRITICAL": "Your mood is very low. Contact the flight surgeon or the crew medical officer today.",
+      "REC_STRESS_HIGH_CAUTION": "Your stress is elevated. Do 5 minutes of guided breathing and take a break from tasks.",
+      "REC_STRESS_HIGH_CRITICAL": "Your stress is very high. Contact the flight surgeon and ask for support to reduce your workload.",
+      "REC_PVT_CAUTION": "PVT latency > 320 ms ({value} ms). Execute NASA 45-min restorative nap protocol prior to critical operations.",
+      "REC_PVT_CRITICAL": "PVT latency > 450 ms ({value} ms). High neurocognitive fatigue: defer critical tasks and rest immediately."
+    },
+    "historyTitle": "Local Dexie Records (Sync Queue)",
+    "historyEmpty": "No check-ins saved on this device yet.",
+    "syncPending": "Pending sync",
+    "syncSynced": "Synced"
   }
 }
