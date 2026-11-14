@@ -16,6 +16,8 @@
 --  * Catalog rows use the same fixed UUIDs as the client (roles, body_systems, units,
 --    indicators, alert_levels, symptoms, sensor_types), so client rows sync without id lookups.
 --  * alerts: new columns alert_level_id and direction ('low' | 'high').
+--  * thresholds: new column mode ('absolute' | 'baseline', default 'absolute'). 'baseline' rows hold
+--    deviations from the personal baseline instead of absolute limits (src/rules/baseline.js).
 --  * TH_RAD_DOSE: 0 / 0 / 400 / 600 mSv (NASA-STD-3001 career limit), validated.
 --  * TH_BMD: -1.5 / -1.0 / 0.5 / 2 % per month (NASA HRP bone loss rate), validated.
 --  * Other thresholds that cited the "NASA HRP compendium": same values, source relabelled
@@ -166,11 +168,19 @@ create table thresholds (
   valid_from    timestamptz not null default now(),
   source        text,                                   -- where the reference value comes from
   validated     boolean not null default false,         -- false = estimated, TODO: validar fuente
+  -- 'absolute': the four limits are absolute values. 'baseline': they are deviations from the
+  -- user's personal baseline (median of their last 24 h, see src/rules/baseline.js).
+  mode          text not null default 'absolute',
   updated_at    timestamptz not null default now(),     -- for "pull changes since X" (Earth wins)
   constraint chk_thresholds_order check (
     min_critical <= min_normal and min_normal <= max_normal and max_normal <= max_critical
-  )
+  ),
+  constraint chk_thresholds_mode check (mode in ('absolute', 'baseline'))
 );
+-- Idempotent upgrade for a thresholds table created before `mode` existed (no-op on a fresh install).
+alter table thresholds add column if not exists mode text not null default 'absolute';
+alter table thresholds drop constraint if exists chk_thresholds_mode;
+alter table thresholds add constraint chk_thresholds_mode check (mode in ('absolute', 'baseline'));
 create unique index thresholds_general_uq  on thresholds (indicator_id, valid_from) where user_id is null;
 create unique index thresholds_personal_uq on thresholds (indicator_id, user_id, valid_from) where user_id is not null;
 
@@ -425,31 +435,31 @@ on conflict (code) do update set name_es = excluded.name_es, name_en = excluded.
   body_system_id = excluded.body_system_id, unit_id = excluded.unit_id, is_live = excluded.is_live;
 
 -- General thresholds (user_id null).
-insert into thresholds (id, indicator_id, user_id, min_critical, min_normal, max_normal, max_critical, valid_from, source, validated)
-select v.id, i.id, null, v.min_c, v.min_n, v.max_n, v.max_c, v.valid_from::timestamptz, v.source, v.validated
+insert into thresholds (id, indicator_id, user_id, min_critical, min_normal, max_normal, max_critical, valid_from, source, validated, mode)
+select v.id, i.id, null, v.min_c, v.min_n, v.max_n, v.max_c, v.valid_from::timestamptz, v.source, v.validated, v.mode
 from (values
-  ('TH_HR', 'HR', 45, 55, 95, 130, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_SPO2', 'SPO2', 90, 95, 100, 100, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_SBP', 'SBP', 80, 95, 130, 155, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_DBP', 'DBP', 50, 60, 85, 100, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_RR', 'RR', 8, 12, 18, 28, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_TSKIN', 'TSKIN', 34.5, 35.8, 37.3, 38.5, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_BMD', 'BMD', -1.5, -1, 0.5, 2, '2026-01-01T00:00:00Z', 'NASA HRP Risk of Spaceflight-Induced Bone Changes: 1-1.5 % bone density loss per month (4-6 month missions); CSA infographic 8056: up to 1.5 %/month. Value = monthly % change.', true),
-  ('TH_CTX', 'CTX', 0, 0, 0.7, 1.2, '2026-01-01T00:00:00Z', 'TODO: validar fuente (estimado; depende del laboratorio, sexo y edad)', false),
-  ('TH_IL6', 'IL6', 0, 0.5, 5, 12, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_CORTISOL', 'CORTISOL', 2, 5, 25, 45, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_SLEEP_H', 'SLEEP_H', 4, 6.5, 9, 14, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_MOOD', 'MOOD', 1.5, 2.5, 5, 5, '2026-01-01T00:00:00Z', 'Internal 1-5 check-in scale (1 = very low). TODO: validar fuente (ej. POMS)', false),
-  ('TH_STRESS', 'STRESS', 1, 1, 3, 4.5, '2026-01-01T00:00:00Z', 'Internal 1-5 check-in scale (5 = very high). TODO: validar fuente', false),
-  ('TH_RAD_DOSE', 'RAD_DOSE', 0, 0, 400, 600, '2026-01-01T00:00:00Z', 'NASA-STD-3001 Vol.1 [V1 4030]: career effective dose < 600 mSv (NASA OCHMO Radiation Protection Technical Brief). Caution from 400 mSv is an internal app margin.', true),
-  ('TH_MUSCLE', 'MUSCLE', 80, 90, 105, 120, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_RAD_D', 'RAD_D', 0, 0.05, 0.8, 1.8, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_PVT', 'PVT', 150, 180, 300, 450, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false),
-  ('TH_WBC', 'WBC', 2.5, 4.5, 10.5, 15, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false)
-) as v(id, code, min_c, min_n, max_n, max_c, valid_from, source, validated)
+  ('TH_HR', 'HR', 45, 55, 95, 130, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_SPO2', 'SPO2', 90, 95, 100, 100, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_SBP', 'SBP', 80, 95, 130, 155, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_DBP', 'DBP', 50, 60, 85, 100, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_RR', 'RR', 8, 12, 18, 28, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_TSKIN', 'TSKIN', -2, -0.7, 0.8, 2, '2026-01-01T00:00:00Z', 'Personal baseline: deviation (°C) from the median of the astronaut''s own skin temperature in the last 24 h (min 10 readings, src/rules/baseline.js). Deviations derived from the NASA HRP compendium range (35.8-37.3 normal, 34.5/38.5 critical, centered at 36.5). Skin temperature has no universal clinical range. TODO: validate source', false, 'baseline'),
+  ('TH_BMD', 'BMD', -1.5, -1, 0.5, 2, '2026-01-01T00:00:00Z', 'NASA HRP Risk of Spaceflight-Induced Bone Changes: 1-1.5 % bone density loss per month (4-6 month missions); CSA infographic 8056: up to 1.5 %/month. Value = monthly % change.', true, 'absolute'),
+  ('TH_CTX', 'CTX', 0, 0, 0.7, 1.2, '2026-01-01T00:00:00Z', 'TODO: validar fuente (estimado; depende del laboratorio, sexo y edad)', false, 'absolute'),
+  ('TH_IL6', 'IL6', 0, 0.5, 5, 12, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_CORTISOL', 'CORTISOL', 2, 5, 25, 45, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_SLEEP_H', 'SLEEP_H', 4, 6.5, 9, 14, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_MOOD', 'MOOD', 1.5, 2.5, 5, 5, '2026-01-01T00:00:00Z', 'Internal 1-5 check-in scale (1 = very low). TODO: validar fuente (ej. POMS)', false, 'absolute'),
+  ('TH_STRESS', 'STRESS', 1, 1, 3, 4.5, '2026-01-01T00:00:00Z', 'Internal 1-5 check-in scale (5 = very high). TODO: validar fuente', false, 'absolute'),
+  ('TH_RAD_DOSE', 'RAD_DOSE', 0, 0, 400, 600, '2026-01-01T00:00:00Z', 'NASA-STD-3001 Vol.1 [V1 4030]: career effective dose < 600 mSv (NASA OCHMO Radiation Protection Technical Brief). Caution from 400 mSv is an internal app margin.', true, 'absolute'),
+  ('TH_MUSCLE', 'MUSCLE', 80, 90, 105, 120, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_RAD_D', 'RAD_D', 0, 0.05, 0.8, 1.8, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_PVT', 'PVT', 150, 180, 300, 450, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute'),
+  ('TH_WBC', 'WBC', 2.5, 4.5, 10.5, 15, '2026-01-01T00:00:00Z', 'General clinical reference (not from the challenge sources). Demo values. TODO: validate source', false, 'absolute')
+) as v(id, code, min_c, min_n, max_n, max_c, valid_from, source, validated, mode)
 join indicators i on i.code = v.code
 on conflict (id) do update set min_critical = excluded.min_critical, min_normal = excluded.min_normal,
-  max_normal = excluded.max_normal, max_critical = excluded.max_critical, source = excluded.source, validated = excluded.validated;
+  max_normal = excluded.max_normal, max_critical = excluded.max_critical, source = excluded.source, validated = excluded.validated, mode = excluded.mode;
 
 insert into recommendations (id, indicator_id, alert_level_id, direction, text)
 select v.id, i.id, l.id, v.direction, v.text::jsonb
@@ -472,10 +482,10 @@ from (values
   ('REC_RR_LOW_CRITICAL', 'RR', 'critical', 'low', '{"es":"Respiración muy lenta (%value% %unit%). Contacta al médico de vuelo ahora y revisa la calidad del aire de la cabina.","en":"Breathing very slow (%value% %unit%). Contact the flight surgeon now and check cabin air quality."}'),
   ('REC_RR_HIGH_CAUTION', 'RR', 'caution', 'high', '{"es":"Respiración rápida (%value% %unit%). Haz respiración lenta y vuelve a medir en 5 minutos.","en":"Fast breathing (%value% %unit%). Do slow breathing and measure again in 5 minutes."}'),
   ('REC_RR_HIGH_CRITICAL', 'RR', 'critical', 'high', '{"es":"Respiración muy rápida (%value% %unit%). Revisa el CO2 de la cabina, descansa y contacta al médico de vuelo ahora.","en":"Breathing very fast (%value% %unit%). Check cabin CO2, rest and contact the flight surgeon now."}'),
-  ('REC_TSKIN_LOW_CAUTION', 'TSKIN', 'caution', 'low', '{"es":"Temperatura de piel baja (%value% %unit%). Abrígate y verifica la temperatura de la cabina.","en":"Skin temperature low (%value% %unit%). Warm up and check cabin temperature."}'),
-  ('REC_TSKIN_LOW_CRITICAL', 'TSKIN', 'critical', 'low', '{"es":"Temperatura de piel muy baja (%value% %unit%). Abrígate de inmediato y contacta al médico de vuelo.","en":"Skin temperature very low (%value% %unit%). Warm up immediately and contact the flight surgeon."}'),
-  ('REC_TSKIN_HIGH_CAUTION', 'TSKIN', 'caution', 'high', '{"es":"Temperatura de piel alta (%value% %unit%). Reduce la actividad, hidrátate y verifica la temperatura de la cabina.","en":"Skin temperature high (%value% %unit%). Reduce activity, hydrate and check cabin temperature."}'),
-  ('REC_TSKIN_HIGH_CRITICAL', 'TSKIN', 'critical', 'high', '{"es":"Temperatura de piel muy alta (%value% %unit%). Detén la actividad, enfríate, hidrátate y contacta al médico de vuelo ahora.","en":"Skin temperature very high (%value% %unit%). Stop activity, cool down, hydrate and contact the flight surgeon now."}'),
+  ('REC_TSKIN_LOW_CAUTION', 'TSKIN', 'caution', 'low', '{"es":"Tu temperatura de piel bajó respecto a tu valor habitual (%value% %unit%). Abrígate, verifica la temperatura de la cabina y vuelve a medir en 15 minutos.","en":"Your skin temperature dropped below your usual value (%value% %unit%). Warm up, check the cabin temperature and measure again in 15 minutes."}'),
+  ('REC_TSKIN_LOW_CRITICAL', 'TSKIN', 'critical', 'low', '{"es":"Tu temperatura de piel bajó mucho respecto a tu valor habitual (%value% %unit%): posible enfriamiento. Abrígate de inmediato, mide tu temperatura corporal y contacta al médico de vuelo.","en":"Your skin temperature dropped far below your usual value (%value% %unit%): possible chilling. Warm up immediately, measure your body temperature and contact the flight surgeon."}'),
+  ('REC_TSKIN_HIGH_CAUTION', 'TSKIN', 'caution', 'high', '{"es":"Tu temperatura de piel subió respecto a tu valor habitual (%value% %unit%). Reduce la actividad, hidrátate, verifica la temperatura de la cabina y vuelve a medir en 15 minutos.","en":"Your skin temperature rose above your usual value (%value% %unit%). Reduce activity, hydrate, check the cabin temperature and measure again in 15 minutes."}'),
+  ('REC_TSKIN_HIGH_CRITICAL', 'TSKIN', 'critical', 'high', '{"es":"Tu temperatura de piel subió mucho respecto a tu valor habitual (%value% %unit%): posible fiebre. Detén la actividad, mide tu temperatura corporal y contacta al médico de vuelo ahora.","en":"Your skin temperature rose far above your usual value (%value% %unit%): possible fever. Stop activity, measure your body temperature and contact the flight surgeon now."}'),
   ('REC_BMD_LOW_CAUTION', 'BMD', 'caution', 'low', '{"es":"Pérdida ósea de %value% %unit%, mayor a la esperada. Cumple tu ejercicio de resistencia y revisa tu plan con el médico de vuelo.","en":"Bone loss of %value% %unit%, higher than expected. Complete your resistance exercise and review your plan with the flight surgeon."}'),
   ('REC_BMD_LOW_CRITICAL', 'BMD', 'critical', 'low', '{"es":"Pérdida ósea muy acelerada (%value% %unit%). Contacta al médico de vuelo para revisar tu ejercicio de resistencia y la posible medicación (bifosfonatos).","en":"Very fast bone loss (%value% %unit%). Contact the flight surgeon to review your resistance exercise and possible medication (bisphosphonates)."}'),
   ('REC_CTX_HIGH_CAUTION', 'CTX', 'caution', 'high', '{"es":"Marcador de resorción ósea elevado (%value% %unit%). Cumple tu ejercicio de resistencia y avisa al médico de vuelo en tu próximo reporte.","en":"Bone resorption marker elevated (%value% %unit%). Keep up resistance exercise and tell the flight surgeon in your next report."}'),

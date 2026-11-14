@@ -127,11 +127,19 @@ create table thresholds (
   valid_from    timestamptz not null default now(),
   source        text,                                   -- where the reference value comes from
   validated     boolean not null default false,         -- false = estimated, TODO: validar fuente
+  -- 'absolute': the four limits are absolute values. 'baseline': they are deviations from the
+  -- user's personal baseline (median of their last 24 h, see src/rules/baseline.js).
+  mode          text not null default 'absolute',
   updated_at    timestamptz not null default now(),     -- for "pull changes since X" (Earth wins)
   constraint chk_thresholds_order check (
     min_critical <= min_normal and min_normal <= max_normal and max_normal <= max_critical
-  )
+  ),
+  constraint chk_thresholds_mode check (mode in ('absolute', 'baseline'))
 );
+-- Idempotent upgrade for a thresholds table created before `mode` existed (no-op on a fresh install).
+alter table thresholds add column if not exists mode text not null default 'absolute';
+alter table thresholds drop constraint if exists chk_thresholds_mode;
+alter table thresholds add constraint chk_thresholds_mode check (mode in ('absolute', 'baseline'));
 create unique index thresholds_general_uq  on thresholds (indicator_id, valid_from) where user_id is null;
 create unique index thresholds_personal_uq on thresholds (indicator_id, user_id, valid_from) where user_id is not null;
 
