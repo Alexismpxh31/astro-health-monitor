@@ -63,13 +63,14 @@
     "id": "TH_TSKIN",
     "indicatorId": "00000000-0000-4000-8000-000000000406",
     "userId": null,
-    "minCritical": 34.5,
-    "minNormal": 35.8,
-    "maxNormal": 37.3,
-    "maxCritical": 38.5,
+    "minCritical": -2,
+    "minNormal": -0.7,
+    "maxNormal": 0.8,
+    "maxCritical": 2,
     "validFrom": "2026-01-01T00:00:00Z",
-    "source": "General clinical reference (not from the challenge sources). Demo values. TODO: validate source",
-    "validated": false
+    "source": "Personal baseline: deviation (°C) from the median of the astronaut's own skin temperature in the last 24 h (min 10 readings, src/rules/baseline.js). Deviations derived from the NASA HRP compendium range (35.8-37.3 normal, 34.5/38.5 critical, centered at 36.5). Skin temperature has no universal clinical range. TODO: validate source",
+    "validated": false,
+    "mode": "baseline"
   },
   {
     "id": "TH_BMD",

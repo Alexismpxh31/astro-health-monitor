@@ -148,32 +148,32 @@
     "indicatorId": "00000000-0000-4000-8000-000000000406",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
     "direction": "low",
-    "textEs": "Temperatura de piel baja (%value% %unit%). Abrígate y verifica la temperatura de la cabina.",
-    "textEn": "Skin temperature low (%value% %unit%). Warm up and check cabin temperature."
+    "textEs": "Tu temperatura de piel bajó respecto a tu valor habitual (%value% %unit%). Abrígate, verifica la temperatura de la cabina y vuelve a medir en 15 minutos.",
+    "textEn": "Your skin temperature dropped below your usual value (%value% %unit%). Warm up, check the cabin temperature and measure again in 15 minutes."
   },
   {
     "id": "REC_TSKIN_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000406",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
     "direction": "low",
-    "textEs": "Temperatura de piel muy baja (%value% %unit%). Abrígate de inmediato y contacta al médico de vuelo.",
-    "textEn": "Skin temperature very low (%value% %unit%). Warm up immediately and contact the flight surgeon."
+    "textEs": "Tu temperatura de piel bajó mucho respecto a tu valor habitual (%value% %unit%): posible enfriamiento. Abrígate de inmediato, mide tu temperatura corporal y contacta al médico de vuelo.",
+    "textEn": "Your skin temperature dropped far below your usual value (%value% %unit%): possible chilling. Warm up immediately, measure your body temperature and contact the flight surgeon."
   },
   {
     "id": "REC_TSKIN_HIGH_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000406",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
     "direction": "high",
-    "textEs": "Temperatura de piel alta (%value% %unit%). Reduce la actividad, hidrátate y verifica la temperatura de la cabina.",
-    "textEn": "Skin temperature high (%value% %unit%). Reduce activity, hydrate and check cabin temperature."
+    "textEs": "Tu temperatura de piel subió respecto a tu valor habitual (%value% %unit%). Reduce la actividad, hidrátate, verifica la temperatura de la cabina y vuelve a medir en 15 minutos.",
+    "textEn": "Your skin temperature rose above your usual value (%value% %unit%). Reduce activity, hydrate, check the cabin temperature and measure again in 15 minutes."
   },
   {
     "id": "REC_TSKIN_HIGH_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000406",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
     "direction": "high",
-    "textEs": "Temperatura de piel muy alta (%value% %unit%). Detén la actividad, enfríate, hidrátate y contacta al médico de vuelo ahora.",
-    "textEn": "Skin temperature very high (%value% %unit%). Stop activity, cool down, hydrate and contact the flight surgeon now."
+    "textEs": "Tu temperatura de piel subió mucho respecto a tu valor habitual (%value% %unit%): posible fiebre. Detén la actividad, mide tu temperatura corporal y contacta al médico de vuelo ahora.",
+    "textEn": "Your skin temperature rose far above your usual value (%value% %unit%): possible fever. Stop activity, measure your body temperature and contact the flight surgeon now."
   },
   {
     "id": "REC_BMD_LOW_CAUTION",
