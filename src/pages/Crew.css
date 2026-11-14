@@ -1,0 +1,240 @@
+.crew-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.crew-header p {
+  margin: 0;
+}
+
+.crew-header button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.crew-error {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+}
+
+.crew-simulated-note {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.crew-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.crew-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.crew-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 0.875rem;
+}
+
+.crew-filter[aria-pressed='true'] {
+  background-color: var(--bg);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.crew-filter-count {
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.crew-filter-clear {
+  color: var(--accent);
+  background: none;
+  border-color: transparent;
+}
+
+.crew-empty-filter {
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.crew-table-wrap {
+  overflow-x: auto;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.crew-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.crew-table th,
+.crew-table td {
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+}
+
+.crew-table thead th {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.crew-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+/* Left stripe marks rows that need attention (the badge carries the text). */
+.crew-row.is-critical > th {
+  box-shadow: inset 4px 0 0 var(--danger);
+}
+
+.crew-row.is-warning > th {
+  box-shadow: inset 4px 0 0 var(--warn);
+}
+
+.crew-member-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+.crew-member-link:hover {
+  color: var(--accent);
+}
+
+.crew-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.crew-cell-value {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.crew-time {
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.crew-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Phones: one card per crew member. */
+@media (max-width: 719px) {
+  .crew-table-wrap {
+    overflow: visible;
+    background: none;
+    border: 0;
+  }
+
+  .crew-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .crew-table,
+  .crew-table tbody,
+  .crew-table tr,
+  .crew-table th,
+  .crew-table td {
+    display: block;
+  }
+
+  .crew-table tr {
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .crew-row.is-critical {
+    border-left: 4px solid var(--danger);
+  }
+
+  .crew-row.is-warning {
+    border-left: 4px solid var(--warn);
+  }
+
+  .crew-row.is-critical > th,
+  .crew-row.is-warning > th {
+    box-shadow: none;
+  }
+
+  .crew-table tbody th {
+    padding-block: 0;
+  }
+
+  .crew-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.5rem;
+  }
+
+  .crew-table td::before {
+    content: attr(data-label);
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .crew-table tbody tr:last-child > * {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .crew-table tbody tr > :last-child {
+    border-bottom: 0;
+  }
+
+  .crew-cell {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
