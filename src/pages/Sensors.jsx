@@ -14,28 +14,16 @@ import { db } from '../db/db.js'
 import { recommendationText, requestNotificationPermission } from '../rules/engine.js'
 
 // The simulator always feeds the demo astronaut from the seed.
- alexis/fix-db
-const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'astronaut').id
-const DEMO_ASTRONAUT_ID = usersSeed.users.find((user) => user.roleId === ASTRONAUT_ROLE_ID).id
-
-// alertLevels.code -> CSS color variable. The level name is always shown as text too.
-const LEVEL_COLORS = {
-  normal: 'var(--ok)',
-  caution: 'var(--warn)',
-  critical: 'var(--danger)',
-
-const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'ASTRONAUT')?.id
+const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'astronaut')?.id
 const DEMO_ASTRONAUT_ID =
   usersSeed.users.find((user) => user.roleId === ASTRONAUT_ROLE_ID)?.id ??
   '00000000-0000-4000-8000-000000000901'
 
 // alertLevels.code -> CSS color variable. The level name is always shown as text too.
 const LEVEL_COLORS = {
-  NORMAL: 'var(--ok)',
-  WARNING: 'var(--warn)',
-  CAUTION: 'var(--warn)',
-  CRITICAL: 'var(--danger)',
- main
+  normal: 'var(--ok)',
+  caution: 'var(--warn)',
+  critical: 'var(--danger)',
 }
 
 // Reference devices (based on real ISS hardware). Values are simulated for the demo.
@@ -108,6 +96,8 @@ export default function Sensors() {
   }
 
   // ---------- Simulator (main) ----------
+  // The simulator lives outside React and keeps running across page changes,
+  // so the initial state is read from it.
   const [running, setRunning] = useState(() => simulator.isRunning())
   const [scenario, setScenario] = useState(() => simulator.getScenario())
 
@@ -129,6 +119,7 @@ export default function Sensors() {
     if (running) {
       simulator.stop()
     } else {
+      // Ask for notification permission here because it needs a user gesture.
       requestNotificationPermission()
       simulator.start(DEMO_ASTRONAUT_ID)
     }
@@ -213,35 +204,6 @@ export default function Sensors() {
         <div className="sim-panel">
           <p className="sim-badge">{t('sensors.simulatedData')}</p>
 
- alexis/fix-db
-      <h2>{t('sensors.latestAlerts')}</h2>
-      {alerts.length === 0 ? (
-        <p className="muted">{t('sensors.noAlerts')}</p>
-      ) : (
-        <ul className="sim-list">
-          {alerts.map((alert) => {
-            const levelCode = alert.level?.code ?? 'caution'
-            const advice = recommendationText(
-              alert.recommendation,
-              alert.reading,
-              i18n.resolvedLanguage,
-            )
-            return (
-              <li
-                key={alert.id}
-                className="sim-row sim-alert"
-                style={{ '--level-color': LEVEL_COLORS[levelCode] }}
-              >
-                <span className="sim-level">
-                  {t(`levels.${levelCode}`)}
-                  {alert.direction && (
-                    <span title={t(`directions.${alert.direction}`)}>
-                      {' '}
-                      <span aria-hidden="true">{alert.direction === 'high' ? '↑' : '↓'}</span>
-                      <span className="visually-hidden">{t(`directions.${alert.direction}`)}</span>
-                    </span>
-                  )}
-
           <button
             type="button"
             className={`sim-toggle${running ? ' is-running' : ''}`}
@@ -277,7 +239,6 @@ export default function Sensors() {
                 <span className="sim-row-name">{indicatorName(reading.indicatorCode)}</span>
                 <span className="sim-row-value">
                   {reading.value} {reading.unit}
- main
                 </span>
                 <time className="muted" dateTime={reading.measuredAt}>
                   {formatTime(reading.measuredAt)}
@@ -293,8 +254,12 @@ export default function Sensors() {
         ) : (
           <ul className="sim-list">
             {alerts.map((alert) => {
-              const levelCode = (alert.level?.code ?? 'WARNING').toUpperCase()
-              const advice = spanish ? alert.recommendation?.textEs : alert.recommendation?.textEn
+              const levelCode = (alert.level?.code ?? 'caution').toLowerCase()
+              const advice = recommendationText(
+                alert.recommendation,
+                alert.reading,
+                i18n.resolvedLanguage,
+              )
               return (
                 <li
                   key={alert.id}
