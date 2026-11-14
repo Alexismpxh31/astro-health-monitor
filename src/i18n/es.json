@@ -263,5 +263,16 @@
       "high": "subió",
       "low": "bajó"
     }
+  },
+  "astronaut": {
+    "title": "Panel Principal de Monitoreo del Astronauta",
+    "subsystems": "Subsistemas de Monitoreo",
+    "clinicalFile": "Ficha Clínica NASA",
+    "viewDetails": "Ver Detalle del Sistema",
+    "hrpHazard": "Peligro HRP Asociado",
+    "flightRisk": "Riesgo Oficial de Vuelo",
+    "livePulse": "Telemetría Activa (1 Hz)",
+    "noAlerts": "No hay alertas médicas pendientes. Todos los parámetros fisiológicos se encuentran en rango seguro.",
+    "markDone": "Hecho / Marcar Atendida"
   }
 }
