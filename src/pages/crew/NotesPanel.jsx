@@ -48,8 +48,8 @@ export default function NotesPanel({ recipientId, senderId, notes, lang, initial
         content,
         sentAt: new Date().toISOString(),
         readAt: null,
-        // Local link to the alert the note answers (Comms attends it when the note is read).
-        // TODO(sync): add an alert_id column in Supabase before uploading this field.
+        // Link to the alert the note answers (Comms attends it when the note is read).
+        // Uploaded as messages.alert_id by src/sync/queue.js.
         ...(linkedAlertId ? { alertId: linkedAlertId } : {}),
         syncStatus: 'pending',
       })

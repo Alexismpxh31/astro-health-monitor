@@ -79,6 +79,17 @@ for (const row of recommendations) {
   if (!row.textEs || !row.textEn) throw new Error(`Seed error: recommendation ${row.id} needs textEs and textEn`)
   if (![null, 'low', 'high'].includes(row.direction)) throw new Error(`Seed error: recommendation ${row.id} has an invalid direction`)
 }
+for (const row of catalogs.missions) {
+  const min = row.commDelayMinSec ?? null
+  const max = row.commDelayMaxSec ?? null
+  if ((min === null) !== (max === null) || (min !== null && (min < 0 || max < min))) {
+    throw new Error(`Seed error: mission ${row.id} needs commDelayMinSec <= commDelayMaxSec (both or none)`)
+  }
+}
+for (const row of crew) {
+  byId(catalogs.missions, row.missionId, 'mission')
+  byId(users, row.userId, 'user')
+}
 
 // ---------- Seed ----------
 
@@ -137,10 +148,12 @@ join alert_levels l on l.code = v.level_code
 on conflict (id) do update set indicator_id = excluded.indicator_id, alert_level_id = excluded.alert_level_id,
   direction = excluded.direction, text = excluded.text;
 
--- Demo mission and crew (fake people, demo PINs: surgeon 9999, astronauts 1111 / 2222 / 3333)
-insert into missions (id, name, destination, start_date, end_date) values
-${tuples(catalogs.missions.map((r) => [r.id, r.name, r.destination, r.startDate, r.endDate]))}
-on conflict (id) do nothing;
+-- Demo missions and crew (fake people, demo PINs: surgeon 9999, astronauts 1111 / 2222 / 3333 / 4444 / 5555)
+insert into missions (id, name, destination, start_date, end_date, name_es, name_en, comm_delay_min_sec, comm_delay_max_sec) values
+${tuples(catalogs.missions.map((r) => [r.id, r.name, r.destination, r.startDate, r.endDate, r.nameEs ?? null, r.nameEn ?? null, r.commDelayMinSec ?? null, r.commDelayMaxSec ?? null]))}
+on conflict (id) do update set name = excluded.name, destination = excluded.destination,
+  name_es = excluded.name_es, name_en = excluded.name_en,
+  comm_delay_min_sec = excluded.comm_delay_min_sec, comm_delay_max_sec = excluded.comm_delay_max_sec;
 
 insert into users (id, first_name, last_name, role_id, pin_salt, pin_hash)
 select v.id::uuid, v.first_name, v.last_name, r.id, v.pin_salt, v.pin_hash
@@ -198,6 +211,9 @@ const header = `-- =============================================================
 --    REC_PVT_HIGH_CAUTION, REC_SLEEP_H_LOW_CAUTION, REC_BMD_LOW_CAUTION, REC_BMD_LOW_CRITICAL,
 --    REC_MUSCLE_LOW_CAUTION, REC_RAD_D_HIGH_CAUTION, REC_RAD_D_HIGH_CRITICAL, REC_RAD_DOSE_HIGH_CRITICAL.
 --  * Catalog: RAD_D is_live = true, RAD_DOSE is_live = false, TSKIN belongs to 'immune'.
+--  * missions: new columns name_es, name_en, comm_delay_min_sec, comm_delay_max_sec; second demo
+--    mission (Mars transit) with astronauts Four (PIN 4444) and Five (PIN 5555, medical officer).
+--  * messages: new column alert_id (note sent from an alert; reading it marks the alert attended).
 --
 -- OFFICIAL INDICATOR CODES (${codes.length})
 ${wrap(codes, 70).map((line) => `--   ${line}`).join(',\n')}
