@@ -115,5 +115,9 @@
     "historyEmpty": "Aún no hay chequeos guardados en este dispositivo.",
     "syncPending": "Pendiente de envío",
     "syncSynced": "Sincronizado"
+  },
+  "directions": {
+    "high": "alto",
+    "low": "bajo"
   }
 }
