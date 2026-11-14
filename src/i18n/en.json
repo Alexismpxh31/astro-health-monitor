@@ -245,5 +245,16 @@
       "high": "went up",
       "low": "went down"
     }
+  },
+  "astronaut": {
+    "title": "Astronaut Medical Overview",
+    "subsystems": "Body Subsystems",
+    "clinicalFile": "NASA Clinical File",
+    "viewDetails": "View System Details",
+    "hrpHazard": "Associated HRP Hazard",
+    "flightRisk": "Official Flight Risk",
+    "livePulse": "Active Telemetry (1 Hz)",
+    "noAlerts": "No pending medical alerts. All physiological indicators are currently in safe range.",
+    "markDone": "Mark as Done"
   }
 }
