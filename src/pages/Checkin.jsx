@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { getSession } from '../auth/session.js'
+import { CheckinNotAllowedError, saveDailyCheckin } from '../data/checkins.js'
 import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import catalogs from '../data/seed/catalogs.json'
 import { db, seedIfEmpty } from '../db/db.js'
@@ -44,6 +45,7 @@ export default function Checkin() {
   const [selectedSymptoms, setSelectedSymptoms] = useState([])
   const [notes, setNotes] = useState('')
   const [evaluation, setEvaluation] = useState(null)
+  const [saveErrorKey, setSaveErrorKey] = useState(null)
 
   // Psychomotor Vigilance Test (PVT)
   const [pvtState, setPvtState] = useState('idle') // idle | waiting | ready | early | done
@@ -148,7 +150,6 @@ export default function Checkin() {
     const cleanNotes = notes.trim()
     const combinedNotes = [cleanNotes, pvtTag].filter(Boolean).join(' ') || null
 
-    let checkinId = crypto.randomUUID()
     const units = await getUnitByIndicatorCode()
     const reading = (indicatorCode, value) => ({
       ...createReading({ userId, indicatorCode, value, unit: units[indicatorCode] ?? '', source: 'simulated' }),
@@ -157,55 +158,25 @@ export default function Checkin() {
     const readingRows = [reading('SLEEP_H', sleepHours), reading('MOOD', mood), reading('STRESS', stress)]
     if (pvtMs !== null) readingRows.push(reading('PVT', pvtMs))
 
-    await db.transaction(
-      'rw',
-      db.dailyCheckins,
-      db.checkinSymptoms,
-      db.readings,
-      async () => {
-        const existing = await db.dailyCheckins
-          .where('[userId+date]')
-          .equals([userId, dateUtc])
-          .first()
-
-        if (existing) {
-          checkinId = existing.id
-          const oldSymptoms = await db.checkinSymptoms
-            .where('[checkinId+symptomId]')
-            .between([checkinId, ''], [checkinId, '\uffff'])
-            .toArray()
-
-          if (oldSymptoms.length > 0) {
-            await db.checkinSymptoms.bulkDelete(
-              oldSymptoms.map((item) => [item.checkinId, item.symptomId])
-            )
-          }
-        }
-
-        await db.dailyCheckins.put({
-          id: checkinId,
-          userId,
-          date: dateUtc,
-          mood,
-          sleepHours,
-          stress,
-          notes: combinedNotes,
-          syncStatus: 'pending',
-        })
-
-        if (selectedSymptoms.length > 0) {
-          await db.checkinSymptoms.bulkPut(
-            selectedSymptoms.map((symptomId) => ({
-              checkinId,
-              symptomId,
-            }))
-          )
-        }
-
-        // Readings also go to db.readings, so charts and the flight surgeon panel see them.
-        await db.readings.bulkPut(readingRows)
-      }
-    )
+    // The data layer rejects check-ins from (or for) a flight surgeon.
+    try {
+      await saveDailyCheckin({
+        userId,
+        date: dateUtc,
+        mood,
+        sleepHours,
+        stress,
+        notes: combinedNotes,
+        symptomIds: selectedSymptoms,
+        readings: readingRows,
+      })
+      setSaveErrorKey(null)
+    } catch (error) {
+      console.error('[Checkin] Could not save the check-in', error)
+      setEvaluation(null)
+      setSaveErrorKey(error instanceof CheckinNotAllowedError ? 'checkin.notAllowed' : 'checkin.saveError')
+      return
+    }
 
     // After saving: the rules engine evaluates each reading and stores the alerts.
     const result = await evaluateWithEngine(readingRows)
@@ -413,6 +384,12 @@ export default function Checkin() {
       </form>
 
       {/* Resultado clínico inmediato */}
+      {saveErrorKey && (
+        <p className="checkin-save-error" role="alert">
+          ⚠ {t(saveErrorKey)}
+        </p>
+      )}
+
       {evaluation && (
         <div className={`triage-card ${evaluation.level}`}>
           <div className="triage-head">

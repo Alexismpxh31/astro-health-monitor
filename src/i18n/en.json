@@ -213,7 +213,9 @@
     "historyTitle": "Local Dexie Records (Sync Queue)",
     "historyEmpty": "No check-ins saved on this device yet.",
     "syncPending": "Pending sync",
-    "syncSynced": "Synced"
+    "syncSynced": "Synced",
+    "notAllowed": "The flight surgeon cannot record daily check-ins. Only astronauts save their own check-in.",
+    "saveError": "The check-in could not be saved. Try again."
   },
   "directions": {
     "high": "high",
