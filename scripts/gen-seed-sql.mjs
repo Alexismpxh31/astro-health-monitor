@@ -2,9 +2,34 @@
 // The seed is built from src/data/seed/*.json (the single source of truth), so the
 // Supabase data always matches what the client loads into IndexedDB.
 //
-// Usage: npm run gen:sql
+// Usage: npm run gen:sql            (or: node scripts/gen-seed-sql.mjs)
+//        npm run gen:sql -- --help  (prints the usage, writes nothing)
 
 import fs from 'node:fs'
+
+const USAGE = `Usage: node scripts/gen-seed-sql.mjs [options]
+
+Generates supabase/setup_final.sql (header + drops + scripts/schema.sql + seed).
+The seed is built from src/data/seed/*.json, the same files the client loads.
+
+Options:
+  -h, --help   Show this help and exit without generating or writing any file.
+
+Without options it overwrites supabase/setup_final.sql.
+`
+
+// Handled before anything is read, generated or written.
+const args = process.argv.slice(2)
+if (args.includes('--help') || args.includes('-h')) {
+  process.stdout.write(USAGE)
+  process.exit(0)
+}
+if (args.length > 0) {
+  process.stderr.write(`Unknown option: ${args[0]}
+
+${USAGE}`)
+  process.exit(1)
+}
 
 const root = new URL('../', import.meta.url)
 const read = (path) => fs.readFileSync(new URL(path, root), 'utf8').replaceAll('\r', '')
@@ -33,6 +58,11 @@ function byId(rows, id, what) {
 }
 const indicatorCode = (id) => byId(catalogs.indicators, id, 'indicator').code
 const levelCode = (id) => byId(catalogs.alertLevels, id, 'alert level').code
+// thresholds.mode: rows without it are absolute limits; 'baseline' = deviations from the personal baseline.
+const THRESHOLD_MODES = ['absolute', 'baseline']
+const DEFAULT_THRESHOLD_MODE = 'absolute'
+const thresholdMode = (row) => row.mode ?? DEFAULT_THRESHOLD_MODE
+
 const roleCode = (id) => byId(catalogs.roles, id, 'role').code
 
 // ---------- Consistency checks (fail the generation instead of producing a broken script) ----------
@@ -43,6 +73,7 @@ for (const row of thresholds) {
     row.minNormal <= row.maxNormal &&
     row.maxNormal <= row.maxCritical
   if (!ordered) throw new Error(`Seed error: threshold ${row.id} breaks min_critical <= min_normal <= max_normal <= max_critical`)
+  if (!THRESHOLD_MODES.includes(thresholdMode(row))) throw new Error(`Seed error: threshold ${row.id} has an invalid mode (use ${THRESHOLD_MODES.join(' | ')})`)
 }
 for (const row of recommendations) {
   if (!row.textEs || !row.textEn) throw new Error(`Seed error: recommendation ${row.id} needs textEs and textEn`)
@@ -87,14 +118,14 @@ on conflict (code) do update set name_es = excluded.name_es, name_en = excluded.
   body_system_id = excluded.body_system_id, unit_id = excluded.unit_id, is_live = excluded.is_live;
 
 -- General thresholds (user_id null).
-insert into thresholds (id, indicator_id, user_id, min_critical, min_normal, max_normal, max_critical, valid_from, source, validated)
-select v.id, i.id, null, v.min_c, v.min_n, v.max_n, v.max_c, v.valid_from::timestamptz, v.source, v.validated
+insert into thresholds (id, indicator_id, user_id, min_critical, min_normal, max_normal, max_critical, valid_from, source, validated, mode)
+select v.id, i.id, null, v.min_c, v.min_n, v.max_n, v.max_c, v.valid_from::timestamptz, v.source, v.validated, v.mode
 from (values
-${tuples(thresholds.map((r) => [r.id, indicatorCode(r.indicatorId), r.minCritical, r.minNormal, r.maxNormal, r.maxCritical, r.validFrom, r.source, r.validated]))}
-) as v(id, code, min_c, min_n, max_n, max_c, valid_from, source, validated)
+${tuples(thresholds.map((r) => [r.id, indicatorCode(r.indicatorId), r.minCritical, r.minNormal, r.maxNormal, r.maxCritical, r.validFrom, r.source, r.validated, thresholdMode(r)]))}
+) as v(id, code, min_c, min_n, max_n, max_c, valid_from, source, validated, mode)
 join indicators i on i.code = v.code
 on conflict (id) do update set min_critical = excluded.min_critical, min_normal = excluded.min_normal,
-  max_normal = excluded.max_normal, max_critical = excluded.max_critical, source = excluded.source, validated = excluded.validated;
+  max_normal = excluded.max_normal, max_critical = excluded.max_critical, source = excluded.source, validated = excluded.validated, mode = excluded.mode;
 
 insert into recommendations (id, indicator_id, alert_level_id, direction, text)
 select v.id, i.id, l.id, v.direction, v.text::jsonb
@@ -157,6 +188,8 @@ const header = `-- =============================================================
 --  * Catalog rows use the same fixed UUIDs as the client (roles, body_systems, units,
 --    indicators, alert_levels, symptoms, sensor_types), so client rows sync without id lookups.
 --  * alerts: new columns alert_level_id and direction ('low' | 'high').
+--  * thresholds: new column mode ('absolute' | 'baseline', default 'absolute'). 'baseline' rows hold
+--    deviations from the personal baseline instead of absolute limits (src/rules/baseline.js).
 --  * TH_RAD_DOSE: 0 / 0 / 400 / 600 mSv (NASA-STD-3001 career limit), validated.
 --  * TH_BMD: -1.5 / -1.0 / 0.5 / 2 % per month (NASA HRP bone loss rate), validated.
 --  * Other thresholds that cited the "NASA HRP compendium": same values, source relabelled
