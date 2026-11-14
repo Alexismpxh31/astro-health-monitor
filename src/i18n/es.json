@@ -16,7 +16,9 @@
   },
   "connection": {
     "online": "En línea",
-    "offline": "Sin señal"
+    "offline": "Sin señal",
+    "pending_one": "{{count}} pendiente",
+    "pending_other": "{{count}} pendientes"
   },
   "trafficLight": {
     "NORMAL": "Normal",
