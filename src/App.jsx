@@ -1,4 +1,6 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import RequireSession from './auth/RequireSession.jsx'
+import { ROLE } from './auth/session.js'
 import Layout from './components/Layout.jsx'
 import Alerts from './pages/Alerts.jsx'
 import Checkin from './pages/Checkin.jsx'
@@ -15,18 +17,24 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* TODO(auth): protect every route except /login once src/auth is implemented. */}
         <Route element={<Layout />}>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/vitals" element={<Vitals />} />
-          <Route path="/system/:id" element={<SystemDetail />} />
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/checkin" element={<Checkin />} />
-          <Route path="/sensors" element={<Sensors />} />
-          <Route path="/comms" element={<Comms />} />
-          <Route path="/crew" element={<Crew />} />
-          <Route path="/crew/:userId" element={<CrewMember />} />
+          {/* Every other route needs a session; without one it redirects to /login. */}
+          <Route element={<RequireSession />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/vitals" element={<Vitals />} />
+            <Route path="/system/:id" element={<SystemDetail />} />
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/checkin" element={<Checkin />} />
+            <Route path="/sensors" element={<Sensors />} />
+            <Route path="/comms" element={<Comms />} />
+            {/* Flight surgeon only: astronauts are sent back to the home page. */}
+            <Route element={<RequireSession roleCode={ROLE.FLIGHT_SURGEON} />}>
+              <Route path="/crew" element={<Crew />} />
+              <Route path="/crew/:userId" element={<CrewMember />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

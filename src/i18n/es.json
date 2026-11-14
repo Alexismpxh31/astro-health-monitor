@@ -95,12 +95,12 @@
     "pendingCount_one": "{{count}} registro pendiente de sincronizar",
     "pendingCount_other": "{{count}} registros pendientes de sincronizar",
     "notes": {
-  "title": "Notas del médico de vuelo",
-  "loading": "Cargando notas…",
-  "empty": "Todavía no tienes notas del médico.",
-  "markAsRead": "Marcar como leída",
-  "readError": "No se pudo marcar la nota como leída. Inténtalo de nuevo."
-}
+      "title": "Notas del médico de vuelo",
+      "loading": "Cargando notas…",
+      "empty": "Todavía no tienes notas del médico.",
+      "markAsRead": "Marcar como leída",
+      "readError": "No se pudo marcar la nota como leída. Inténtalo de nuevo."
+    }
   },
   "common": {
     "underConstruction": "En construcción",
@@ -198,5 +198,30 @@
   "directions": {
     "high": "alto",
     "low": "bajo"
+  },
+  "login": {
+    "chooseUser": "Elige tu usuario para continuar.",
+    "loading": "Cargando tripulación…",
+    "noUsers": "No hay usuarios activos en este dispositivo.",
+    "enterPin": "Ingresa tu PIN de 4 dígitos",
+    "pinProgress": "{{entered}} de {{total}} dígitos ingresados",
+    "delete": "Borrar",
+    "enter": "Entrar",
+    "changeUser": "Cambiar de usuario",
+    "wrongPin_one": "PIN incorrecto. Te queda {{count}} intento.",
+    "wrongPin_other": "PIN incorrecto. Te quedan {{count}} intentos.",
+    "locked": "Demasiados intentos fallidos. Acceso bloqueado temporalmente.",
+    "lockedCountdown_one": "Podrás intentarlo de nuevo en {{count}} segundo.",
+    "lockedCountdown_other": "Podrás intentarlo de nuevo en {{count}} segundos.",
+    "error": "No se pudo comprobar el PIN. Inténtalo de nuevo.",
+    "offlineNote": "Funciona sin conexión: el PIN se comprueba en este dispositivo."
+  },
+  "auth": {
+    "roles": {
+      "astronaut": "Astronauta",
+      "flight_surgeon": "Médico de vuelo"
+    },
+    "logout": "Cerrar sesión",
+    "signedInAs": "Usuario con sesión iniciada"
   }
 }

@@ -1,29 +1,31 @@
-// Offline PIN authentication (STUB).
-// PINs are never stored in plain text: only a salted hash lives in db.users (pinHash, pinSalt).
+// Offline PIN authentication.
+// PINs are never stored or logged in plain text: only a salted hash lives in
+// db.users (pinSalt, pinHash). Same rule as the server (supabase/setup_final.sql):
+//   pinHash = hex SHA-256 of (pinSalt || pin), no separator.
 
 /**
- * Hashes a PIN with a per-user salt.
+ * Hashes a PIN with a per-user salt using Web Crypto. Works offline.
  *
+ * @param {string} salt - The user's pinSalt.
  * @param {string} pin
- * @param {string} salt
- * @returns {Promise<string>} hex-encoded hash.
+ * @returns {Promise<string>} lowercase hex SHA-256 of salt + pin.
  */
-export async function hashPin(pin, salt) {
-  // TODO: crypto.subtle (PBKDF2, or SHA-256 over salt + pin) -> hex string.
-  console.warn('[auth] hashPin is not implemented yet', typeof pin, typeof salt)
-  return ''
+export async function hashPin(salt, pin) {
+  // crypto.subtle only exists in secure contexts (https or localhost).
+  if (!globalThis.crypto?.subtle) throw new Error('[auth] Web Crypto is not available')
+  const bytes = new TextEncoder().encode(`${salt}${pin}`)
+  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 /**
- * Checks a PIN against the hash stored for the user.
+ * Checks a PIN against the hash stored for a user.
  *
- * @param {string} userId
+ * @param {{ pinSalt?: string|null, pinHash?: string|null }|null|undefined} user - Row from db.users.
  * @param {string} pin
- * @returns {Promise<boolean>}
+ * @returns {Promise<boolean>} false when the user has no PIN set.
  */
-export async function verifyPin(userId, pin) {
-  // TODO: user = await db.users.get(userId)
-  //       return (await hashPin(pin, user.pinSalt)) === user.pinHash
-  console.warn('[auth] verifyPin is not implemented yet', userId, typeof pin)
-  return false
+export async function verifyPin(user, pin) {
+  if (!user?.pinSalt || !user?.pinHash || typeof pin !== 'string' || !pin) return false
+  return (await hashPin(user.pinSalt, pin)) === user.pinHash.toLowerCase()
 }
