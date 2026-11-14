@@ -20,7 +20,7 @@ import './CrewMember.css'
 export default function CrewMember() {
   const { userId } = useParams()
   // "Send note" on a crew alert opens this page with a prefilled note.
-  const noteDraft = useLocation().state?.noteDraft ?? ''
+  const { noteDraft = '', alertId = null } = useLocation().state ?? {}
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const data = useLiveQuery(() => loadMemberData(userId), [userId])
@@ -133,6 +133,7 @@ export default function CrewMember() {
               notes={notes}
               lang={lang}
               initialDraft={noteDraft}
+              alertId={alertId}
             />
           ) : (
             <p className="crew-readonly-note">{t('crew.officerView')}</p>

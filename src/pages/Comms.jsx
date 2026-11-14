@@ -28,13 +28,21 @@ export default function Comms() {
     setReadError(false)
 
     try {
-      await db.transaction('rw', db.messages, async () => {
+      await db.transaction('rw', db.messages, db.alerts, async () => {
         const note = await db.messages.get(noteId)
         if (note?.recipientId !== userId || note.readAt) return
 
-        await db.messages.update(noteId, {
-          readAt: new Date().toISOString(),
-        })
+        const now = new Date().toISOString()
+        await db.messages.update(noteId, { readAt: now })
+
+        // A note sent from an alert: reading it means the astronaut got the advice,
+        // so the alert is attended for the flight surgeon too.
+        if (note.alertId) {
+          const alert = await db.alerts.get(note.alertId)
+          if (alert && !alert.attendedAt) {
+            await db.alerts.update(note.alertId, { attendedAt: now, syncStatus: 'pending' })
+          }
+        }
       })
     } catch (error) {
       console.error('[comms] Could not mark note as read', error)

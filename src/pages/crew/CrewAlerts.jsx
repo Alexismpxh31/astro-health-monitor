@@ -38,7 +38,8 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
       time: timeFormat.format(new Date(item.alert.generatedAt)),
       advice,
     }).trim()
-    navigate(`/crew/${item.user.id}`, { state: { noteDraft: draft } })
+    // The alert id travels with the note: when the astronaut reads it, the alert is attended.
+    navigate(`/crew/${item.user.id}`, { state: { noteDraft: draft, alertId: item.alert.id } })
   }
 
   const items = (data?.items ?? []).filter((item) => !onlyOpen || !item.alert.attendedAt)
@@ -98,10 +99,14 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
                   {advice && <p className="crew-alert-advice">{advice}</p>}
                 </div>
                 <div className="crew-alert-side">
-                  <span className={`crew-alert-status ${item.alert.attendedAt ? 'is-done' : 'is-open'}`}>
+                  <span
+                    className={`crew-alert-status ${item.alert.attendedAt ? 'is-done' : item.note ? 'is-sent' : 'is-open'}`}
+                  >
                     {item.alert.attendedAt
                       ? t('crewAlerts.attended', { time: timeFormat.format(new Date(item.alert.attendedAt)) })
-                      : t('crewAlerts.open')}
+                      : item.note
+                        ? t('crewAlerts.noteSent')
+                        : t('crewAlerts.open')}
                   </span>
                   {canSendNotes && (
                     <button type="button" onClick={() => sendNote(item, advice)}>

@@ -95,7 +95,8 @@
       "synced": "Sent",
       "read": "Read",
       "noSender": "No flight surgeon is logged in.",
-      "sendError": "The note could not be saved. Try again."
+      "sendError": "The note could not be saved. Try again.",
+      "linkedToAlert": "This note answers an alert: when the astronaut reads it, the alert will be marked as attended."
     }
   },
   "comms": {
@@ -264,7 +265,8 @@
     "direction": {
       "high": "went up",
       "low": "went down"
-    }
+    },
+    "noteSent": "Note sent, unread"
   },
   "theme": {
     "switchTo": {

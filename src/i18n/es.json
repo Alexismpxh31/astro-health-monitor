@@ -95,7 +95,8 @@
       "synced": "Enviada",
       "read": "Leída",
       "noSender": "No hay un médico de vuelo con sesión iniciada.",
-      "sendError": "No se pudo guardar la nota. Inténtalo de nuevo."
+      "sendError": "No se pudo guardar la nota. Inténtalo de nuevo.",
+      "linkedToAlert": "Esta nota responde a una alerta: cuando el astronauta la lea, la alerta quedará atendida."
     }
   },
   "comms": {
@@ -264,7 +265,8 @@
     "direction": {
       "high": "subió",
       "low": "bajó"
-    }
+    },
+    "noteSent": "Nota enviada, sin leer"
   },
   "theme": {
     "switchTo": {
