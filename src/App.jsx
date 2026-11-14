@@ -1,40 +1,23 @@
-import React, { useState } from 'react';
-import { Navbar } from './components/Navbar';
-import { Home } from './pages/Home';
-import { Vitals } from './pages/Vitals';
-import { SystemDetail } from './pages/SystemDetail';
+import { useState } from 'react';
+import AstronautBody3D from './components/AstronautBody3D';
 
-export function App() {
-  const [currentPath, setCurrentPath] = useState('/');
-
-  const handleNavigate = (path) => {
-    setCurrentPath(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const renderCurrentView = () => {
-    if (currentPath === '/vitals') {
-      return <Vitals onNavigate={handleNavigate} />;
-    }
-    if (currentPath.startsWith('/system/')) {
-      const systemId = currentPath.replace('/system/', '') || 'cardiovascular';
-      return <SystemDetail systemId={systemId} onNavigate={handleNavigate} />;
-    }
-    return <Home onNavigate={handleNavigate} />;
-  };
+export default function App() {
+  const [activeSystem, setActiveSystem] = useState(null);
 
   return (
-    <div className="min-h-screen bg-space-bg bg-space-grid text-space-text flex flex-col font-sans selection:bg-space-cyan/30 selection:text-space-cyan">
-      <Navbar currentPath={currentPath} onNavigate={handleNavigate} />
-      <main className="flex-1 pb-12">
-        {renderCurrentView()}
-      </main>
+    <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px' }}>
+      <AstronautBody3D
+        onSelectZone={(systemData) => {
+          setActiveSystem(systemData);
+          // Aquí puedes filtrar tus datos de Supabase o Dexie según systemData.id
+        }}
+      />
 
-      <footer className="border-t border-space-border/60 bg-space-surface/40 py-4 text-center text-xs font-mono text-space-muted">
-        NASA Space Apps Challenge 2026 · Equipo Riobamba · Panel de Monitoreo Astronauta Walter C.
-      </footer>
-    </div>
+      {activeSystem && (
+        <p style={{ marginTop: '12px', fontFamily: 'sans-serif', color: '#334155' }}>
+          Sistema seleccionado para gráficas históricas: <strong>{activeSystem.name}</strong> ({activeSystem.value})
+        </p>
+      )}
+    </main>
   );
 }
-
-export default App;
