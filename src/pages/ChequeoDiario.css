@@ -53,7 +53,7 @@
 }
 
 .checkin-card h2 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.35rem 0;
   font-size: 1.15rem;
   color: #bae6fd;
 }
@@ -124,71 +124,21 @@
   text-align: center;
 }
 
-/* Pad interactivo PVT */
-.pvt-pad {
-  width: 100%;
-  min-height: 96px;
-  margin-top: 0.75rem;
-  border-radius: 14px;
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  border: 2px solid #38bdf8;
-  transition: background-color 0.1s ease;
-}
-
-.pvt-pad.idle,
-.pvt-pad.done {
-  background: #11223d;
-  color: #38bdf8;
-}
-
-.pvt-pad.waiting {
-  background: #78350f;
-  border-color: #f59e0b;
-  color: #fef3c7;
-}
-
-.pvt-pad.ready {
-  background: #06b6d4;
-  border-color: #cffafe;
-  color: #04101d;
-  box-shadow: 0 0 24px rgba(6, 182, 212, 0.7);
-}
-
-.pvt-pad.early {
-  background: #7f1d1d;
-  border-color: #ef4444;
-  color: #fee2e2;
-}
-
-.pvt-result-badge {
-  margin-top: 0.75rem;
-  padding: 0.65rem 1rem;
-  background: #08101e;
-  border: 1px solid #234873;
-  border-radius: 10px;
-  font-size: 1.05rem;
-  color: #38bdf8;
-  font-weight: 700;
-}
-
 .symptoms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 0.65rem;
   margin-top: 0.75rem;
 }
 
 .symptom-btn {
-  min-height: 60px;
+  min-height: 58px;
   padding: 0.75rem 1rem;
   background: #11223d;
   border: 2px solid #234873;
   border-radius: 12px;
   color: #e2f1ff;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -225,7 +175,6 @@
   cursor: pointer;
 }
 
-/* Tarjeta de Semáforo y Contramedidas NASA */
 .triage-box {
   margin-top: 1.25rem;
   padding: 1.25rem;
@@ -233,19 +182,19 @@
   border: 2px solid;
 }
 
-.triage-box.verde {
+.triage-box.normal {
   background: #052e16;
   border-color: #22c55e;
   color: #dcfce7;
 }
 
-.triage-box.amarillo {
+.triage-box.caution {
   background: #422006;
-  border-color: #eab308;
+  border-color: #f59e0b;
   color: #fef9c3;
 }
 
-.triage-box.rojo {
+.triage-box.critical {
   background: #450a0a;
   border-color: #ef4444;
   color: #fee2e2;

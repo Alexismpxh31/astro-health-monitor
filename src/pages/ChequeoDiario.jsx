@@ -1,190 +1,143 @@
-﻿import { useState, useRef, useEffect } from "react";
+﻿import { useState } from "react";
 import { dailyCheckinTranslations } from "../i18n/dailyCheckinLocale";
 import "./ChequeoDiario.css";
 
-export default function ChequeoDiario({ usuarioId = "astro-demo-01", onSaveCheckin }) {
+// Default UUID matches Astronaut One (demo) in setup.sql
+const DEMO_ASTRONAUT_ID = "a0000000-0000-4000-8000-000000000002";
+
+export default function ChequeoDiario({ userId = DEMO_ASTRONAUT_ID, onSaveCheckin }) {
   const [lang, setLang] = useState("es");
   const t = dailyCheckinTranslations[lang].dailyCheckin;
 
-  const [animo, setAnimo] = useState(4);
-  const [horasSueno, setHorasSueno] = useState(7.5);
-  const [estres, setEstres] = useState(2);
-  const [sintomasSeleccionados, setSintomasSeleccionados] = useState([]);
-  const [notas, setNotas] = useState("");
+  const [mood, setMood] = useState(4);
+  const [sleepHours, setSleepHours] = useState(7.5);
+  const [stress, setStress] = useState(2);
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [notes, setNotes] = useState("");
+  const [evaluation, setEvaluation] = useState(null);
 
-  // Estado del Test de Vigilancia Psicomotora (PVT)
-  const [pvtState, setPvtState] = useState("idle"); // idle | waiting | ready | early | done
-  const [pvtMs, setPvtMs] = useState(null);
-  const timerRef = useRef(null);
-  const startTimeRef = useRef(0);
-
-  // Resultado de evaluación NASA
-  const [evaluacion, setEvaluacion] = useState(null);
-
-  useEffect(() => {
-    return () => clearTimeout(timerRef.current);
-  }, []);
-
-  const iniciarPvt = () => {
-    clearTimeout(timerRef.current);
-    setPvtState("waiting");
-    const delay = 1200 + Math.floor(Math.random() * 1800);
-    timerRef.current = setTimeout(() => {
-      startTimeRef.current = performance.now();
-      setPvtState("ready");
-    }, delay);
-  };
-
-  const manejarToquePvt = () => {
-    if (pvtState === "idle" || pvtState === "done" || pvtState === "early") {
-      iniciarPvt();
-      return;
-    }
-    if (pvtState === "waiting") {
-      clearTimeout(timerRef.current);
-      setPvtState("early");
-      return;
-    }
-    if (pvtState === "ready") {
-      const latencia = Math.round(performance.now() - startTimeRef.current);
-      setPvtMs(latencia);
-      setPvtState("done");
-    }
-  };
-
-  const toggleSintoma = (sintomaId) => {
-    setSintomasSeleccionados((prev) =>
-      prev.includes(sintomaId)
-        ? prev.filter((id) => id !== sintomaId)
-        : [...prev, sintomaId]
+  const toggleSymptom = (code) => {
+    setSelectedSymptoms((prev) =>
+      prev.includes(code) ? prev.filter((item) => item !== code) : [...prev, code]
     );
   };
 
-  const ajustarSueno = (delta) => {
-    setHorasSueno((prev) => {
-      const nuevo = Math.round((prev + delta) * 2) / 2;
-      return Math.min(24, Math.max(0, nuevo));
+  const adjustSleep = (delta) => {
+    setSleepHours((prev) => {
+      const next = Math.round((prev + delta) * 2) / 2;
+      return Math.min(24, Math.max(0, next)); // CHECK sleep_hours between 0 and 24
     });
   };
 
-  const calcularEvaluacionNasa = () => {
-    let nivel = "verde";
-    const recomendaciones = [];
+  // Evaluates exact thresholds seeded in setup.sql (TH_SLEEP_H, TH_MOOD, TH_STRESS)
+  const evaluateCheckin = () => {
+    let level = "normal"; // normal | caution | critical
+    const triggeredRecs = [];
 
-    // Evaluación SLEEP (Nominal 6.5 - 9.0 h, Crítico < 4.0 o > 14.0 h)
-    if (horasSueno < 4.0 || horasSueno > 14.0) {
-      nivel = "rojo";
-      recomendaciones.push(t.recSleepWarn);
-    } else if (horasSueno < 6.5 || horasSueno > 9.0) {
-      nivel = "amarillo";
-      recomendaciones.push(t.recSleepWarn);
-    }
+    const elevate = (newLevel, recId, value = "") => {
+      if (newLevel === "critical") level = "critical";
+      else if (newLevel === "caution" && level === "normal") level = "caution";
 
-    // Evaluación PVT (Precaución > 320 ms, Crítico > 450 ms)
-    if (pvtMs !== null) {
-      if (pvtMs > 450) {
-        nivel = "rojo";
-        recomendaciones.push(t.recPvtCrit);
-      } else if (pvtMs > 320) {
-        if (nivel !== "rojo") nivel = "amarillo";
-        recomendaciones.push(t.recPvtWarn);
-      }
-    }
+      const template = t.recs[recId] || "";
+      triggeredRecs.push({
+        recommendation_id: recId,
+        level: newLevel,
+        text: template.replace("{value}", String(value)),
+      });
+    };
 
-    // Contramedidas por síntomas HSRB específicos
-    if (sintomasSeleccionados.includes("sym-02")) {
-      if (nivel === "verde") nivel = "amarillo";
-      recomendaciones.push(t.recSans);
-    }
-    if (sintomasSeleccionados.includes("sym-04")) {
-      if (nivel === "verde") nivel = "amarillo";
-      recomendaciones.push(t.recCo2);
-    }
+    // TH_SLEEP_H: min_critical 4, min_normal 6, max_normal 9, max_critical 12
+    if (sleepHours < 4) elevate("critical", "REC_SLEEP_H_LOW_CRITICAL", sleepHours);
+    else if (sleepHours < 6) elevate("caution", "REC_SLEEP_H_LOW_CAUTION", sleepHours);
+    else if (sleepHours > 12) elevate("critical", "REC_SLEEP_H_HIGH_CRITICAL", sleepHours);
+    else if (sleepHours > 9) elevate("caution", "REC_SLEEP_H_HIGH_CAUTION", sleepHours);
 
-    if (recomendaciones.length === 0) {
-      recomendaciones.push(t.recNominal);
-    }
+    // TH_MOOD: min_critical 1.5, min_normal 2.5
+    if (mood < 1.5) elevate("critical", "REC_MOOD_LOW_CRITICAL", mood);
+    else if (mood < 2.5) elevate("caution", "REC_MOOD_LOW_CAUTION", mood);
 
-    return { nivel, recomendaciones };
+    // TH_STRESS: max_normal 3, max_critical 4.5
+    if (stress > 4.5) elevate("critical", "REC_STRESS_HIGH_CRITICAL", stress);
+    else if (stress > 3) elevate("caution", "REC_STRESS_HIGH_CAUTION", stress);
+
+    return { level, triggeredRecs };
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const nowUtc = new Date().toISOString();
-    const fechaUtc = nowUtc.split("T")[0];
-    const chequeoId = crypto.randomUUID();
+    const dateUtc = nowUtc.split("T")[0];
+    const checkinId = crypto.randomUUID();
 
-    // 1. Tabla chequeos_diarios
-    const registroChequeo = {
-      id: chequeoId,
-      usuario_id: usuarioId,
-      fecha: fechaUtc,
-      animo,
-      horas_sueno: horasSueno,
-      estres,
-      notas: notas.trim(),
-      registrado_en: nowUtc,
-      estado_sync: "pendiente",
+    // 1. Mirrors Dexie `checkins` -> Supabase `daily_checkins`
+    const checkinRecord = {
+      id: checkinId,
+      user_id: userId,
+      date: dateUtc,
+      mood,
+      sleep_hours: sleepHours,
+      stress,
+      notes: notes.trim() || null,
+      syncStatus: "pending",
     };
 
-    // 2. Tabla puente chequeo_sintomas
-    const registrosSintomas = sintomasSeleccionados.map((sintomaId) => ({
-      chequeo_id: chequeoId,
-      sintoma_id: sintomaId,
+    // 2. Mirrors `checkin_symptoms` using exact `symptoms.code` values from setup.sql
+    const symptomRecords = selectedSymptoms.map((symptomCode) => ({
+      checkin_id: checkinId,
+      symptomCode,
+      syncStatus: "pending",
     }));
 
-    // 3. Lecturas fisiológicas estándar para tabla lecturas (SLEEP y PVT)
-    const lecturasGeneradas = [
+    // 3. Mirrors Dexie `readings` -> Supabase `readings` (`indicatorCode` maps to `indicators.code`)
+    const readingRecords = [
       {
         id: crypto.randomUUID(),
-        usuario_id: usuarioId,
-        indicador_codigo: "SLEEP",
-        valor: horasSueno,
-        unidad: "h/24h",
-        medido_en: nowUtc,
-        estado_sync: "pendiente",
+        user_id: userId,
+        indicatorCode: "SLEEP_H",
+        value: sleepHours,
+        measured_at: nowUtc,
+        source: "simulated",
+        syncStatus: "pending",
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        indicatorCode: "MOOD",
+        value: mood,
+        measured_at: nowUtc,
+        source: "simulated",
+        syncStatus: "pending",
+      },
+      {
+        id: crypto.randomUUID(),
+        user_id: userId,
+        indicatorCode: "STRESS",
+        value: stress,
+        measured_at: nowUtc,
+        source: "simulated",
+        syncStatus: "pending",
       },
     ];
 
-    if (pvtMs !== null) {
-      lecturasGeneradas.push({
-        id: crypto.randomUUID(),
-        usuario_id: usuarioId,
-        indicador_codigo: "PVT",
-        valor: pvtMs,
-        unidad: "ms",
-        medido_en: nowUtc,
-        estado_sync: "pendiente",
-      });
-    }
-
     const payload = {
-      chequeo: registroChequeo,
-      sintomas: registrosSintomas,
-      lecturas: lecturasGeneradas,
+      checkin: checkinRecord,
+      symptoms: symptomRecords,
+      readings: readingRecords,
     };
 
     if (typeof onSaveCheckin === "function") {
-      onSaveCheckin(payload);
+      await onSaveCheckin(payload);
     } else {
-      const existentes = JSON.parse(localStorage.getItem("chequeos_diarios_queue") || "[]");
-      const filtrados = existentes.filter(
-        (item) => !(item.chequeo.usuario_id === usuarioId && item.chequeo.fecha === fechaUtc)
+      const queue = JSON.parse(localStorage.getItem("astro_checkins_queue") || "[]");
+      const filtered = queue.filter(
+        (item) => !(item.checkin.user_id === userId && item.checkin.date === dateUtc)
       );
-      localStorage.setItem("chequeos_diarios_queue", JSON.stringify([...filtrados, payload]));
+      localStorage.setItem("astro_checkins_queue", JSON.stringify([...filtered, payload]));
     }
 
-    setEvaluacion(calcularEvaluacionNasa());
+    setEvaluation(evaluateCheckin());
   };
-
-  const textoBotonPvt = {
-    idle: t.pvtStart,
-    waiting: t.pvtWait,
-    ready: t.pvtTapNow,
-    early: t.pvtEarly,
-    done: t.pvtRetry,
-  }[pvtState];
 
   return (
     <section className="checkin-container">
@@ -203,106 +156,85 @@ export default function ChequeoDiario({ usuarioId = "astro-demo-01", onSaveCheck
       </header>
 
       <form onSubmit={handleSubmit}>
-        {/* 1. Ánimo */}
         <div className="checkin-card">
           <h2>{t.moodLabel}</h2>
+          <p className="checkin-subtitle">{t.moodHint}</p>
           <div className="scale-grid">
-            {[1, 2, 3, 4, 5].map((valor) => (
+            {[1, 2, 3, 4, 5].map((val) => (
               <button
-                key={valor}
+                key={val}
                 type="button"
-                className={`scale-btn ${animo === valor ? "active" : ""}`}
-                onClick={() => setAnimo(valor)}
+                className={`scale-btn ${mood === val ? "active" : ""}`}
+                onClick={() => setMood(val)}
               >
-                <strong>{valor}</strong>
-                <span>{t.moodOptions[valor]}</span>
+                <strong>{val}</strong>
+                <span>{t.moodOptions[val]}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* 2. Horas de sueño (SLEEP) */}
         <div className="checkin-card">
           <h2>{t.sleepLabel}</h2>
           <p className="checkin-subtitle">{t.sleepHint}</p>
           <div className="sleep-stepper">
-            <button type="button" className="stepper-btn" onClick={() => ajustarSueno(-0.5)}>
+            <button type="button" className="stepper-btn" onClick={() => adjustSleep(-0.5)}>
               −
             </button>
             <div className="sleep-display">
-              {horasSueno} {t.sleepUnit}
+              {sleepHours} {t.sleepUnit}
             </div>
-            <button type="button" className="stepper-btn" onClick={() => ajustarSueno(0.5)}>
+            <button type="button" className="stepper-btn" onClick={() => adjustSleep(0.5)}>
               +
             </button>
           </div>
         </div>
 
-        {/* 3. Estrés */}
         <div className="checkin-card">
           <h2>{t.stressLabel}</h2>
+          <p className="checkin-subtitle">{t.stressHint}</p>
           <div className="scale-grid">
-            {[1, 2, 3, 4, 5].map((valor) => (
+            {[1, 2, 3, 4, 5].map((val) => (
               <button
-                key={valor}
+                key={val}
                 type="button"
-                className={`scale-btn ${estres === valor ? "active" : ""}`}
-                onClick={() => setEstres(valor)}
+                className={`scale-btn ${stress === val ? "active" : ""}`}
+                onClick={() => setStress(val)}
               >
-                <strong>{valor}</strong>
-                <span>{t.stressOptions[valor]}</span>
+                <strong>{val}</strong>
+                <span>{t.stressOptions[val]}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* 4. Test PVT */}
-        <div className="checkin-card">
-          <h2>{t.pvtTitle}</h2>
-          <p className="checkin-subtitle">{t.pvtSubtitle}</p>
-          <button
-            type="button"
-            className={`pvt-pad ${pvtState}`}
-            onClick={manejarToquePvt}
-          >
-            {textoBotonPvt}
-          </button>
-          {pvtMs !== null && (
-            <div className="pvt-result-badge">
-              {t.pvtResultLabel} {pvtMs} ms
-            </div>
-          )}
-        </div>
-
-        {/* 5. Síntomas HSRB */}
         <div className="checkin-card">
           <h2>{t.symptomsLabel}</h2>
           <p className="checkin-subtitle">{t.symptomsHint}</p>
           <div className="symptoms-grid">
-            {t.symptomsCatalog.map((sintoma) => {
-              const activo = sintomasSeleccionados.includes(sintoma.id);
+            {t.symptomsCatalog.map((sym) => {
+              const active = selectedSymptoms.includes(sym.code);
               return (
                 <button
-                  key={sintoma.id}
+                  key={sym.code}
                   type="button"
-                  className={`symptom-btn ${activo ? "selected" : ""}`}
-                  onClick={() => toggleSintoma(sintoma.id)}
+                  className={`symptom-btn ${active ? "selected" : ""}`}
+                  onClick={() => toggleSymptom(sym.code)}
                 >
-                  {activo ? "✓ " : "+ "}
-                  {sintoma.name}
+                  {active ? "✓ " : "+ "}
+                  {sym.name}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* 6. Notas */}
         <div className="checkin-card">
           <h2>{t.notesLabel}</h2>
           <textarea
             className="notes-textarea"
-            value={notas}
-            onChange={(e) => setNotas(e.target.value)}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
             placeholder={t.notesPlaceholder}
           />
         </div>
@@ -311,21 +243,23 @@ export default function ChequeoDiario({ usuarioId = "astro-demo-01", onSaveCheck
           {t.submitButton}
         </button>
 
-        {evaluacion && (
-          <div className={`triage-box ${evaluacion.nivel}`}>
+        {evaluation && (
+          <div className={`triage-box ${evaluation.level}`}>
             <h3>
               {t.evalTitle}:{" "}
-              {evaluacion.nivel === "verde"
-                ? t.statusGreen
-                : evaluacion.nivel === "amarillo"
-                ? t.statusYellow
-                : t.statusRed}
+              {evaluation.level === "normal"
+                ? t.statusNormal
+                : evaluation.level === "caution"
+                ? t.statusCaution
+                : t.statusCritical}
             </h3>
             <p style={{ margin: "0 0 0.5rem 0", fontSize: "0.95rem" }}>{t.savedSuccess}</p>
             <ul>
-              {evaluacion.recomendaciones.map((rec, idx) => (
-                <li key={idx}>{rec}</li>
-              ))}
+              {evaluation.triggeredRecs.length > 0 ? (
+                evaluation.triggeredRecs.map((rec, idx) => <li key={idx}>{rec.text}</li>)
+              ) : (
+                <li>{t.recNominal}</li>
+              )}
             </ul>
           </div>
         )}
