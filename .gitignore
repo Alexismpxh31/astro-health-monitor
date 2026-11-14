@@ -23,7 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 .env
-
-# Team hackathon reference docs
-instrucciones_ia_astrosalud.md
-*.pdf
