@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router-dom'
 import { getLockedUntil, login, useSession } from '../auth/session.js'
 import { db } from '../db/db.js'
+import { clearCurrentMission } from './missions/missionStore.js'
 
 const PIN_LENGTH = 4
 const DIGIT_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -21,7 +22,7 @@ async function loadLoginUsers() {
     }))
 }
 
-// Everyone lands on "/": the astronaut dashboard, or the mission overview for the flight surgeon.
+// Everyone lands on "/": the astronaut dashboard, or "My missions" for the flight surgeon.
 const HOME_PATH = '/'
 
 export default function Login() {
@@ -29,6 +30,11 @@ export default function Login() {
   const session = useSession()
   const users = useLiveQuery(loadLoginUsers)
   const [selectedId, setSelectedId] = useState(null)
+
+  // A new login never reopens the mission picked in a previous session.
+  useEffect(() => {
+    if (!session) clearCurrentMission()
+  }, [session])
 
   // Also covers the moment right after a successful login.
   if (session) return <Navigate to={HOME_PATH} replace />

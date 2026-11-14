@@ -5,6 +5,7 @@ import { logout, ROLE, useSession } from '../auth/session.js'
 import { stop as stopSimulator } from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { SUPPORTED_LANGUAGES } from '../i18n/index.js'
+import { clearCurrentMission } from '../pages/missions/missionStore.js'
 import BrandMark from './BrandMark.jsx'
 import ConnectionStatus from './ConnectionStatus.jsx'
 import Icon from './icons.jsx'
@@ -45,6 +46,8 @@ export default function Layout() {
   function handleLogout() {
     // The simulator writes readings for the session user, so it must not outlive the session.
     stopSimulator()
+    // Each login starts at "My missions" instead of the mission picked last time.
+    clearCurrentMission()
     logout()
   }
 
