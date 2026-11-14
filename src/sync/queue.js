@@ -1,6 +1,8 @@
 // Sync queue (STUB).
 // Pushes locally stored rows with syncStatus 'pending' to Supabase when online.
 
+import { db } from '../db/db.js'
+
 /** Tables that carry a syncStatus field and take part in the sync queue. */
 export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins', 'messages']
 
@@ -11,7 +13,13 @@ export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins', 'messages
  */
 export async function getPendingCount() {
   // TODO: sum db[table].where('syncStatus').equals('pending').count() over SYNCABLE_TABLES.
-  return 0
+    const counts = await Promise.all(
+    SYNCABLE_TABLES.map((tableName) =>
+      db.table(tableName).where('syncStatus').equals('pending').count(),
+    ),
+  )
+
+  return counts.reduce((total, count) => total + count, 0)
 }
 
 /**

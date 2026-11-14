@@ -13,6 +13,11 @@
     "crewMember": "Crew member"
   },
   "connection": { "online": "Online", "offline": "No signal" },
+  "comms": {
+  "loading": "Checking pending records…",
+  "pendingCount_one": "{{count}} record pending sync",
+  "pendingCount_other": "{{count}} records pending sync"
+},
   "common": {
     "underConstruction": "Under construction",
     "language": "Language",
