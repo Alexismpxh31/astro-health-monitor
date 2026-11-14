@@ -1,20 +1,19 @@
 import { getSession } from '../../auth/session.js'
 import { db } from '../../db/db.js'
-import { classifyValue, effectiveThreshold, LEVEL, severityOf } from './crewStatus.js'
+import { classifyValue, effectiveThreshold, hasRole, LEVEL, severityOf } from './crewStatus.js'
 
 // Data for /crew/:userId. Everything comes from IndexedDB, so the screen works offline.
 // Readings from any source (simulator, NASA dataset adapter, BLE) show up here as long
 // as they follow the Reading shape in src/models/reading.js.
 
 const MAX_POINTS = 60
-const FLIGHT_SURGEON_ROLE_CODE = 'FLIGHT_SURGEON'
+const FLIGHT_SURGEON_ROLE_CODE = 'flight_surgeon'
 
 function resolveSurgeonId(roles, users) {
   // TODO(auth): remove the fallback once the PIN login stores a real session.
   const session = getSession()
   if (session?.userId) return session.userId
-  const surgeonRoleId = roles.find((role) => role.code === FLIGHT_SURGEON_ROLE_CODE)?.id
-  return users.find((user) => user.roleId === surgeonRoleId)?.id ?? null
+  return users.find((user) => hasRole(roles, user, FLIGHT_SURGEON_ROLE_CODE))?.id ?? null
 }
 
 /**

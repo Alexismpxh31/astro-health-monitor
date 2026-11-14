@@ -1,242 +1,482 @@
 [
   {
-    "id": "00000000-0000-4000-8000-000000000b01",
+    "id": "REC_HR_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000401",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Tu pulso está fuera del rango normal. Detén la actividad, respira lento durante 5 minutos y vuelve a medir.",
-    "textEn": "Your heart rate is outside the normal range. Stop the activity, breathe slowly for 5 minutes and measure again."
+    "direction": "low",
+    "textEs": "Tu pulso está bajo (%value% %unit%). Siéntate, evita esfuerzos y vuelve a medir en 5 minutos.",
+    "textEn": "Your heart rate is low (%value% %unit%). Sit down, avoid exertion and measure again in 5 minutes."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b02",
+    "id": "REC_HR_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000401",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Pulso en nivel crítico. Detén la actividad, quédate en reposo y contacta al médico de vuelo ahora.",
-    "textEn": "Heart rate at a critical level. Stop the activity, stay at rest and contact the flight surgeon now."
+    "direction": "low",
+    "textEs": "Pulso muy bajo (%value% %unit%). Suspende la actividad, mantente en reposo y contacta al médico de vuelo ahora.",
+    "textEn": "Heart rate very low (%value% %unit%). Stop activity, stay at rest and contact the flight surgeon now."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b03",
+    "id": "REC_HR_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000401",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Tu pulso está elevado (%value% %unit%). Haz respiración lenta 5 minutos y vuelve a medir.",
+    "textEn": "Your heart rate is elevated (%value% %unit%). Do slow breathing for 5 minutes and measure again."
+  },
+  {
+    "id": "REC_HR_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000401",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Pulso muy alto (%value% %unit%). Detén la actividad, siéntate, respira lento y contacta al médico de vuelo ahora.",
+    "textEn": "Heart rate very high (%value% %unit%). Stop activity, sit down, breathe slowly and contact the flight surgeon now."
+  },
+  {
+    "id": "REC_SPO2_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000402",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Tu SpO₂ bajó. Haz respiración profunda durante 5 minutos y vuelve a medir.",
-    "textEn": "Your SpO₂ dropped. Do deep breathing for 5 minutes and measure again."
+    "direction": "low",
+    "textEs": "Tu SpO2 bajó a %value% %unit%: haz respiración profunda 5 min y vuelve a medir.",
+    "textEn": "Your SpO2 dropped to %value% %unit%: do deep breathing for 5 min and measure again."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b04",
+    "id": "REC_SPO2_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000402",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "SpO₂ crítica. Revisa la ventilación y el nivel de CO₂ de la cabina, respira profundo y contacta al médico de vuelo ahora.",
-    "textEn": "Critical SpO₂. Check cabin ventilation and CO₂ level, breathe deeply and contact the flight surgeon now."
+    "direction": "low",
+    "textEs": "SpO2 crítica (%value% %unit%). Revisa la ventilación y el nivel de CO2 de la cabina, respira profundo y contacta al médico de vuelo ahora.",
+    "textEn": "Critical SpO2 (%value% %unit%). Check cabin ventilation and CO2 level, breathe deeply and contact the flight surgeon now."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b05",
+    "id": "REC_SBP_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000403",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Presión sistólica fuera del rango normal. Descansa 10 minutos, hidrátate y vuelve a medir.",
-    "textEn": "Systolic pressure outside the normal range. Rest for 10 minutes, hydrate and measure again."
+    "direction": "low",
+    "textEs": "Presión sistólica baja (%value% %unit%). Hidrátate, levántate despacio y vuelve a medir en 10 minutos.",
+    "textEn": "Systolic pressure low (%value% %unit%). Hydrate, stand up slowly and measure again in 10 minutes."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b06",
+    "id": "REC_SBP_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000403",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Presión sistólica en nivel crítico. Quédate en reposo, evita movimientos bruscos y contacta al médico de vuelo ahora.",
-    "textEn": "Systolic pressure at a critical level. Stay at rest, avoid sudden movements and contact the flight surgeon now."
+    "direction": "low",
+    "textEs": "Presión sistólica críticamente baja (%value% %unit%). Quédate en reposo, no hagas movimientos bruscos y contacta al médico de vuelo ahora.",
+    "textEn": "Systolic pressure critically low (%value% %unit%). Stay at rest, avoid sudden movements and contact the flight surgeon now."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b07",
+    "id": "REC_SBP_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000403",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Presión sistólica elevada (%value% %unit%). Descansa 10 minutos, reduce la sal y vuelve a medir.",
+    "textEn": "Systolic pressure elevated (%value% %unit%). Rest for 10 minutes, reduce salt intake and measure again."
+  },
+  {
+    "id": "REC_SBP_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000403",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Presión sistólica críticamente alta (%value% %unit%). Detén la actividad, descansa y contacta al médico de vuelo ahora.",
+    "textEn": "Systolic pressure critically high (%value% %unit%). Stop activity, rest and contact the flight surgeon now."
+  },
+  {
+    "id": "REC_DBP_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000404",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Presión diastólica fuera del rango normal. Descansa 10 minutos, hidrátate y vuelve a medir.",
-    "textEn": "Diastolic pressure outside the normal range. Rest for 10 minutes, hydrate and measure again."
+    "direction": "low",
+    "textEs": "Presión diastólica baja (%value% %unit%). Hidrátate y vuelve a medir en 10 minutos.",
+    "textEn": "Diastolic pressure low (%value% %unit%). Hydrate and measure again in 10 minutes."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b08",
+    "id": "REC_DBP_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000404",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Presión diastólica en nivel crítico. Quédate en reposo y contacta al médico de vuelo ahora.",
-    "textEn": "Diastolic pressure at a critical level. Stay at rest and contact the flight surgeon now."
+    "direction": "low",
+    "textEs": "Presión diastólica críticamente baja (%value% %unit%). Quédate en reposo y contacta al médico de vuelo ahora.",
+    "textEn": "Diastolic pressure critically low (%value% %unit%). Stay at rest and contact the flight surgeon now."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b09",
+    "id": "REC_DBP_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000404",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Presión diastólica elevada (%value% %unit%). Descansa 10 minutos y vuelve a medir.",
+    "textEn": "Diastolic pressure elevated (%value% %unit%). Rest for 10 minutes and measure again."
+  },
+  {
+    "id": "REC_DBP_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000404",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Presión diastólica críticamente alta (%value% %unit%). Detén la actividad y contacta al médico de vuelo ahora.",
+    "textEn": "Diastolic pressure critically high (%value% %unit%). Stop activity and contact the flight surgeon now."
+  },
+  {
+    "id": "REC_RR_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000405",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Tu respiración está fuera del ritmo normal. Respira de forma lenta y controlada y vuelve a medir en 5 minutos.",
-    "textEn": "Your breathing is outside the normal rate. Breathe slowly and steadily and measure again in 5 minutes."
+    "direction": "low",
+    "textEs": "Respiración lenta (%value% %unit%). Respira conscientemente y vuelve a medir en 5 minutos.",
+    "textEn": "Slow breathing (%value% %unit%). Breathe deliberately and measure again in 5 minutes."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b0a",
+    "id": "REC_RR_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000405",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Frecuencia respiratoria en nivel crítico. Revisa el CO₂ de la cabina, descansa y contacta al médico de vuelo ahora.",
-    "textEn": "Respiratory rate at a critical level. Check cabin CO₂, rest and contact the flight surgeon now."
+    "direction": "low",
+    "textEs": "Respiración muy lenta (%value% %unit%). Contacta al médico de vuelo ahora y revisa la calidad del aire de la cabina.",
+    "textEn": "Breathing very slow (%value% %unit%). Contact the flight surgeon now and check cabin air quality."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b0b",
+    "id": "REC_RR_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000405",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Respiración rápida (%value% %unit%). Haz respiración lenta y vuelve a medir en 5 minutos.",
+    "textEn": "Fast breathing (%value% %unit%). Do slow breathing and measure again in 5 minutes."
+  },
+  {
+    "id": "REC_RR_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000405",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Respiración muy rápida (%value% %unit%). Revisa el CO2 de la cabina, descansa y contacta al médico de vuelo ahora.",
+    "textEn": "Breathing very fast (%value% %unit%). Check cabin CO2, rest and contact the flight surgeon now."
+  },
+  {
+    "id": "REC_TSKIN_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000406",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Tu temperatura de piel se alejó de tu valor habitual. Ajusta tu ropa, hidrátate, verifica la temperatura de la cabina y vuelve a medir en 15 minutos.",
-    "textEn": "Your skin temperature moved away from your usual value. Adjust your clothing, hydrate, check the cabin temperature and measure again in 15 minutes."
+    "direction": "low",
+    "textEs": "Tu temperatura de piel bajó respecto a tu valor habitual (%value% %unit%). Abrígate, verifica la temperatura de la cabina y vuelve a medir en 15 minutos.",
+    "textEn": "Your skin temperature dropped below your usual value (%value% %unit%). Warm up, check the cabin temperature and measure again in 15 minutes."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b0c",
+    "id": "REC_TSKIN_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000406",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Tu temperatura de piel cambió mucho respecto a tu valor habitual: posible fiebre o enfriamiento. Detén la actividad, mide tu temperatura corporal y contacta al médico de vuelo ahora.",
-    "textEn": "Your skin temperature changed a lot from your usual value: possible fever or chilling. Stop the activity, measure your body temperature and contact the flight surgeon now."
+    "direction": "low",
+    "textEs": "Tu temperatura de piel bajó mucho respecto a tu valor habitual (%value% %unit%): posible enfriamiento. Abrígate de inmediato, mide tu temperatura corporal y contacta al médico de vuelo.",
+    "textEn": "Your skin temperature dropped far below your usual value (%value% %unit%): possible chilling. Warm up immediately, measure your body temperature and contact the flight surgeon."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b0d",
+    "id": "REC_TSKIN_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000406",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Tu temperatura de piel subió respecto a tu valor habitual (%value% %unit%). Reduce la actividad, hidrátate, verifica la temperatura de la cabina y vuelve a medir en 15 minutos.",
+    "textEn": "Your skin temperature rose above your usual value (%value% %unit%). Reduce activity, hydrate, check the cabin temperature and measure again in 15 minutes."
+  },
+  {
+    "id": "REC_TSKIN_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000406",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Tu temperatura de piel subió mucho respecto a tu valor habitual (%value% %unit%): posible fiebre. Detén la actividad, mide tu temperatura corporal y contacta al médico de vuelo ahora.",
+    "textEn": "Your skin temperature rose far above your usual value (%value% %unit%): possible fever. Stop activity, measure your body temperature and contact the flight surgeon now."
+  },
+  {
+    "id": "REC_BMD_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000407",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Cambio de densidad ósea fuera de lo esperado. Si es una pérdida, cumple tu sesión de ejercicio de resistencia (ARED) y revisa con el médico de vuelo tu vitamina D y calcio; si es una ganancia, repite la medición para descartar un error.",
-    "textEn": "Bone density change outside the expected range. If it is a loss, complete your resistance exercise session (ARED) and review vitamin D and calcium with the flight surgeon; if it is a gain, repeat the measurement to rule out an error."
+    "direction": "low",
+    "textEs": "Pérdida ósea de %value% %unit%, mayor a la esperada. Cumple tu ejercicio de resistencia y revisa tu plan con el médico de vuelo.",
+    "textEn": "Bone loss of %value% %unit%, higher than expected. Complete your resistance exercise and review your plan with the flight surgeon."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b0e",
+    "id": "REC_BMD_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000407",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Cambio óseo en nivel crítico: pérdida muy acelerada o un valor que puede ser error de medición. Repite la medición y contacta al médico de vuelo para revisar tu plan de ejercicio, nutrición y suplementación.",
-    "textEn": "Bone change at a critical level: very fast loss or a value that may be a measurement error. Repeat the measurement and contact the flight surgeon to review your exercise, nutrition and supplementation plan."
+    "direction": "low",
+    "textEs": "Pérdida ósea muy acelerada (%value% %unit%). Contacta al médico de vuelo para revisar tu ejercicio de resistencia y la posible medicación (bifosfonatos).",
+    "textEn": "Very fast bone loss (%value% %unit%). Contact the flight surgeon to review your resistance exercise and possible medication (bisphosphonates)."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b0f",
-    "indicatorId": "00000000-0000-4000-8000-000000000408",
+    "id": "REC_CTX_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000416",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Dosis diaria de radiación fuera de lo esperado. Si es casi cero, verifica que el dosímetro esté conectado y transmitiendo; si es alta, permanece en las zonas con más blindaje (agua y polietileno) y revisa el plan de exposición.",
-    "textEn": "Daily radiation dose outside the expected range. If it is almost zero, check that the dosimeter is connected and transmitting; if it is high, stay in the best-shielded areas (water and polyethylene) and review the exposure plan."
+    "direction": "high",
+    "textEs": "Marcador de resorción ósea elevado (%value% %unit%). Cumple tu ejercicio de resistencia y avisa al médico de vuelo en tu próximo reporte.",
+    "textEn": "Bone resorption marker elevated (%value% %unit%). Keep up resistance exercise and tell the flight surgeon in your next report."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b10",
-    "indicatorId": "00000000-0000-4000-8000-000000000408",
+    "id": "REC_CTX_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000416",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Dosis diaria muy alta: posible evento solar de protones. Refúgiate de inmediato en el compartimento de tormenta solar y contacta al médico de vuelo.",
-    "textEn": "Daily dose very high: possible solar particle event. Shelter immediately in the storm shelter and contact the flight surgeon."
+    "direction": "high",
+    "textEs": "Resorción ósea muy elevada (%value% %unit%). Contacta al médico de vuelo para revisar tu plan de ejercicio y nutrición.",
+    "textEn": "Bone resorption very high (%value% %unit%). Contact the flight surgeon to review your exercise and nutrition plan."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b11",
-    "indicatorId": "00000000-0000-4000-8000-000000000409",
-    "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Tu masa muscular salió del rango esperado. Si bajó, completa tu protocolo de resistencia (ARED: sentadillas, peso muerto y press) y cuida tu ingesta de proteína; si subió, repite la medición: puede ser retención de líquidos.",
-    "textEn": "Your muscle mass is outside the expected range. If it dropped, complete your resistance protocol (ARED: squats, deadlift and press) and watch your protein intake; if it rose, repeat the measurement: it may be fluid retention."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b12",
-    "indicatorId": "00000000-0000-4000-8000-000000000409",
-    "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Masa muscular en nivel crítico: pérdida importante o una medición anómala. Repite la medición y contacta al médico de vuelo para ajustar tu ejercicio y nutrición.",
-    "textEn": "Muscle mass at a critical level: significant loss or an abnormal measurement. Repeat the measurement and contact the flight surgeon to adjust your exercise and nutrition."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b13",
-    "indicatorId": "00000000-0000-4000-8000-000000000410",
-    "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Dosis acumulada de radiación alta. Limita el tiempo fuera de las zonas con más blindaje y revisa el plan de exposición con el médico de vuelo.",
-    "textEn": "Cumulative radiation dose high. Limit time outside the best-shielded areas and review the exposure plan with the flight surgeon."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b14",
-    "indicatorId": "00000000-0000-4000-8000-000000000410",
-    "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Dosis acumulada sobre el límite de carrera (600 mSv). Refúgiate en la zona más blindada y contacta al médico de vuelo ahora.",
-    "textEn": "Cumulative dose above the career limit (600 mSv). Shelter in the most shielded area and contact the flight surgeon now."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b15",
-    "indicatorId": "00000000-0000-4000-8000-000000000411",
-    "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Tu tiempo de reacción salió del rango normal. Si fue lento, es señal de fatiga: haz una siesta de 45 minutos y evita tareas críticas hasta recuperarte; si fue demasiado rápido, repite la prueba con calma.",
-    "textEn": "Your reaction time is outside the normal range. If it was slow, it is a sign of fatigue: take a 45-minute nap and avoid critical tasks until you recover; if it was too fast, repeat the test calmly."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b16",
-    "indicatorId": "00000000-0000-4000-8000-000000000411",
-    "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Tiempo de reacción en nivel crítico: fatiga severa o una respuesta anticipada. Repite la prueba; si sigue igual, suspende las tareas críticas, descansa y contacta al médico de vuelo.",
-    "textEn": "Reaction time at a critical level: severe fatigue or an anticipated response. Repeat the test; if it stays the same, stop critical tasks, rest and contact the flight surgeon."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b17",
-    "indicatorId": "00000000-0000-4000-8000-000000000412",
-    "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Tus horas de sueño están fuera de lo recomendado. Mantén horarios regulares y reduce la luz y el ruido antes de dormir.",
-    "textEn": "Your sleep hours are outside the recommended range. Keep regular hours and reduce light and noise before bed."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b18",
-    "indicatorId": "00000000-0000-4000-8000-000000000412",
-    "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Sueño en nivel crítico. Evita tareas de alto riesgo hoy y avisa al médico de vuelo.",
-    "textEn": "Sleep at a critical level. Avoid high-risk tasks today and tell the flight surgeon."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b19",
-    "indicatorId": "00000000-0000-4000-8000-000000000413",
-    "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Leucocitos fuera del rango normal: posible infección o defensas bajas. Revisa si tienes fiebre o síntomas, refuerza la higiene y avisa al médico de vuelo.",
-    "textEn": "White blood cells outside the normal range: possible infection or low defenses. Check for fever or symptoms, reinforce hygiene and tell the flight surgeon."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b1a",
-    "indicatorId": "00000000-0000-4000-8000-000000000413",
-    "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Leucocitos en nivel crítico. Contacta al médico de vuelo ahora y evita el contacto cercano con otros tripulantes.",
-    "textEn": "White blood cells at a critical level. Contact the flight surgeon now and avoid close contact with crewmates."
-  },
-  {
-    "id": "00000000-0000-4000-8000-000000000b1b",
+    "id": "REC_IL6_HIGH_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000414",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "IL-6 fuera del rango normal. Si está alta, prioriza el descanso, hidrátate y revisa si tienes síntomas; si está muy baja, repite la muestra.",
-    "textEn": "IL-6 outside the normal range. If it is high, prioritize rest, hydrate and check for symptoms; if it is very low, repeat the sample."
+    "direction": "high",
+    "textEs": "Marcador de inflamación elevado (IL-6 %value% %unit%). Prioriza el descanso, hidrátate y revisa si tienes síntomas.",
+    "textEn": "Inflammation marker elevated (IL-6 %value% %unit%). Prioritize rest, hydrate and check for symptoms."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b1c",
+    "id": "REC_IL6_HIGH_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000414",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Inflamación muy elevada (IL-6). Contacta al médico de vuelo ahora y reporta tus síntomas.",
-    "textEn": "Inflammation very high (IL-6). Contact the flight surgeon now and report your symptoms."
+    "direction": "high",
+    "textEs": "Inflamación muy elevada (IL-6 %value% %unit%). Contacta al médico de vuelo ahora y reporta tus síntomas.",
+    "textEn": "Inflammation very high (IL-6 %value% %unit%). Contact the flight surgeon now and report your symptoms."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b1d",
+    "id": "REC_CORTISOL_LOW_CAUTION",
     "indicatorId": "00000000-0000-4000-8000-000000000415",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "direction": null,
-    "textEs": "Cortisol fuera del rango normal, posible señal de estrés. Haz una pausa de relajación, cuida tu descanso y avísale al médico de vuelo en tu próximo reporte.",
-    "textEn": "Cortisol outside the normal range, a possible sign of stress. Take a relaxation break, look after your rest and tell the flight surgeon in your next report."
+    "direction": "low",
+    "textEs": "Cortisol bajo (%value% %unit%). Cuida tu descanso y alimentación, y avisa al médico de vuelo en tu próximo reporte.",
+    "textEn": "Cortisol low (%value% %unit%). Look after your rest and nutrition, and tell the flight surgeon in your next report."
   },
   {
-    "id": "00000000-0000-4000-8000-000000000b1e",
+    "id": "REC_CORTISOL_LOW_CRITICAL",
     "indicatorId": "00000000-0000-4000-8000-000000000415",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "direction": null,
-    "textEs": "Cortisol en nivel crítico. Contacta al médico de vuelo y reduce tu carga de trabajo hoy.",
-    "textEn": "Cortisol at a critical level. Contact the flight surgeon and reduce your workload today."
+    "direction": "low",
+    "textEs": "Cortisol muy bajo (%value% %unit%). Contacta al médico de vuelo ahora.",
+    "textEn": "Cortisol very low (%value% %unit%). Contact the flight surgeon now."
+  },
+  {
+    "id": "REC_CORTISOL_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000415",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Cortisol elevado (%value% %unit%), señal de estrés. Haz una pausa de relajación y revisa tu horario de sueño.",
+    "textEn": "Cortisol elevated (%value% %unit%), a sign of stress. Take a relaxation break and review your sleep schedule."
+  },
+  {
+    "id": "REC_CORTISOL_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000415",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Cortisol muy elevado (%value% %unit%). Contacta al médico de vuelo y reduce tu carga de trabajo hoy.",
+    "textEn": "Cortisol very high (%value% %unit%). Contact the flight surgeon and reduce your workload today."
+  },
+  {
+    "id": "REC_SLEEP_H_LOW_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000412",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "low",
+    "textEs": "Dormiste poco (%value% h). Reduce la luz y el ruido antes de dormir, respeta el horario de descanso y usa la iluminación LED de cabina que simula el ciclo día/noche.",
+    "textEn": "You slept little (%value% h). Reduce light and noise before bed, keep to the rest schedule and use the cabin LED lighting that simulates the day/night cycle."
+  },
+  {
+    "id": "REC_SLEEP_H_LOW_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000412",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "low",
+    "textEs": "Sueño muy insuficiente (%value% h). Evita tareas de alto riesgo hoy y avisa al médico de vuelo.",
+    "textEn": "Severely insufficient sleep (%value% h). Avoid high-risk tasks today and tell the flight surgeon."
+  },
+  {
+    "id": "REC_SLEEP_H_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000412",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Dormiste mucho (%value% h). Mantén horarios regulares y haz algo de actividad física hoy.",
+    "textEn": "You slept a lot (%value% h). Keep regular hours and do some physical activity today."
+  },
+  {
+    "id": "REC_SLEEP_H_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000412",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Sueño excesivo (%value% h). Avisa al médico de vuelo, puede indicar fatiga o problemas de ánimo.",
+    "textEn": "Excessive sleep (%value% h). Tell the flight surgeon, it may indicate fatigue or mood issues."
+  },
+  {
+    "id": "REC_MOOD_LOW_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000417",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "low",
+    "textEs": "Tu ánimo está bajo. Habla con un compañero o con tu familia y haz una actividad que disfrutes.",
+    "textEn": "Your mood is low. Talk to a crewmate or your family and do an activity you enjoy."
+  },
+  {
+    "id": "REC_MOOD_LOW_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000417",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "low",
+    "textEs": "Tu ánimo está muy bajo. Contacta al médico de vuelo o al oficial médico de la tripulación hoy.",
+    "textEn": "Your mood is very low. Contact the flight surgeon or the crew medical officer today."
+  },
+  {
+    "id": "REC_STRESS_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000418",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Tu estrés está elevado. Haz 5 minutos de respiración guiada y una pausa de las tareas.",
+    "textEn": "Your stress is elevated. Do 5 minutes of guided breathing and take a break from tasks."
+  },
+  {
+    "id": "REC_STRESS_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000418",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Tu estrés es muy alto. Contacta al médico de vuelo y pide apoyo para reducir tu carga de trabajo.",
+    "textEn": "Your stress is very high. Contact the flight surgeon and ask for support to reduce your workload."
+  },
+  {
+    "id": "REC_RAD_DOSE_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000410",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Dosis acumulada de radiación alta (%value% %unit%). Limita el tiempo fuera de las zonas con más blindaje y revisa el plan de exposición.",
+    "textEn": "Cumulative radiation dose high (%value% %unit%). Limit time outside better-shielded areas and review the exposure plan."
+  },
+  {
+    "id": "REC_RAD_DOSE_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000410",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Dosis acumulada en el límite de carrera (%value% %unit%). Refúgiate en la zona más blindada y contacta al médico de vuelo ahora.",
+    "textEn": "Cumulative dose at the career limit (%value% %unit%). Shelter in the most shielded area and contact the flight surgeon now."
+  },
+  {
+    "id": "REC_BMD_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000407",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Cambio óseo inusual (%value% %unit%). Repite la medición para descartar un error del equipo y avisa al médico de vuelo.",
+    "textEn": "Unusual bone change (%value% %unit%). Repeat the measurement to rule out an equipment error and tell the flight surgeon."
+  },
+  {
+    "id": "REC_BMD_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000407",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Cambio óseo fuera de lo esperable (%value% %unit%). Repite la medición y contacta al médico de vuelo.",
+    "textEn": "Bone change outside the expected range (%value% %unit%). Repeat the measurement and contact the flight surgeon."
+  },
+  {
+    "id": "REC_MUSCLE_LOW_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000409",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "low",
+    "textEs": "Tu masa muscular bajó a %value% %unit%. Completa tu ejercicio de resistencia del día y cuida tu alimentación.",
+    "textEn": "Your muscle mass dropped to %value% %unit%. Complete today's resistance exercise and watch your nutrition."
+  },
+  {
+    "id": "REC_MUSCLE_LOW_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000409",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "low",
+    "textEs": "Pérdida muscular importante (%value% %unit%). Contacta al médico de vuelo para ajustar tu ejercicio y nutrición.",
+    "textEn": "Significant muscle loss (%value% %unit%). Contact the flight surgeon to adjust your exercise and nutrition."
+  },
+  {
+    "id": "REC_MUSCLE_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000409",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Valor por encima de lo esperado (%value% %unit%): puede ser retención de líquidos o un error de medición. Repite la medición.",
+    "textEn": "Value above expected (%value% %unit%): it may be fluid retention or a measurement error. Repeat the measurement."
+  },
+  {
+    "id": "REC_MUSCLE_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000409",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Valor muy por encima de lo esperado (%value% %unit%). Repite la medición y avisa al médico de vuelo.",
+    "textEn": "Value far above expected (%value% %unit%). Repeat the measurement and tell the flight surgeon."
+  },
+  {
+    "id": "REC_IL6_LOW_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000414",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "low",
+    "textEs": "IL-6 salival más baja de lo habitual (%value% %unit%). Repite la muestra y avisa al médico de vuelo en tu próximo reporte.",
+    "textEn": "Salivary IL-6 lower than usual (%value% %unit%). Repeat the sample and tell the flight surgeon in your next report."
+  },
+  {
+    "id": "REC_WBC_LOW_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000413",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "low",
+    "textEs": "Leucocitos bajos (%value% %unit%): defensas disminuidas. Refuerza la higiene, descansa y avisa al médico de vuelo.",
+    "textEn": "Low white blood cells (%value% %unit%): reduced defenses. Reinforce hygiene, rest and tell the flight surgeon."
+  },
+  {
+    "id": "REC_WBC_LOW_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000413",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "low",
+    "textEs": "Leucocitos muy bajos (%value% %unit%). Contacta al médico de vuelo ahora y evita el contacto cercano con tripulantes enfermos.",
+    "textEn": "Very low white blood cells (%value% %unit%). Contact the flight surgeon now and avoid close contact with sick crewmates."
+  },
+  {
+    "id": "REC_WBC_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000413",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Leucocitos elevados (%value% %unit%): posible infección. Revisa fiebre y síntomas y avisa al médico de vuelo.",
+    "textEn": "Elevated white blood cells (%value% %unit%): possible infection. Check for fever and symptoms and tell the flight surgeon."
+  },
+  {
+    "id": "REC_WBC_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000413",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Leucocitos muy elevados (%value% %unit%): posible infección aguda. Contacta al médico de vuelo ahora.",
+    "textEn": "Very high white blood cells (%value% %unit%): possible acute infection. Contact the flight surgeon now."
+  },
+  {
+    "id": "REC_PVT_LOW_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000411",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "low",
+    "textEs": "Tu tiempo de reacción fue inusualmente corto (%value% %unit%). Repite la prueba con calma: puede ser una respuesta anticipada.",
+    "textEn": "Your reaction time was unusually short (%value% %unit%). Repeat the test calmly: it may be an anticipated response."
+  },
+  {
+    "id": "REC_PVT_LOW_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000411",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "low",
+    "textEs": "Tiempo de reacción fuera de lo humanamente esperable (%value% %unit%). Repite la prueba; si se repite, avisa al médico de vuelo.",
+    "textEn": "Reaction time outside the humanly expected range (%value% %unit%). Repeat the test; if it repeats, tell the flight surgeon."
+  },
+  {
+    "id": "REC_PVT_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000411",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Tu tiempo de reacción subió a %value% %unit%: señal de fatiga. Descansa y evita tareas críticas hasta recuperarte.",
+    "textEn": "Your reaction time rose to %value% %unit%: a sign of fatigue. Rest and avoid critical tasks until you recover."
+  },
+  {
+    "id": "REC_PVT_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000411",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Fatiga severa (%value% %unit%). Suspende las tareas críticas, descansa y contacta al médico de vuelo ahora.",
+    "textEn": "Severe fatigue (%value% %unit%). Stop critical tasks, rest and contact the flight surgeon now."
+  },
+  {
+    "id": "REC_RAD_D_LOW_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000408",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "low",
+    "textEs": "El dosímetro marca una dosis diaria muy baja (%value% %unit%). Verifica que esté conectado y transmitiendo.",
+    "textEn": "The dosimeter shows a very low daily dose (%value% %unit%). Check that it is connected and transmitting."
+  },
+  {
+    "id": "REC_RAD_D_HIGH_CAUTION",
+    "indicatorId": "00000000-0000-4000-8000-000000000408",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "direction": "high",
+    "textEs": "Dosis diaria de radiación elevada (%value% %unit%). Permanece en las zonas con más blindaje y revisa el plan de exposición.",
+    "textEn": "Daily radiation dose elevated (%value% %unit%). Stay in the best-shielded areas and review the exposure plan."
+  },
+  {
+    "id": "REC_RAD_D_HIGH_CRITICAL",
+    "indicatorId": "00000000-0000-4000-8000-000000000408",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "direction": "high",
+    "textEs": "Dosis diaria muy alta (%value% %unit%): posible evento solar. Refúgiate de inmediato en la zona más blindada y contacta al médico de vuelo.",
+    "textEn": "Daily dose very high (%value% %unit%): possible solar event. Shelter immediately in the most shielded area and contact the flight surgeon."
   }
 ]

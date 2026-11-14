@@ -3,15 +3,15 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
-import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
+import { addDemoReadings, DEMO_CREW_USER_IDS, ensureDemoCrew } from '../data/demoCrew.js'
 import { db } from '../db/db.js'
-import { buildCrewStatus, LEVEL } from './crew/crewStatus.js'
+import { buildCrewStatus, hasRole, LEVEL } from './crew/crewStatus.js'
 import { DISPLAY_CODE } from './crew/display.js'
 import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
 import { useLiveDemo } from './crew/useLiveDemo.js'
 import './Crew.css'
 
-const ASTRONAUT_ROLE_CODE = 'ASTRONAUT'
+const ASTRONAUT_ROLE_CODE = 'astronaut'
 const SUMMARY_LEVELS = [LEVEL.CRITICAL, LEVEL.WARNING, LEVEL.NORMAL]
 
 // Reads everything from IndexedDB (offline-first); re-runs whenever those tables change.
@@ -28,9 +28,10 @@ async function loadCrewData() {
     db.thresholds.toArray(),
   ])
 
-  const astronautRoleId = roles.find((role) => role.code === ASTRONAUT_ROLE_CODE)?.id
-  const crewUserIds = new Set(crew.map((member) => member.userId))
-  const astronauts = users.filter((user) => crewUserIds.has(user.id) && user.roleId === astronautRoleId)
+  // seedIfEmpty() rebuilds the crew table from users.json, so the simulated demo
+  // crew is added here too to keep it visible after any re-seed.
+  const crewUserIds = new Set([...crew.map((member) => member.userId), ...DEMO_CREW_USER_IDS])
+  const astronauts = users.filter((user) => crewUserIds.has(user.id) && hasRole(roles, user, ASTRONAUT_ROLE_CODE))
   const readings = astronauts.length
     ? await db.readings.where('userId').anyOf(astronauts.map((user) => user.id)).toArray()
     : []

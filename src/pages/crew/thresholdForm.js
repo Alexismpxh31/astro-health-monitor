@@ -1,8 +1,8 @@
-export const THRESHOLD_FIELDS = ['criticalMin', 'warnMin', 'warnMax', 'criticalMax']
+export const THRESHOLD_FIELDS = ['minCritical', 'minNormal', 'maxNormal', 'maxCritical']
 
 /**
  * Parses and validates the four bounds typed by the flight surgeon.
- * Rule (same as the DB CHECK): criticalMin <= warnMin <= warnMax <= criticalMax.
+ * Rule (same as the DB CHECK): minCritical <= minNormal <= maxNormal <= maxCritical.
  * An empty field means "no limit on that side".
  *
  * @param {Record<string, string>} form

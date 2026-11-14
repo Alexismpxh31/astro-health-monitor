@@ -14,10 +14,10 @@ import { BASELINE_MIN_READINGS } from '../../rules/baseline.js'
 import { CHART_COLORS, DISPLAY_CODE, localName } from './display.js'
 
 const BOUND_STYLES = {
-  criticalMin: { color: CHART_COLORS.danger, dash: '4 4' },
-  warnMin: { color: CHART_COLORS.warn, dash: '2 4' },
-  warnMax: { color: CHART_COLORS.warn, dash: '2 4' },
-  criticalMax: { color: CHART_COLORS.danger, dash: '4 4' },
+  minCritical: { color: CHART_COLORS.danger, dash: '4 4' },
+  minNormal: { color: CHART_COLORS.warn, dash: '2 4' },
+  maxNormal: { color: CHART_COLORS.warn, dash: '2 4' },
+  maxCritical: { color: CHART_COLORS.danger, dash: '4 4' },
 }
 
 function yDomain(points, threshold) {

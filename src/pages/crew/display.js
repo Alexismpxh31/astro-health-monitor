@@ -3,10 +3,10 @@ export const DISPLAY_CODE = {
   SPO2: 'SpO₂',
   TSKIN: 'T piel',
   RAD_D: 'Rad/día',
-  RAD_C: 'Rad acum.',
+  RAD_DOSE: 'Rad acum.',
   IL6: 'IL-6',
-  CORT: 'Cortisol',
-  SLEEP: 'Sueño',
+  CORTISOL: 'Cortisol',
+  SLEEP_H: 'Sueño',
   MUSCLE: 'Músculo',
 }
 

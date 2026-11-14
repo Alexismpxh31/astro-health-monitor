@@ -1,8 +1,8 @@
 // Personal-baseline thresholds.
 // Some indicators (e.g. skin temperature) have no universal clinical range: what
 // matters is how far a value moves from that person's usual value. A threshold row
-// with `mode: 'baseline'` stores DEVIATIONS (criticalMin / warnMin / warnMax /
-// criticalMax, in the indicator's unit) from the personal baseline instead of
+// with `mode: 'baseline'` stores DEVIATIONS (minCritical / minNormal / maxNormal /
+// maxCritical, in the indicator's unit) from the personal baseline instead of
 // absolute limits. resolveThreshold() turns it into a normal absolute threshold,
 // so classify() works unchanged.
 
@@ -12,7 +12,7 @@ export const BASELINE_WINDOW_MS = 24 * 60 * 60 * 1000
 /** Below this many past readings the baseline is still "calibrating". */
 export const BASELINE_MIN_READINGS = 10
 
-const BOUNDS = ['criticalMin', 'warnMin', 'warnMax', 'criticalMax']
+const BOUNDS = ['minCritical', 'minNormal', 'maxNormal', 'maxCritical']
 
 /** @returns {boolean} true when the threshold is relative to the personal baseline. */
 export function isBaselineThreshold(threshold) {

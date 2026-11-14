@@ -15,16 +15,25 @@ export const LEVEL = {
 
 const SEVERITY = { NO_DATA: -1, NORMAL: 0, WARNING: 1, CRITICAL: 2 }
 
+// Engine levels (alertLevels codes: normal | caution | critical) -> panel levels.
+const LEVEL_FROM_ENGINE = { normal: LEVEL.NORMAL, caution: LEVEL.WARNING, critical: LEVEL.CRITICAL }
+
 /**
  * Classifies a value against a threshold row. A null bound means "no limit on that side".
  *
  * @param {number} value
- * @param {{ criticalMin: number|null, warnMin: number|null, warnMax: number|null, criticalMax: number|null } | null} threshold
+ * @param {{ minCritical: number|null, minNormal: number|null, maxNormal: number|null, maxCritical: number|null } | null} threshold
  * @returns {'NORMAL'|'WARNING'|'CRITICAL'|null} null when there is no threshold to compare with.
  */
 export function classifyValue(value, threshold) {
   if (!threshold) return null
-  return classify(value, threshold).level.toUpperCase()
+  return LEVEL_FROM_ENGINE[classify(value, threshold).level] ?? null
+}
+
+/** Role codes changed case over time (ASTRONAUT -> astronaut); compare without case. */
+export function hasRole(roles, user, roleCode) {
+  const role = roles.find((row) => row.id === user.roleId)
+  return role?.code?.toLowerCase() === roleCode.toLowerCase()
 }
 
 /** @returns {number} sort weight, higher is worse. */

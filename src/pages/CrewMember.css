@@ -198,13 +198,13 @@
   font-weight: 600;
 }
 
-.threshold-field.is-criticalMin span,
-.threshold-field.is-criticalMax span {
+.threshold-field.is-minCritical span,
+.threshold-field.is-maxCritical span {
   color: var(--danger);
 }
 
-.threshold-field.is-warnMin span,
-.threshold-field.is-warnMax span {
+.threshold-field.is-minNormal span,
+.threshold-field.is-maxNormal span {
   color: var(--warn);
 }
 

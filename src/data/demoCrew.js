@@ -68,6 +68,9 @@ async function seedDemoCrew() {
   })
 }
 
+/** Ids of the simulated demo astronauts (the crew table may be rebuilt by seedIfEmpty()). */
+export const DEMO_CREW_USER_IDS = demoCrew.users.map((user) => user.id)
+
 let ensurePromise = null
 
 /**
