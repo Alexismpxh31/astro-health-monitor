@@ -1,1411 +1,763 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
-const DEFAULT_TELEMETRY = {
+const ZONE_SYSTEM_MAP = {
   neuro: {
-    id: 'neuro',
+    systemId: 'behavioral',
+    zoneCode: 'neuro',
     name: 'Casco y Sistema Neuro-Vestibular',
+    nameEn: 'Helmet & Neuro-Vestibular System',
     region: 'Visor Presurizado / Unidad Cefálica',
     metric: 'Presión Casco · O₂',
     value: '4.30 psi · 99.6 %',
     status: 'optimal',
-    detail: 'Sello cervical hermético nominal; parámetros ópticos y vestibulares estables.'
+    detail: 'Sello cervical hermético nominal; parámetros ópticos y vestibulares estables.',
   },
   cardio: {
-    id: 'cardio',
+    systemId: 'cardiovascular',
+    zoneCode: 'cardio',
     name: 'Coraza Pectoral (HUT) y Mochila PLSS',
+    nameEn: 'Torso (HUT) & PLSS Life Support',
     region: 'Tórax y Soporte Vital Primario',
     metric: 'Ritmo Cardíaco · Refrigeración LCVG',
-    value: '72 BPM · 21.2 °C',
+    value: '74 BPM · 21.2 °C',
     status: 'optimal',
-    detail: 'Circulación térmica y frecuencia cardíaca dentro de parámetros nominales.'
+    detail: 'Circulación térmica y gasto cardíaco en rangos nominales de misión.',
   },
   metabolic: {
-    id: 'metabolic',
-    name: 'Corsé Abdominal y Arnés Pélvico',
-    region: 'Cintura Articulada / Regulación',
-    metric: 'Hidratación · Presión Diferencial',
+    systemId: 'immune',
+    zoneCode: 'metabolic',
+    name: 'Corsé Abdominal y Regulación Pélvica',
+    nameEn: 'Abdominal Yoke & Metabolic Harness',
+    region: 'Cintura Articulada / Inmune & SANS',
+    metric: 'Hidratación · Termorregulación',
     value: '96.5 % · Nominal',
-    status: 'warning',
-    detail: 'Leve descenso hídrico; sugerida ingesta de 250 ml mediante válvula interna.'
+    status: 'optimal',
+    detail: 'Presión compartimental estable; balance electrolítico controlado.',
   },
   musculo: {
-    id: 'musculo',
+    systemId: 'musculoskeletal',
+    zoneCode: 'musculo',
     name: 'Extremidades, Guantes y Botas EVA',
+    nameEn: 'EVA Limbs, Gloves & Lunar Boots',
     region: 'Articulaciones de Fuelle y Tracción Lunar',
-    metric: 'Carga Mecánica · Agarre',
-    value: '93 % · Óptimo',
+    metric: 'Carga Mecánica · Articular',
+    value: '94 % · Nominal',
     status: 'optimal',
-    detail: 'Fuelles de codo/rodilla y suelas de alta tracción operando sin resistencia.'
+    detail: 'Fuelles de codo/rodilla y suelas de alta tracción operando con fluidez.',
   },
   radiation: {
-    id: 'radiation',
+    systemId: 'radiation',
+    zoneCode: 'radiation',
     name: 'Blindaje Multicapa (TMG) y Dosimetría',
-    region: 'Cobertura Integral del Traje',
-    metric: 'Dosis Acumulada Misión',
-    value: '18.4 mSv',
+    nameEn: 'Multilayer Insulation & Dosimetry',
+    region: 'Mochila PLSS y Blindaje Integral',
+    metric: 'Tasa Dosis Diaria Absorbida',
+    value: '0.35 mSv/d',
     status: 'optimal',
-    detail: 'Aislamiento térmico y atenuación contra radiación solar en rango seguro.'
-  }
+    detail: 'Atenuación biológica contra radiación cósmica galáctica en rango seguro.',
+  },
 };
 
 const STATUS_BADGE = {
-  optimal: { color: '#0284c7', bg: 'rgba(2, 132, 199, 0.12)', label: 'Óptimo' },
-  warning: { color: '#d97706', bg: 'rgba(217, 119, 6, 0.12)', label: 'Atención' },
-  critical: { color: '#dc2626', bg: 'rgba(220, 38, 38, 0.12)', label: 'Alerta' }
+  optimal: { color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.14)', label: 'Nominal' },
+  warning: { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.14)', label: 'Precaución' },
+  critical: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.14)', label: 'Alerta' },
 };
 
 /**
- * Genera mapas PBR procedurales de alta resolución:
- * - Tejido técnico Ripstop (bumpMap + roughnessMap)
- * - Acanalado para articulaciones de fuelle
- * - Insignia NASA ("Meatball") 1024px, Bandera EE.UU. y parches de pecho
- * - Sombra de contacto suave bajo las botas
+ * Construye un astronauta procedural PBR de alta fidelidad si el archivo .glb
+ * no estuviera disponible en el entorno del cliente.
  */
-function createSuitPBRTextures() {
-  // 1. Tejido técnico Ripstop + micro-trama (Bump & Roughness)
-  const weaveCanvas = document.createElement('canvas');
-  weaveCanvas.width = 512;
-  weaveCanvas.height = 512;
-  const wCtx = weaveCanvas.getContext('2d');
+function createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings) {
+  const group = new THREE.Group();
 
-  wCtx.fillStyle = '#7c7c7c';
-  wCtx.fillRect(0, 0, 512, 512);
-
-  // Micro-trama cruzada
-  for (let y = 0; y < 512; y += 2) {
-    for (let x = 0; x < 512; x += 2) {
-      const val = ((x >> 1) + (y >> 1)) % 2 === 0 ? 136 : 114;
-      wCtx.fillStyle = `rgb(${val},${val},${val})`;
-      wCtx.fillRect(x, y, 2, 2);
-    }
-  }
-
-  // Cuadrícula de refuerzo Ripstop cada 16px
-  wCtx.strokeStyle = 'rgba(215, 215, 215, 0.45)';
-  wCtx.lineWidth = 1.2;
-  for (let i = 0; i < 512; i += 16) {
-    wCtx.beginPath();
-    wCtx.moveTo(i, 0);
-    wCtx.lineTo(512, i);
-    wCtx.stroke();
-
-    wCtx.beginPath();
-    wCtx.moveTo(0, i);
-    wCtx.lineTo(512, i);
-    wCtx.stroke();
-  }
-
-  const fabricBump = new THREE.CanvasTexture(weaveCanvas);
-  fabricBump.wrapS = THREE.RepeatWrapping;
-  fabricBump.wrapT = THREE.RepeatWrapping;
-  fabricBump.repeat.set(14, 14);
-
-  const fabricRoughness = new THREE.CanvasTexture(weaveCanvas);
-  fabricRoughness.wrapS = THREE.RepeatWrapping;
-  fabricRoughness.wrapT = THREE.RepeatWrapping;
-  fabricRoughness.repeat.set(14, 14);
-
-  // 2. Textura acanalada para fuelles de codos, rodillas y cintura
-  const ribCanvas = document.createElement('canvas');
-  ribCanvas.width = 256;
-  ribCanvas.height = 256;
-  const rCtx = ribCanvas.getContext('2d');
-  for (let y = 0; y < 256; y++) {
-    const wave = Math.sin((y / 256) * Math.PI * 24) * 0.5 + 0.5;
-    const v = Math.round(70 + wave * 155);
-    rCtx.fillStyle = `rgb(${v},${v},${v})`;
-    rCtx.fillRect(0, y, 256, 1);
-  }
-  const ribBump = new THREE.CanvasTexture(ribCanvas);
-  ribBump.wrapS = THREE.RepeatWrapping;
-  ribBump.wrapT = THREE.RepeatWrapping;
-
-  // 3. Logo circular NASA ("Meatball") en 1024x1024
-  const nasaCanvas = document.createElement('canvas');
-  nasaCanvas.width = 1024;
-  nasaCanvas.height = 1024;
-  const nCtx = nasaCanvas.getContext('2d');
-
-  nCtx.clearRect(0, 0, 1024, 1024);
-
-  // Esfera azul con sutil degradado de bordado
-  const blueGrad = nCtx.createRadialGradient(460, 440, 60, 512, 512, 430);
-  blueGrad.addColorStop(0, '#1868e6');
-  blueGrad.addColorStop(1, '#0b44a8');
-  nCtx.beginPath();
-  nCtx.arc(512, 512, 425, 0, Math.PI * 2);
-  nCtx.fillStyle = blueGrad;
-  nCtx.fill();
-
-  // Borde bordado exterior sutil
-  nCtx.lineWidth = 10;
-  nCtx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-  nCtx.stroke();
-
-  // Estrellas blancas
-  nCtx.fillStyle = '#ffffff';
-  const stars = [
-    [290, 290, 6], [390, 225, 4.5], [625, 245, 5.5], [715, 325, 4.5],
-    [255, 610, 5], [375, 725, 6.5], [645, 710, 5.5], [750, 595, 4.5],
-    [510, 195, 4], [480, 790, 5], [330, 395, 3.8], [690, 430, 4.2]
-  ];
-  stars.forEach(([x, y, r]) => {
-    nCtx.beginPath();
-    nCtx.arc(x, y, r, 0, Math.PI * 2);
-    nCtx.fill();
+  // Materiales PBR
+  const suitFabric = new THREE.MeshStandardMaterial({
+    color: 0xeeeeee,
+    roughness: 0.6,
+    metalness: 0.05,
+  });
+  const navyJoints = new THREE.MeshStandardMaterial({
+    color: 0x1e293b,
+    roughness: 0.5,
+    metalness: 0.2,
+  });
+  const brushedMetal = new THREE.MeshStandardMaterial({
+    color: 0x94a3b8,
+    roughness: 0.2,
+    metalness: 0.9,
+  });
+  const visorGlass = new THREE.MeshStandardMaterial({
+    color: 0x0a101f,
+    roughness: 0.05,
+    metalness: 0.95,
+  });
+  const ringGlow = new THREE.MeshStandardMaterial({
+    color: 0x06b6d4,
+    emissive: new THREE.Color(0x06b6d4),
+    emissiveIntensity: 2.2,
+    roughness: 0.2,
   });
 
-  // Vector rojo en V (Chevron)
-  nCtx.beginPath();
-  nCtx.moveTo(135, 585);
-  nCtx.lineTo(502, 260);
-  nCtx.lineTo(622, 462);
-  nCtx.lineTo(885, 248);
-  nCtx.lineTo(596, 540);
-  nCtx.lineTo(486, 362);
-  nCtx.closePath();
-  nCtx.fillStyle = '#e03c31';
-  nCtx.fill();
+  // Plataforma
+  const platBase = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.95, 0.08, 48), suitFabric);
+  platBase.position.y = 0.04;
+  platBase.raycast = () => {};
+  group.add(platBase);
 
-  // Órbita blanca elíptica
-  nCtx.save();
-  nCtx.translate(512, 524);
-  nCtx.rotate(-0.34);
-  nCtx.beginPath();
-  nCtx.ellipse(0, 0, 432, 130, 0, 0, Math.PI * 2);
-  nCtx.lineWidth = 18;
-  nCtx.strokeStyle = '#ffffff';
-  nCtx.stroke();
-  nCtx.restore();
+  [0.85, 0.68, 0.5].forEach((radius) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.015, 16, 48), ringGlow.clone());
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.082;
+    ring.raycast = () => {};
+    platformRings.push(ring);
+    group.add(ring);
+  });
 
-  // Tipografía NASA
-  nCtx.fillStyle = '#ffffff';
-  nCtx.font = '900 186px Georgia, "Times New Roman", serif';
-  nCtx.textAlign = 'center';
-  nCtx.textBaseline = 'middle';
-  nCtx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-  nCtx.shadowBlur = 14;
-  nCtx.fillText('NASA', 512, 532);
-
-  const nasaTexture = new THREE.CanvasTexture(nasaCanvas);
-  nasaTexture.colorSpace = THREE.SRGBColorSpace;
-  nasaTexture.anisotropy = 8;
-
-  // 4. Bandera de Estados Unidos (brazo izquierdo)
-  const flagCanvas = document.createElement('canvas');
-  flagCanvas.width = 640;
-  flagCanvas.height = 400;
-  const fCtx = flagCanvas.getContext('2d');
-
-  fCtx.fillStyle = '#ffffff';
-  fCtx.fillRect(0, 0, 640, 400);
-  const stripeH = 400 / 13;
-  fCtx.fillStyle = '#b91c1c';
-  for (let i = 0; i < 13; i += 2) {
-    fCtx.fillRect(0, i * stripeH, 640, stripeH);
+  // Función auxiliar para registrar mallas interactivas
+  function addPart(geom, mat, zone, name, pos, rot) {
+    const clonedMat = mat.clone();
+    const mesh = new THREE.Mesh(geom, clonedMat);
+    if (pos) mesh.position.set(...pos);
+    if (rot) mesh.rotation.set(...rot);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = {
+      zone,
+      meshName: name,
+      originalEmissive: clonedMat.emissive ? clonedMat.emissive.clone() : new THREE.Color(0x000000),
+      originalEmissiveIntensity: clonedMat.emissiveIntensity ?? 1.0,
+    };
+    interactiveMeshes.push(mesh);
+    if (meshesByZone[zone]) meshesByZone[zone].push(mesh);
+    group.add(mesh);
+    return mesh;
   }
-  fCtx.fillStyle = '#1e3a8a';
-  fCtx.fillRect(0, 0, 270, stripeH * 7);
 
-  fCtx.fillStyle = '#ffffff';
-  for (let row = 0; row < 5; row++) {
-    for (let col = 0; col < 6; col++) {
-      fCtx.beginPath();
-      fCtx.arc(24 + col * 43, 22 + row * 41, 5.2, 0, Math.PI * 2);
-      fCtx.fill();
-    }
-  }
-  fCtx.strokeStyle = '#e2e8f0';
-  fCtx.lineWidth = 12;
-  fCtx.strokeRect(6, 6, 628, 388);
+  // 1. NEURO: Casco y Visor
+  addPart(new THREE.SphereGeometry(0.24, 32, 24), suitFabric, 'neuro', 'neuro_helmet', [0, 1.82, 0]);
+  addPart(new THREE.SphereGeometry(0.19, 24, 24, 0, Math.PI * 2, 0, Math.PI / 2), visorGlass, 'neuro', 'neuro_visor', [0, 1.83, 0.08], [Math.PI / 2, 0, 0]);
+  addPart(new THREE.TorusGeometry(0.19, 0.02, 16, 32), brushedMetal, 'neuro', 'neuro_collar', [0, 1.62, 0], [Math.PI / 2, 0, 0]);
 
-  const flagTexture = new THREE.CanvasTexture(flagCanvas);
-  flagTexture.colorSpace = THREE.SRGBColorSpace;
-  flagTexture.anisotropy = 8;
+  // 2. CARDIO: Torso HUT & Mochila PLSS
+  addPart(new THREE.CylinderGeometry(0.26, 0.23, 0.44, 24), suitFabric, 'cardio', 'cardio_torso', [0, 1.4, 0]);
+  const plss = addPart(new THREE.BoxGeometry(0.38, 0.46, 0.2), suitFabric, 'cardio', 'cardio_plss', [0, 1.42, -0.22]);
+  meshesByZone.radiation.push(plss);
+  addPart(new THREE.CylinderGeometry(0.04, 0.04, 0.08, 16), brushedMetal, 'cardio', 'cardio_valve_1', [-0.1, 1.68, -0.22]);
+  addPart(new THREE.CylinderGeometry(0.04, 0.04, 0.08, 16), brushedMetal, 'cardio', 'cardio_valve_2', [0.1, 1.68, -0.22]);
 
-  // 5. Micro-parches superiores de pecho (azul izquierda, verde/teal derecha)
-  const createPatch = (bgHex, ringHex, coreHex) => {
-    const c = document.createElement('canvas');
-    c.width = 256;
-    c.height = 160;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle = bgHex;
-    ctx.beginPath();
-    ctx.roundRect(8, 8, 240, 144, 24);
-    ctx.fill();
+  // 3. METABOLIC: Abdomen y Pelvis
+  addPart(new THREE.CylinderGeometry(0.22, 0.22, 0.16, 24), suitFabric, 'metabolic', 'metabolic_abdomen', [0, 1.14, 0]);
+  addPart(new THREE.CylinderGeometry(0.23, 0.2, 0.14, 24), navyJoints, 'metabolic', 'metabolic_pelvis', [0, 1.0, 0]);
+  addPart(new THREE.BoxGeometry(0.1, 0.06, 0.04), brushedMetal, 'metabolic', 'metabolic_buckle', [0, 1.08, 0.22]);
 
-    ctx.strokeStyle = '#f1f5f9';
-    ctx.lineWidth = 8;
-    ctx.stroke();
+  // 4. MUSCULO: Brazos, Piernas y Botas
+  [-1, 1].forEach((side) => {
+    // Brazos
+    addPart(new THREE.SphereGeometry(0.1, 16, 16), suitFabric, 'musculo', `musculo_shoulder_${side}`, [side * 0.32, 1.5, 0]);
+    addPart(new THREE.CylinderGeometry(0.08, 0.07, 0.26, 16), suitFabric, 'musculo', `musculo_arm_${side}`, [side * 0.34, 1.32, 0]);
+    addPart(new THREE.SphereGeometry(0.07, 16, 16), navyJoints, 'musculo', `musculo_elbow_${side}`, [side * 0.35, 1.16, 0]);
+    addPart(new THREE.CylinderGeometry(0.07, 0.06, 0.22, 16), suitFabric, 'musculo', `musculo_forearm_${side}`, [side * 0.35, 1.02, 0]);
+    addPart(new THREE.SphereGeometry(0.06, 16, 16), navyJoints, 'musculo', `musculo_glove_${side}`, [side * 0.35, 0.88, 0]);
 
-    ctx.strokeStyle = ringHex;
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(128, 80, 42, 0, Math.PI * 2);
-    ctx.stroke();
+    // Piernas
+    addPart(new THREE.CylinderGeometry(0.1, 0.09, 0.36, 16), suitFabric, 'musculo', `musculo_thigh_${side}`, [side * 0.14, 0.76, 0]);
+    addPart(new THREE.SphereGeometry(0.09, 16, 16), navyJoints, 'musculo', `musculo_knee_${side}`, [side * 0.14, 0.54, 0]);
+    addPart(new THREE.CylinderGeometry(0.09, 0.08, 0.34, 16), suitFabric, 'musculo', `musculo_shin_${side}`, [side * 0.14, 0.34, 0]);
+    addPart(new THREE.BoxGeometry(0.14, 0.12, 0.26), navyJoints, 'musculo', `musculo_boot_${side}`, [side * 0.14, 0.14, 0.04]);
+  });
 
-    ctx.fillStyle = coreHex;
-    ctx.beginPath();
-    ctx.arc(128, 80, 22, 0, Math.PI * 2);
-    ctx.fill();
-
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-  };
-
-  const leftChestBadgeTex = createPatch('#0284c7', '#bae6fd', '#ffffff');
-  const rightChestBadgeTex = createPatch('#0f766e', '#99f6e4', '#fde047');
-
-  // 6. Sombra de contacto realista bajo las botas
-  const shadowCanvas = document.createElement('canvas');
-  shadowCanvas.width = 512;
-  shadowCanvas.height = 512;
-  const sCtx = shadowCanvas.getContext('2d');
-  const radGrad = sCtx.createRadialGradient(256, 256, 20, 256, 256, 240);
-  radGrad.addColorStop(0, 'rgba(15, 23, 42, 0.42)');
-  radGrad.addColorStop(0.55, 'rgba(15, 23, 42, 0.16)');
-  radGrad.addColorStop(1, 'rgba(15, 23, 42, 0)');
-  sCtx.fillStyle = radGrad;
-  sCtx.fillRect(0, 0, 512, 512);
-  const contactShadowTex = new THREE.CanvasTexture(shadowCanvas);
-
-  return {
-    fabricBump,
-    fabricRoughness,
-    ribBump,
-    nasaTexture,
-    flagTexture,
-    leftChestBadgeTex,
-    rightChestBadgeTex,
-    contactShadowTex
-  };
+  scene.add(group);
+  return group;
 }
 
 /**
- * Crea una geometría orgánica torneada a partir de puntos [radio, alturaY] ordenados de abajo hacia arriba
+ * AstronautModel3D
+ * Carga el modelo de producción glTF (/models/astronauta.glb)
+ * con fallback procedural PBR automático para garantizar 100% de disponibilidad.
  */
-function createSculptedLathe(profilePairs, radialSegments = 36, curveDivisions = 28) {
-  const vecs = profilePairs.map(([r, y]) => new THREE.Vector2(Math.max(0.0001, r), y));
-  const curve = new THREE.SplineCurve(vecs);
-  const sampled = curve.getPoints(curveDivisions);
-  const geo = new THREE.LatheGeometry(sampled, radialSegments);
-  geo.computeVertexNormals();
-  return geo;
-}
-
-/**
- * Crea una costura en relieve (piping) siguiendo una curva 3D
- */
-function createSeamPiping(points3D, radius = 0.0038, tubularSegments = 28) {
-  const curve = new THREE.CatmullRomCurve3(points3D.map((p) => new THREE.Vector3(...p)));
-  return new THREE.TubeGeometry(curve, tubularSegments, radius, 8, false);
-}
-
 export default function AstronautModel3D({
-  telemetry = DEFAULT_TELEMETRY,
-  onSelectZone,
-  selectedZone: propSelectedZone,
-  embedded = false,
   theme = 'dark',
-  height = '680px'
+  embedded = true,
+  selectedZone = 'cardio',
+  onSelectZone,
+  height = '530px',
+  showHud = true,
 }) {
-  const isDark = theme === 'dark' || embedded;
   const mountRef = useRef(null);
-  const autoRotateRef = useRef(false);
-  const selectedZoneRef = useRef('cardio');
+  const controlsRef = useRef(null);
+  const resetCameraRef = useRef(null);
+  const updateHighlightsRef = useRef(null);
+  const onSelectZoneRef = useRef(onSelectZone);
+  useEffect(() => {
+    onSelectZoneRef.current = onSelectZone;
+  }, [onSelectZone]);
 
-  const ZONE_ALIASES = {
-    cardiovascular: 'cardio',
-    musculoskeletal: 'musculo',
-    immune: 'metabolic',
-    behavioral: 'neuro',
-    radiation: 'radiation',
-    cardio: 'cardio',
-    musculo: 'musculo',
-    metabolic: 'metabolic',
-    neuro: 'neuro'
-  };
-
-  const REVERSE_ALIASES = {
-    cardio: 'cardiovascular',
-    musculo: 'musculoskeletal',
-    metabolic: 'immune',
-    neuro: 'behavioral',
-    radiation: 'radiation'
-  };
-
-  const [selectedZone, setSelectedZone] = useState('cardio');
   const [hoveredZone, setHoveredZone] = useState(null);
-  const [autoRotate, setAutoRotate] = useState(false);
-  const [showHud, setShowHud] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadProgress, setLoadProgress] = useState(0);
 
-  useEffect(() => {
-    if (propSelectedZone) {
-      const canonical = ZONE_ALIASES[propSelectedZone] || propSelectedZone;
-      setSelectedZone(canonical);
-      selectedZoneRef.current = canonical;
-    }
-  }, [propSelectedZone]);
-
-  const activeData = telemetry[selectedZone] || DEFAULT_TELEMETRY[selectedZone];
-  const badgeStyle = STATUS_BADGE[activeData?.status || 'optimal'] || STATUS_BADGE.optimal;
-
-  const handleSelectZone = (zoneId) => {
-    const canonical = ZONE_ALIASES[zoneId] || zoneId;
-    setSelectedZone(canonical);
-    selectedZoneRef.current = canonical;
-    if (onSelectZone) {
-      const fullSystemId = REVERSE_ALIASES[canonical] || canonical;
-      const zoneData = telemetry[canonical] || { id: fullSystemId, value: canonical };
-      onSelectZone({ ...zoneData, id: fullSystemId, zoneCode: canonical });
-    }
-  };
-
-  useEffect(() => {
-    autoRotateRef.current = autoRotate;
-  }, [autoRotate]);
+  const activeZone = selectedZone || 'cardio';
+  const isDark = theme === 'dark' || embedded;
 
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
 
-    const width = container.clientWidth || 720;
-    const heightPx = container.clientHeight || 680;
+    let animationFrameId;
+    let isDisposed = false;
 
-    const isDark = theme === 'dark' || embedded;
-
-    // 1. Escena, cámara y renderizador PBR con Tone Mapping cinematográfico
+    // 1. Escena y Cámara
     const scene = new THREE.Scene();
-    if (!embedded && !isDark) {
-      scene.background = new THREE.Color(0xeaf2fb);
-      scene.fog = new THREE.Fog(0xeaf2fb, 7, 15);
-    }
+    scene.background = null;
 
-    const camera = new THREE.PerspectiveCamera(34, width / heightPx, 0.1, 50);
-    camera.position.set(0, embedded ? 1.02 : 1.14, embedded ? 4.95 : 4.1);
+    const width = container.clientWidth || 480;
+    const heightPx = container.clientHeight || 530;
 
+    const camera = new THREE.PerspectiveCamera(40, width / heightPx, 0.1, 50);
+    const initialCamPos = new THREE.Vector3(0, 1.25, 2.85);
+    const cameraTarget = new THREE.Vector3(0, 1.04, 0);
+    camera.position.copy(initialCamPos);
+
+    // 2. Renderer PBR con ToneMapping
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
     });
     renderer.setSize(width, heightPx);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    if (embedded || isDark) {
-      renderer.setClearColor(0x000000, 0);
-    }
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     container.appendChild(renderer.domElement);
 
-    // Entorno HDRI procedural para reflejos realistas en visor y hebillas metálicas
+    // 3. RoomEnvironment con PMREMGenerator
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    const envRT = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
-    scene.environment = envRT.texture;
-    scene.environmentIntensity = isDark ? 0.65 : 0.55;
+    pmremGenerator.compileEquirectangularShader();
+    const roomEnv = new RoomEnvironment();
+    const envTexture = pmremGenerator.fromScene(roomEnv, 0.04).texture;
+    scene.environment = envTexture;
 
-    // 2. Controles orbitales
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
-    controls.target.set(0, embedded ? 0.98 : 1.05, 0);
-    controls.minDistance = 1.45;
-    controls.maxDistance = 6.2;
-    controls.maxPolarAngle = Math.PI * 0.51;
-
-    // 3. Iluminación de estudio de 3 puntos
-    const hemiLight = new THREE.HemisphereLight(0xffffff, isDark ? 0x0f172a : 0xcbd5e1, 0.85);
-    hemiLight.position.set(0, 5, 0);
+    // 4. Iluminación de estudio
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x0f172a, 1.25);
+    hemiLight.position.set(0, 8, 0);
     scene.add(hemiLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
-    keyLight.position.set(2.6, 4.8, 3.8);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    keyLight.position.set(3, 5, 4);
     keyLight.castShadow = true;
-    keyLight.shadow.mapSize.width = 2048;
-    keyLight.shadow.mapSize.height = 2048;
-    keyLight.shadow.camera.near = 0.5;
-    keyLight.shadow.camera.far = 12;
-    keyLight.shadow.camera.left = -1.6;
-    keyLight.shadow.camera.right = 1.6;
-    keyLight.shadow.camera.top = 2.6;
-    keyLight.shadow.camera.bottom = -0.4;
-    keyLight.shadow.bias = -0.0003;
+    keyLight.shadow.mapSize.width = 1024;
+    keyLight.shadow.mapSize.height = 1024;
+    keyLight.shadow.bias = -0.0005;
     scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(isDark ? 0x38bdf8 : 0xdbeafe, isDark ? 0.55 : 0.65);
-    fillLight.position.set(-3.4, 2.2, 2.4);
+    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.9);
+    fillLight.position.set(-3.5, 3, -1);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(isDark ? 0x22d3ee : 0x93c5fd, isDark ? 1.2 : 0.75);
-    rimLight.position.set(0, 3.2, -3.6);
+    const rimLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+    rimLight.position.set(0, 4, -4);
     scene.add(rimLight);
 
-    // 4. Materiales físicos realistas (PBR)
-    const tex = createSuitPBRTextures();
+    // 5. OrbitControls fluido
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.target.copy(cameraTarget);
+    controls.minDistance = 1.3;
+    controls.maxDistance = 5.5;
+    controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    controls.autoRotate = autoRotate;
+    controls.autoRotateSpeed = 1.3;
+    controlsRef.current = controls;
 
-    // Tela térmica blanca (Ortho-Fabric) con relieve ripstop
-    const whiteSuitMat = new THREE.MeshStandardMaterial({
-      color: 0xf8fafc,
-      roughness: 0.62,
-      roughnessMap: tex.fabricRoughness,
-      metalness: 0.03,
-      bumpMap: tex.fabricBump,
-      bumpScale: 0.0035
-    });
+    resetCameraRef.current = () => {
+      camera.position.copy(initialCamPos);
+      controls.target.copy(cameraTarget);
+      controls.update();
+    };
 
-    // Placas rígidas blancas satinadas (casco, coraza HUT, espinilleras)
-    const whiteShellMat = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      roughness: 0.24,
-      metalness: 0.05,
-      clearcoat: 0.35,
-      clearcoatRoughness: 0.25
-    });
-
-    // Costuras y ribetes blancos ligeramente sombreados para definición de paneles
-    const seamPipingMat = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
-      roughness: 0.5,
-      metalness: 0.05
-    });
-
-    // Tejido azul marino profundo de articulaciones y arneses (#0b1d3a)
-    const navyJointMat = new THREE.MeshStandardMaterial({
-      color: 0x0b1d3a,
-      roughness: 0.54,
-      metalness: 0.1,
-      bumpMap: tex.ribBump,
-      bumpScale: 0.0045
-    });
-
-    // Arnés liso azul marino (cinturón, correas de hombro, marco de visor)
-    const navyStrapMat = new THREE.MeshStandardMaterial({
-      color: 0x0d2142,
-      roughness: 0.38,
-      metalness: 0.14
-    });
-
-    // Suela de caucho vulcanizado azul marino oscuro
-    const navySoleMat = new THREE.MeshStandardMaterial({
-      color: 0x071224,
-      roughness: 0.78,
-      metalness: 0.06
-    });
-
-    // Aluminio anodizado / acero pulido para hebillas y anillos de desconexión
-    const brushedMetalMat = new THREE.MeshStandardMaterial({
-      color: 0xdbeafe,
-      roughness: 0.22,
-      metalness: 0.92
-    });
-
-    // Cristal del visor oscuro con recubrimiento óptico y reflejo real
-    const visorGlassMat = new THREE.MeshPhysicalMaterial({
-      color: 0x020612,
-      emissive: 0x04132e,
-      emissiveIntensity: 0.25,
-      roughness: 0.04,
-      metalness: 0.12,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.03,
-      reflectivity: 1.0
-    });
-
+    // 6. Colecciones e interactividad
+    const activeZoneRef = { current: activeZone };
     const interactiveMeshes = [];
-    const astronaut = new THREE.Group();
-    scene.add(astronaut);
+    const meshesByZone = {
+      neuro: [],
+      cardio: [],
+      metabolic: [],
+      musculo: [],
+      radiation: [],
+    };
+    const platformRings = [];
 
-    const addPart = (geometry, material, zoneId, pos, rot = [0, 0, 0], scale = [1, 1, 1], parent = astronaut) => {
-      const mat = zoneId ? material.clone() : material;
-      const mesh = new THREE.Mesh(geometry, mat);
-      mesh.position.set(...pos);
-      mesh.rotation.set(...rot);
-      mesh.scale.set(...scale);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      if (zoneId) {
-        mesh.userData.zoneId = zoneId;
-        interactiveMeshes.push(mesh);
-      }
-      parent.add(mesh);
-      return mesh;
+    function applyZoneHighlights(zoneToHighlight, hoveredMesh) {
+      interactiveMeshes.forEach((mesh) => {
+        const mat = mesh.material;
+        if (!mat || !mat.emissive) return;
+
+        const isHovered = mesh === hoveredMesh;
+        const isInActiveZone =
+          zoneToHighlight === 'radiation'
+            ? mesh.name?.includes('plss')
+            : mesh.userData.zone === zoneToHighlight;
+
+        if (isHovered) {
+          mat.emissive.set(0x38bdf8);
+          mat.emissiveIntensity = 0.65;
+        } else if (isInActiveZone) {
+          mat.emissive.set(0x06b6d4);
+          mat.emissiveIntensity = 0.32;
+        } else {
+          mat.emissive.copy(mesh.userData.originalEmissive || new THREE.Color(0x000000));
+          mat.emissiveIntensity = mesh.userData.originalEmissiveIntensity ?? 1.0;
+        }
+      });
+    }
+
+    updateHighlightsRef.current = (zone, hovered) => {
+      activeZoneRef.current = zone;
+      applyZoneHighlights(zone, hovered);
     };
 
-    // =========================================================
-    // A. CASCO PRESURIZADO Y VISOR ÓPTICO (Zona: neuro)
-    // =========================================================
-    const headGroup = new THREE.Group();
-    headGroup.position.set(0, 1.925, 0.01);
-    astronaut.add(headGroup);
+    // 7. Carga de GLTFLoader con tiempo de espera configurable de 60 segundos y fallback
+    const baseUrl = (import.meta.env?.BASE_URL || '/').replace(/\/$/, '');
+    const modelUrl = `${baseUrl}/models/astronauta.glb`;
 
-    // Anillo metálico de desconexión cervical + sello azul marino
-    addPart(new THREE.CylinderGeometry(0.148, 0.168, 0.055, 40), navyStrapMat, 'neuro', [0, -0.162, 0], [0, 0, 0], [1.06, 1, 1.02], headGroup);
-    addPart(new THREE.TorusGeometry(0.156, 0.013, 16, 44), brushedMetalMat, 'neuro', [0, -0.136, 0], [Math.PI / 2, 0, 0], [1.06, 1.02, 1], headGroup);
-    addPart(new THREE.TorusGeometry(0.162, 0.014, 16, 44), whiteShellMat, 'neuro', [0, -0.122, 0], [Math.PI / 2, 0, 0], [1.06, 1.02, 1], headGroup);
+    let isGlbResolved = false;
+    const GLB_TIMEOUT_MS = 60000; // 60 segundos de espera máxima
 
-    // Domo esculpido del casco con perfil anatómico
-    const helmetGeo = createSculptedLathe([
-      [0.145, -0.12],
-      [0.188, -0.07],
-      [0.206, 0.00],
-      [0.202, 0.08],
-      [0.175, 0.155],
-      [0.115, 0.205],
-      [0.001, 0.222]
-    ], 44, 32);
-    addPart(helmetGeo, whiteShellMat, 'neuro', [0, 0.0, -0.005], [0, 0, 0], [1.0, 1.0, 1.04], headGroup);
-
-    // Junta perimetral azul marino del visor (esculpida)
-    addPart(
-      new THREE.TorusGeometry(0.146, 0.021, 20, 48),
-      navyStrapMat,
-      'neuro',
-      [0, 0.012, 0.142],
-      [-0.07, 0, 0],
-      [1.06, 0.93, 0.85],
-      headGroup
-    );
-    // Labio exterior blanco del marco del visor
-    addPart(
-      new THREE.TorusGeometry(0.162, 0.013, 16, 48),
-      whiteShellMat,
-      'neuro',
-      [0, 0.012, 0.136],
-      [-0.07, 0, 0],
-      [1.06, 0.94, 0.85],
-      headGroup
-    );
-
-    // Burbuja óptica oscura del visor
-    addPart(
-      new THREE.SphereGeometry(0.156, 36, 32, -Math.PI * 0.42, Math.PI * 0.84, 0.24, 1.15),
-      visorGlassMat,
-      'neuro',
-      [0, 0.012, 0.068],
-      [-0.07, Math.PI * 0.5, 0],
-      [0.95, 0.91, 1.04],
-      headGroup
-    );
-
-    // Cápsulas laterales de comunicaciones (auriculares del casco)
-    [-1, 1].forEach((side) => {
-      addPart(
-        new THREE.CylinderGeometry(0.056, 0.064, 0.036, 28),
-        whiteShellMat,
-        'neuro',
-        [side * 0.202, 0.008, -0.01],
-        [0, 0, Math.PI / 2],
-        [1, 1, 1],
-        headGroup
-      );
-      addPart(
-        new THREE.TorusGeometry(0.048, 0.008, 14, 28),
-        navyStrapMat,
-        'neuro',
-        [side * 0.219, 0.008, -0.01],
-        [0, Math.PI / 2, 0],
-        [1, 1, 1],
-        headGroup
-      );
-      // Micro-sensor metálico central
-      addPart(
-        new THREE.CylinderGeometry(0.016, 0.016, 0.012, 16),
-        brushedMetalMat,
-        'neuro',
-        [side * 0.222, 0.008, -0.01],
-        [0, 0, Math.PI / 2],
-        [1, 1, 1],
-        headGroup
-      );
-    });
-
-    // =========================================================
-    // B. MOCHILA DE SOPORTE VITAL PLSS (Zona: cardio)
-    // =========================================================
-    const backpackGroup = new THREE.Group();
-    backpackGroup.position.set(0, 1.56, -0.225);
-    astronaut.add(backpackGroup);
-
-    // Carcasa principal biselada
-    addPart(new THREE.BoxGeometry(0.37, 0.46, 0.15), whiteSuitMat, 'cardio', [0, 0, 0], [0, 0, 0], [1, 1, 1], backpackGroup);
-    // Panel dorsal en relieve
-    addPart(new THREE.BoxGeometry(0.28, 0.34, 0.025), whiteShellMat, 'cardio', [0, -0.01, -0.08], [0, 0, 0], [1, 1, 1], backpackGroup);
-    // Cúpula superior de oxígeno
-    addPart(new THREE.CapsuleGeometry(0.135, 0.16, 12, 24), whiteShellMat, 'cardio', [0, 0.225, 0.01], [0, 0, Math.PI / 2], [0.55, 1, 0.85], backpackGroup);
-    // Esquinas superiores azul marino y válvulas metálicas
-    [-1, 1].forEach((side) => {
-      addPart(new THREE.BoxGeometry(0.068, 0.075, 0.162), navyStrapMat, 'cardio', [side * 0.155, 0.20, 0], [0, 0, 0], [1, 1, 1], backpackGroup);
-      addPart(new THREE.CylinderGeometry(0.016, 0.016, 0.03, 16), brushedMetalMat, 'cardio', [side * 0.09, -0.24, -0.02], [0, 0, 0], [1, 1, 1], backpackGroup);
-    });
-    // Franja inferior azul marino
-    addPart(new THREE.BoxGeometry(0.35, 0.042, 0.158), navyStrapMat, 'cardio', [0, -0.215, 0], [0, 0, 0], [1, 1, 1], backpackGroup);
-
-    // =========================================================
-    // C. CORAZA PECTORAL (HUT), ARNESES Y LOGO NASA (Zona: cardio)
-    // =========================================================
-    const torsoGeo = createSculptedLathe([
-      [0.186, -0.17],
-      [0.194, -0.09],
-      [0.212, 0.00],
-      [0.226, 0.09],
-      [0.218, 0.15],
-      [0.162, 0.185]
-    ], 44, 30);
-    addPart(torsoGeo, whiteSuitMat, 'cardio', [0, 1.56, 0.01], [0, 0, 0], [1.18, 1.0, 0.78]);
-
-    // Costuras verticales frontales de la coraza (detalles fieles a la imagen)
-    [-1, 1].forEach((side) => {
-      const chestSeam = createSeamPiping([
-        [side * 0.135, 1.71, 0.135],
-        [side * 0.145, 1.61, 0.168],
-        [side * 0.132, 1.49, 0.156],
-        [side * 0.122, 1.39, 0.148]
-      ], 0.0038, 24);
-      addPart(chestSeam, seamPipingMat, null, [0, 0, 0]);
-    });
-
-    // Insignia circular NASA en el centro del pecho
-    const nasaDecalMat = new THREE.MeshStandardMaterial({
-      map: tex.nasaTexture,
-      transparent: true,
-      roughness: 0.42,
-      metalness: 0.04,
-      depthWrite: false
-    });
-    const chestLogo = new THREE.Mesh(new THREE.PlaneGeometry(0.168, 0.168), nasaDecalMat);
-    chestLogo.position.set(0, 1.57, 0.186);
-    chestLogo.rotation.x = -0.05;
-    chestLogo.userData.zoneId = 'cardio';
-    astronaut.add(chestLogo);
-
-    // Correas pectorales azul marino con hebillas metálicas de precisión
-    [-1, 1].forEach((side) => {
-      addPart(
-        new THREE.BoxGeometry(0.044, 0.215, 0.024),
-        navyStrapMat,
-        'cardio',
-        [side * 0.172, 1.622, 0.148],
-        [-0.14, side * 0.12, side * -0.05]
-      );
-      addPart(
-        new THREE.TorusGeometry(0.128, 0.022, 14, 28, Math.PI * 0.85),
-        navyStrapMat,
-        'cardio',
-        [side * 0.174, 1.695, -0.01],
-        [0.08, Math.PI / 2, 0]
-      );
-      // Hebilla metálica doble con pasador central
-      addPart(
-        new THREE.BoxGeometry(0.054, 0.024, 0.032),
-        brushedMetalMat,
-        'cardio',
-        [side * 0.172, 1.602, 0.156],
-        [-0.14, side * 0.12, side * -0.05]
-      );
-      addPart(
-        new THREE.BoxGeometry(0.056, 0.006, 0.035),
-        navyStrapMat,
-        'cardio',
-        [side * 0.172, 1.602, 0.157],
-        [-0.14, side * 0.12, side * -0.05]
-      );
-    });
-
-    // Parches rectangulares claviculares (azul izquierda, verde/teal derecha)
-    const leftBadge = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.05, 0.032),
-      new THREE.MeshStandardMaterial({ map: tex.leftChestBadgeTex, transparent: true, roughness: 0.45 })
-    );
-    leftBadge.position.set(-0.116, 1.676, 0.158);
-    leftBadge.rotation.set(-0.22, -0.18, 0);
-    astronaut.add(leftBadge);
-
-    const rightBadge = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.05, 0.032),
-      new THREE.MeshStandardMaterial({ map: tex.rightChestBadgeTex, transparent: true, roughness: 0.45 })
-    );
-    rightBadge.position.set(0.116, 1.676, 0.158);
-    rightBadge.rotation.set(-0.22, 0.18, 0);
-    astronaut.add(rightBadge);
-
-    // =========================================================
-    // D. CORSÉ ABDOMINAL Y ARNÉS PÉLVICO EN "V" (Zona: metabolic)
-    // =========================================================
-    const abdomenGeo = createSculptedLathe([
-      [0.184, -0.105],
-      [0.192, -0.03],
-      [0.188, 0.04],
-      [0.194, 0.105]
-    ], 40, 20);
-    addPart(abdomenGeo, whiteSuitMat, 'metabolic', [0, 1.31, 0.005], [0, 0, 0], [1.14, 1.0, 0.76]);
-
-    // Pliegues horizontales del corsé abdominal
-    [1.365, 1.31, 1.255].forEach((yPos) => {
-      addPart(new THREE.TorusGeometry(0.191, 0.007, 12, 36), seamPipingMat, 'metabolic', [0, yPos, 0.005], [Math.PI / 2, 0, 0], [1.14, 0.77, 1]);
-    });
-
-    // Cinturón azul marino articulado
-    addPart(new THREE.CylinderGeometry(0.192, 0.196, 0.048, 36), navyStrapMat, 'metabolic', [0, 1.195, 0.005], [0, 0, 0], [1.15, 1, 0.78]);
-
-    // Bloque pélvico blanco + arnés azul marino en "Y/V" alrededor de la ingle
-    addPart(new THREE.SphereGeometry(0.184, 28, 24), whiteSuitMat, 'metabolic', [0, 1.09, 0.005], [0, 0, 0], [1.08, 0.86, 0.76]);
-    [-1, 1].forEach((side) => {
-      addPart(
-        new THREE.TorusGeometry(0.136, 0.025, 16, 32, Math.PI * 0.96),
-        navyStrapMat,
-        'metabolic',
-        [side * 0.115, 1.095, 0.016],
-        [0.18, side * 0.65, side * -0.35],
-        [1, 1.16, 0.86]
-      );
-    });
-
-    // =========================================================
-    // E. BRAZOS ESCULPIDOS, PARCHES, CODOS Y GUANTES (Zona: musculo)
-    // =========================================================
-    const upperArmGeo = createSculptedLathe([
-      [0.064, -0.125],
-      [0.072, -0.05],
-      [0.080, 0.04],
-      [0.084, 0.11]
-    ], 32, 20);
-
-    const forearmGeo = createSculptedLathe([
-      [0.052, -0.11],
-      [0.060, -0.03],
-      [0.067, 0.05],
-      [0.064, 0.105]
-    ], 32, 20);
-
-    [-1, 1].forEach((side) => {
-      const armRoot = new THREE.Group();
-      armRoot.position.set(side * 0.285, 1.63, 0);
-      armRoot.rotation.set(0.04, 0, side * -0.17);
-      astronaut.add(armRoot);
-
-      // Rodamiento de hombro azul marino + hombrera anatómica blanca
-      addPart(new THREE.SphereGeometry(0.088, 26, 26), navyJointMat, 'musculo', [0, 0, 0], [0, 0, 0], [1, 1, 1], armRoot);
-      addPart(new THREE.SphereGeometry(0.095, 26, 20, 0, Math.PI * 2, 0, Math.PI * 0.58), whiteShellMat, 'musculo', [side * 0.012, 0.016, 0], [0, 0, side * -0.25], [1, 1.06, 1], armRoot);
-
-      // Brazo superior esculpido
-      addPart(upperArmGeo, whiteSuitMat, 'musculo', [side * 0.02, -0.145, 0], [0, 0, 0], [1, 1, 1], armRoot);
-
-      // Parches laterales: NASA en brazo derecho (side = -1), Bandera EE.UU. en brazo izquierdo (side = +1)
-      if (side === -1) {
-        const armNasa = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.088, 0.088),
-          new THREE.MeshStandardMaterial({ map: tex.nasaTexture, transparent: true, roughness: 0.45 })
-        );
-        armNasa.position.set(-0.098, -0.105, 0.01);
-        armNasa.rotation.set(0, -Math.PI / 2, 0);
-        armRoot.add(armNasa);
-      } else {
-        const armFlag = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.098, 0.064),
-          new THREE.MeshStandardMaterial({ map: tex.flagTexture, transparent: true, roughness: 0.45 })
-        );
-        armFlag.position.set(0.098, -0.105, 0.01);
-        armFlag.rotation.set(0, Math.PI / 2, 0);
-        armRoot.add(armFlag);
+    const glbTimeoutId = setTimeout(() => {
+      if (!isGlbResolved && !isDisposed) {
+        console.warn(`[AstronautModel3D] Tiempo límite de ${GLB_TIMEOUT_MS / 1000}s alcanzado para astronauta.glb. Activando fallback procedural...`);
+        isGlbResolved = true;
+        createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings);
+        setLoading(false);
+        applyZoneHighlights(activeZoneRef.current, null);
       }
+    }, GLB_TIMEOUT_MS);
 
-      // Codo articulado de fuelle azul marino (3 anillos)
-      addPart(new THREE.SphereGeometry(0.067, 24, 24), navyJointMat, 'musculo', [side * 0.02, -0.275, 0.005], [0, 0, 0], [1, 1.06, 1], armRoot);
-      [-0.255, -0.275, -0.295].forEach((ey) => {
-        addPart(new THREE.TorusGeometry(0.065, 0.009, 12, 28), navyJointMat, 'musculo', [side * 0.02, ey, 0.005], [Math.PI / 2, 0, 0], [1, 1, 1], armRoot);
-      });
+    const loader = new GLTFLoader();
+    loader.load(
+      modelUrl,
+      (gltf) => {
+        if (isDisposed || isGlbResolved) return;
+        isGlbResolved = true;
+        clearTimeout(glbTimeoutId);
 
-      // Antebrazo blanco con detalles técnicos azul marino
-      const forearmGroup = new THREE.Group();
-      forearmGroup.position.set(side * 0.02, -0.28, 0.005);
-      forearmGroup.rotation.set(-0.22, 0, side * 0.08);
-      armRoot.add(forearmGroup);
+        try {
+          const root = gltf.scene;
 
-      addPart(forearmGeo, whiteSuitMat, 'musculo', [0, -0.115, 0], [0, 0, 0], [1, 1, 1], forearmGroup);
+          // A. Filtrar luces y cámaras de Blender
+          const toRemove = [];
+          root.traverse((child) => {
+            if (
+              child.isLight ||
+              child.isCamera ||
+              (child.name && (child.name.startsWith('preview_') || child.name.toLowerCase().includes('light')))
+            ) {
+              toRemove.push(child);
+            }
+          });
+          toRemove.forEach((node) => {
+            if (node.parent) node.parent.remove(node);
+            if (typeof node.dispose === 'function') node.dispose();
+          });
 
-      // Pequeñas placas azules de telemetría en la cara externa del antebrazo (fieles a la imagen)
-      [-0.08, -0.13].forEach((fy) => {
-        addPart(
-          new THREE.BoxGeometry(0.012, 0.026, 0.022),
-          navyStrapMat,
-          'musculo',
-          [side * 0.061, fy, 0.01],
-          [0, 0, side * -0.06],
-          [1, 1, 1],
-          forearmGroup
-        );
-      });
+          // B. Escalado y centrado
+          const initialBox = new THREE.Box3().setFromObject(root);
+          const initialSize = new THREE.Vector3();
+          initialBox.getSize(initialSize);
 
-      // Anillo metálico y sello azul marino de muñeca
-      addPart(new THREE.CylinderGeometry(0.056, 0.056, 0.022, 26), navyStrapMat, 'musculo', [0, -0.23, 0], [0, 0, 0], [1, 1, 1], forearmGroup);
-      addPart(new THREE.TorusGeometry(0.055, 0.005, 10, 28), brushedMetalMat, 'musculo', [0, -0.22, 0], [Math.PI / 2, 0, 0], [1, 1, 1], forearmGroup);
+          const TARGET_HEIGHT = 2.08;
+          const scaleFactor = TARGET_HEIGHT / (initialSize.y || 1);
+          root.scale.setScalar(scaleFactor);
 
-      // GUANTE EVA ARTICULADO (Dorso blanco + palma y 5 dedos azul marino)
-      const handGroup = new THREE.Group();
-      handGroup.position.set(0, -0.245, 0.005);
-      forearmGroup.add(handGroup);
+          const scaledBox = new THREE.Box3().setFromObject(root);
+          const scaledCenter = new THREE.Vector3();
+          scaledBox.getCenter(scaledCenter);
 
-      // Dorso protector blanco y palma azul marino
-      addPart(new THREE.BoxGeometry(0.036, 0.078, 0.068), whiteShellMat, 'musculo', [side * 0.014, -0.038, 0], [0, 0, 0], [1, 1, 1], handGroup);
-      addPart(new THREE.BoxGeometry(0.034, 0.08, 0.066), navyJointMat, 'musculo', [side * -0.008, -0.04, 0.002], [0, 0, 0], [1, 1, 1], handGroup);
+          root.position.x = -scaledCenter.x;
+          root.position.z = -scaledCenter.z;
+          root.position.y = -scaledBox.min.y;
 
-      // 4 dedos articulados con curvatura natural
-      const fingerZ = [0.024, 0.008, -0.008, -0.024];
-      const fingerLen = [0.042, 0.048, 0.045, 0.036];
-      fingerZ.forEach((zOff, idx) => {
-        const fGroup = new THREE.Group();
-        fGroup.position.set(side * -0.004, -0.078, zOff);
-        fGroup.rotation.set(0, 0, side * 0.24);
-        handGroup.add(fGroup);
+          // C. Mallas interactivas
+          root.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
 
-        addPart(new THREE.CapsuleGeometry(0.0075, fingerLen[idx] * 0.55, 6, 10), navyJointMat, 'musculo', [0, -fingerLen[idx] * 0.3, 0], [0, 0, 0], [1, 1, 1], fGroup);
-        addPart(new THREE.CapsuleGeometry(0.0068, fingerLen[idx] * 0.45, 6, 10), navyJointMat, 'musculo', [side * -0.006, -fingerLen[idx] * 0.75, 0], [0, 0, side * 0.32], [1, 1, 1], fGroup);
-      });
+              if (child.name.startsWith('platform_')) {
+                child.raycast = () => {};
+                if (child.name.startsWith('platform_ring_')) {
+                  platformRings.push(child);
+                  if (child.material && child.material.emissive) {
+                    child.material.emissiveIntensity = 2.2;
+                  }
+                }
+                return;
+              }
 
-      // Pulgar oponible azul marino
-      addPart(
-        new THREE.CapsuleGeometry(0.009, 0.034, 6, 12),
-        navyJointMat,
-        'musculo',
-        [side * -0.016, -0.048, 0.038],
-        [0.45, 0, side * -0.28],
-        [1, 1, 1],
-        handGroup
-      );
-    });
+              if (child.material) {
+                child.material = child.material.clone();
+                child.userData.originalEmissive = child.material.emissive
+                  ? child.material.emissive.clone()
+                  : new THREE.Color(0x000000);
+                child.userData.originalEmissiveIntensity = child.material.emissiveIntensity ?? 1.0;
+              }
 
-    // =========================================================
-    // F. PIERNAS ESCULPIDAS, RODILLERAS, BOLSILLO Y BOTAS (Zona: musculo)
-    // =========================================================
-    const thighGeo = createSculptedLathe([
-      [0.090, -0.18],
-      [0.096, -0.08],
-      [0.104, 0.04],
-      [0.108, 0.16]
-    ], 36, 22);
+              let zone = null;
+              if (child.name.startsWith('neuro_')) zone = 'neuro';
+              else if (child.name.startsWith('cardio_')) zone = 'cardio';
+              else if (child.name.startsWith('metabolic_')) zone = 'metabolic';
+              else if (child.name.startsWith('musculo_')) zone = 'musculo';
 
-    const shinGeo = createSculptedLathe([
-      [0.080, -0.19],
-      [0.085, -0.08],
-      [0.093, 0.06],
-      [0.091, 0.18]
-    ], 36, 22);
+              if (zone) {
+                child.userData.zone = zone;
+                child.userData.meshName = child.name;
+                interactiveMeshes.push(child);
+                meshesByZone[zone].push(child);
 
-    [-1, 1].forEach((side) => {
-      const legRoot = new THREE.Group();
-      legRoot.position.set(side * 0.132, 1.05, 0);
-      legRoot.rotation.set(0, side * 0.08, side * -0.035);
-      astronaut.add(legRoot);
+                if (child.name.includes('plss')) {
+                  meshesByZone.radiation.push(child);
+                }
+              }
+            }
+          });
 
-      // Muslo esculpido + costura frontal
-      addPart(thighGeo, whiteSuitMat, 'musculo', [0, -0.19, 0], [0, 0, 0], [1.02, 1, 1.05], legRoot);
-      const thighSeam = createSeamPiping([
-        [0, -0.04, 0.106],
-        [0, -0.19, 0.104],
-        [0, -0.34, 0.096]
-      ], 0.0036, 18);
-      addPart(thighSeam, seamPipingMat, null, [0, 0, 0], [0, 0, 0], [1, 1, 1], legRoot);
-
-      // Bolsillo utilitario en el muslo izquierdo (side = +1) con solapa y costura
-      if (side === 1) {
-        addPart(new THREE.BoxGeometry(0.034, 0.135, 0.098), whiteSuitMat, 'musculo', [0.105, -0.195, 0.005], [0, 0, -0.04], [1, 1, 1], legRoot);
-        addPart(new THREE.BoxGeometry(0.038, 0.034, 0.102), whiteShellMat, 'musculo', [0.108, -0.138, 0.005], [0, 0, -0.04], [1, 1, 1], legRoot);
+          scene.add(root);
+          setLoading(false);
+          applyZoneHighlights(activeZoneRef.current, null);
+        } catch (procErr) {
+          console.warn('[AstronautModel3D] Fallback a modelo procedural por error en glTF:', procErr);
+          createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings);
+          setLoading(false);
+          applyZoneHighlights(activeZoneRef.current, null);
+        }
+      },
+      (xhr) => {
+        if (xhr.total > 0) {
+          const pct = Math.round((xhr.loaded / xhr.total) * 100);
+          setLoadProgress(pct);
+        }
+      },
+      (loadErr) => {
+        if (isDisposed || isGlbResolved) return;
+        isGlbResolved = true;
+        clearTimeout(glbTimeoutId);
+        console.warn('[AstronautModel3D] Activando astronauta procedural PBR tras error de carga:', loadErr);
+        createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings);
+        setLoading(false);
+        applyZoneHighlights(activeZoneRef.current, null);
       }
-
-      // Rodillera articulada azul marino con 4 pliegues anatómicos
-      addPart(new THREE.CylinderGeometry(0.094, 0.092, 0.128, 28), navyJointMat, 'musculo', [0, -0.41, 0.008], [0, 0, 0], [1.02, 1, 1.08], legRoot);
-      [-0.365, -0.395, -0.425, -0.455].forEach((ky) => {
-        addPart(new THREE.TorusGeometry(0.088, 0.010, 12, 28), navyJointMat, 'musculo', [0, ky, 0.018], [Math.PI / 2, 0, 0], [1.02, 1.06, 1], legRoot);
-      });
-
-      // Pantorrilla + espinillera rígida con costuras laterales
-      addPart(shinGeo, whiteSuitMat, 'musculo', [0, -0.65, -0.004], [0, 0, 0], [1.02, 1, 1.06], legRoot);
-      addPart(new THREE.BoxGeometry(0.086, 0.30, 0.034), whiteShellMat, 'musculo', [0, -0.64, 0.074], [0.03, 0, 0], [1, 1, 1], legRoot);
-
-      // BOTA LUNAR / EVA DE ALTA TRACCIÓN (Base apoyada exactamente en y = 0)
-      const bootGroup = new THREE.Group();
-      bootGroup.position.set(0, -0.86, 0.025);
-      bootGroup.rotation.set(0, 0, side * 0.035);
-      legRoot.add(bootGroup);
-
-      // Collarín acolchado del tobillo + caña blanca
-      addPart(new THREE.TorusGeometry(0.084, 0.015, 12, 28), whiteShellMat, 'musculo', [0, -0.005, 0.005], [Math.PI / 2, 0, 0], [0.95, 1.15, 1], bootGroup);
-      addPart(new THREE.BoxGeometry(0.146, 0.11, 0.21), whiteSuitMat, 'musculo', [0, -0.06, 0.02], [0, 0, 0], [1, 1, 1], bootGroup);
-
-      // Empeine esculpido blanco + correa de ajuste sobre el empeine
-      addPart(new THREE.SphereGeometry(0.079, 24, 18), whiteShellMat, 'musculo', [0, -0.09, 0.085], [0, 0, 0], [0.95, 0.65, 1.36], bootGroup);
-      addPart(new THREE.BoxGeometry(0.152, 0.022, 0.045), whiteSuitMat, 'musculo', [0, -0.075, 0.072], [0.22, 0, 0], [1, 1, 1], bootGroup);
-
-      // Puntera reforzada azul marino
-      addPart(new THREE.SphereGeometry(0.077, 24, 18), navyStrapMat, 'musculo', [0, -0.105, 0.136], [0, 0, 0], [0.96, 0.58, 0.92], bootGroup);
-      // Talonera rígida azul marino
-      addPart(new THREE.BoxGeometry(0.148, 0.066, 0.076), navyStrapMat, 'musculo', [0, -0.105, -0.055], [0, 0, 0], [1, 1, 1], bootGroup);
-
-      // Entresuela + suela gruesa dentada azul marino oscuro
-      addPart(new THREE.BoxGeometry(0.158, 0.032, 0.295), navySoleMat, 'musculo', [0, -0.138, 0.045], [0, 0, 0], [1, 1, 1], bootGroup);
-      for (let zLug = -0.08; zLug <= 0.17; zLug += 0.042) {
-        addPart(new THREE.BoxGeometry(0.16, 0.014, 0.024), navySoleMat, 'musculo', [0, -0.158, zLug], [0, 0, 0], [1, 1, 1], bootGroup);
-      }
-    });
-
-    // =========================================================
-    // G. PLATAFORMA CIRCULAR, SOMBRA DE CONTACTO Y ANILLOS AZULES
-    // =========================================================
-    const platformGroup = new THREE.Group();
-    platformGroup.position.set(0, 0.002, 0);
-    scene.add(platformGroup);
-
-    const discBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.16, 1.20, 0.024, 72),
-      new THREE.MeshPhysicalMaterial({
-        color: isDark ? 0x0f172a : 0xf8fafc,
-        roughness: isDark ? 0.38 : 0.22,
-        metalness: isDark ? 0.82 : 0.08,
-        clearcoat: 0.4
-      })
     );
-    discBase.receiveShadow = true;
-    platformGroup.add(discBase);
 
-    // Sombra de contacto realista debajo de ambas botas
-    const contactShadowPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.95, 0.72),
-      new THREE.MeshBasicMaterial({
-        map: tex.contactShadowTex,
-        transparent: true,
-        depthWrite: false
-      })
-    );
-    contactShadowPlane.rotation.x = -Math.PI / 2;
-    contactShadowPlane.position.set(0, 0.013, 0.03);
-    platformGroup.add(contactShadowPlane);
-
-    const ringSpecs = isDark
-      ? [
-          { inner: 0.68, outer: 0.72, color: 0x22d3ee, opacity: 0.95 },
-          { inner: 0.84, outer: 0.90, color: 0x06b6d4, opacity: 0.85 },
-          { inner: 1.02, outer: 1.06, color: 0x38bdf8, opacity: 0.95 }
-        ]
-      : [
-          { inner: 0.68, outer: 0.72, color: 0x60a5fa, opacity: 0.85 },
-          { inner: 0.84, outer: 0.90, color: 0x3b82f6, opacity: 0.75 },
-          { inner: 1.02, outer: 1.06, color: 0x93c5fd, opacity: 0.92 }
-        ];
-    ringSpecs.forEach(({ inner, outer, color, opacity }) => {
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(inner, outer, 72),
-        new THREE.MeshBasicMaterial({
-          color,
-          side: THREE.DoubleSide,
-          transparent: true,
-          opacity
-        })
-      );
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.y = 0.014;
-      platformGroup.add(ring);
-    });
-
-    // Arco luminoso posterior (identidad visual de la referencia)
-    const backHalo = new THREE.Mesh(
-      new THREE.RingGeometry(1.16, 1.21, 80, 1, -0.25, Math.PI + 0.5),
-      new THREE.MeshBasicMaterial({
-        color: isDark ? 0x22d3ee : 0x93c5fd,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: isDark ? 0.65 : 0.45
-      })
-    );
-    backHalo.position.set(0, 1.08, -0.45);
-    scene.add(backHalo);
-
-    // =========================================================
-    // H. INTERACCIÓN (RAYCASTING), RESIZE Y BUCLE DE RENDER
-    // =========================================================
+    // 8. Raycaster para interacción
     const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-    let hovered = null;
-
-    const detectZone = (e) => {
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(interactiveMeshes, false);
-      return hits.length > 0 ? hits[0].object.userData.zoneId : null;
-    };
+    const mouse = new THREE.Vector2(-999, -999);
+    let currentHoveredMesh = null;
 
     const onPointerMove = (e) => {
-      const z = detectZone(e);
-      if (z !== hovered) {
-        hovered = z;
-        setHoveredZone(z);
-        renderer.domElement.style.cursor = z ? 'pointer' : 'grab';
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(interactiveMeshes, false);
+
+      if (intersects.length > 0) {
+        const hit = intersects[0].object;
+        if (hit !== currentHoveredMesh) {
+          currentHoveredMesh = hit;
+          renderer.domElement.style.cursor = 'pointer';
+          const zone = hit.userData.zone;
+          setHoveredZone(zone);
+          applyZoneHighlights(activeZoneRef.current, hit);
+        }
+      } else {
+        if (currentHoveredMesh) {
+          currentHoveredMesh = null;
+          renderer.domElement.style.cursor = 'default';
+          setHoveredZone(null);
+          applyZoneHighlights(activeZoneRef.current, null);
+        }
       }
     };
 
     const onClick = (e) => {
-      const z = detectZone(e);
-      if (z) handleSelectZone(z);
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(interactiveMeshes, false);
+
+      if (intersects.length > 0) {
+        const hit = intersects[0].object;
+        const zone = hit.userData.zone;
+        if (zone) {
+          const meta = ZONE_SYSTEM_MAP[zone];
+          if (onSelectZoneRef.current && meta) {
+            onSelectZoneRef.current({
+              id: meta.systemId,
+              zoneCode: meta.zoneCode,
+              name: meta.name,
+            });
+          }
+        }
+      }
     };
 
-    renderer.domElement.addEventListener('pointermove', onPointerMove);
-    renderer.domElement.addEventListener('click', onClick);
+    const dom = renderer.domElement;
+    dom.addEventListener('pointermove', onPointerMove);
+    dom.addEventListener('click', onClick);
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width: w, height: h } = entry.contentRect;
-        if (w > 0 && h > 0) {
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
-          renderer.setSize(w, h);
-        }
-      }
-    });
-    resizeObserver.observe(container);
-
-    let frameId;
-    const clock = new THREE.Clock();
-
+    // 9. Render loop usando performance.now()
+    const startTime = performance.now();
     const animate = () => {
-      frameId = requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+      if (isDisposed) return;
+      animationFrameId = requestAnimationFrame(animate);
 
-      if (autoRotateRef.current) {
-        astronaut.rotation.y += 0.005;
+      const elapsed = (performance.now() - startTime) * 0.001;
+
+      if (platformRings.length > 0) {
+        const pulse = 1.8 + Math.sin(elapsed * 2.5) * 0.45;
+        platformRings.forEach((ring) => {
+          if (ring.material) ring.material.emissiveIntensity = pulse;
+        });
       }
-
-      // Micro-respiración natural en casco y mochila
-      headGroup.position.y = 1.925 + Math.sin(t * 2.0) * 0.0025;
-      backpackGroup.position.y = 1.56 + Math.sin(t * 2.0) * 0.002;
-
-      // Iluminación sutil al seleccionar o pasar el cursor por encima de una zona
-      const activeHighlightZone = hovered || selectedZoneRef.current;
-      interactiveMeshes.forEach((mesh) => {
-        if (!mesh.material || !mesh.material.emissive) return;
-        const isTarget = activeHighlightZone && mesh.userData.zoneId === activeHighlightZone;
-        if (isTarget) {
-          mesh.material.emissive.setHex(0x38bdf8);
-          mesh.material.emissiveIntensity = hovered && mesh.userData.zoneId === hovered ? 0.35 : 0.22;
-        } else if (mesh.userData.zoneId !== 'neuro') {
-          mesh.material.emissive.setHex(0x000000);
-          mesh.material.emissiveIntensity = 0;
-        }
-      });
 
       controls.update();
       renderer.render(scene, camera);
     };
-
     animate();
 
+    // 10. Resize
+    const handleResize = () => {
+      if (!container) return;
+      const w = container.clientWidth || 480;
+      const h = container.clientHeight || 530;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener('resize', handleResize);
+
     return () => {
-      cancelAnimationFrame(frameId);
-      resizeObserver.disconnect();
-      renderer.domElement.removeEventListener('pointermove', onPointerMove);
-      renderer.domElement.removeEventListener('click', onClick);
-      controls.dispose();
-      envRT.dispose();
+      isDisposed = true;
+      clearTimeout(glbTimeoutId);
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+      dom.removeEventListener('pointermove', onPointerMove);
+      dom.removeEventListener('click', onClick);
+
+      interactiveMeshes.forEach((mesh) => {
+        if (mesh.geometry) mesh.geometry.dispose();
+        if (mesh.material) {
+          if (Array.isArray(mesh.material)) mesh.material.forEach((m) => m.dispose());
+          else mesh.material.dispose();
+        }
+      });
+
       pmremGenerator.dispose();
-      Object.values(tex).forEach((texture) => texture.dispose());
+      roomEnv.dispose?.();
+      if (envTexture) envTexture.dispose();
       renderer.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
+      if (renderer.domElement.parentNode) {
+        renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (controlsRef.current) {
+      controlsRef.current.autoRotate = autoRotate;
+    }
+  }, [autoRotate]);
+
+  useEffect(() => {
+    if (updateHighlightsRef.current) {
+      updateHighlightsRef.current(activeZone, null);
+    }
+  }, [activeZone]);
+
+  const currentZoneData = ZONE_SYSTEM_MAP[activeZone] || ZONE_SYSTEM_MAP.cardio;
+  const currentBadge = STATUS_BADGE[currentZoneData.status] || STATUS_BADGE.optimal;
 
   return (
-    <div style={{
-      ...styles.wrapper,
-      height: embedded ? (height || '480px') : '680px',
-      backgroundColor: embedded ? 'transparent' : '#eaf2fb',
-      border: embedded ? 'none' : '1px solid #cbd5e1',
-      boxShadow: embedded ? 'none' : '0 14px 36px rgba(15, 23, 42, 0.08)',
-      borderRadius: embedded ? '0' : '18px'
-    }}>
-      <div ref={mountRef} style={styles.canvas} />
+    <div
+      className={`astronaut-3d-wrapper ${isDark ? 'is-dark' : 'is-light'}`}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height,
+        minHeight: '440px',
+        overflow: 'hidden',
+        borderRadius: '16px',
+        userSelect: 'none',
+      }}
+    >
+      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
 
-      {/* Embedded 360 Auto-Rotate Pill */}
-      {embedded && (
-        <div style={{
+      {/* Loading overlay */}
+      {loading && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(11, 18, 32, 0.75)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 10,
+            color: '#38bdf8',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+          }}
+        >
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              border: '3px solid rgba(56, 189, 248, 0.2)',
+              borderTopColor: '#38bdf8',
+              borderRadius: '50%',
+              animation: 'spin 0.9s linear infinite',
+              marginBottom: '14px',
+            }}
+          />
+          <span style={{ fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.04em' }}>
+            Iniciando Telemetría EVA 3D... {loadProgress > 0 ? `${loadProgress}%` : ''}
+          </span>
+        </div>
+      )}
+
+      {/* Controles flotantes */}
+      <div
+        style={{
           position: 'absolute',
-          bottom: '12px',
+          bottom: '16px',
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
-          alignItems: 'center',
           gap: '8px',
-          zIndex: 10
-        }}>
-          <button
-            type="button"
-            onClick={() => setAutoRotate((v) => !v)}
+          background: isDark ? 'rgba(17, 26, 46, 0.88)' : 'rgba(255, 255, 255, 0.88)',
+          backdropFilter: 'blur(12px)',
+          border: isDark ? '1px solid rgba(56, 189, 248, 0.2)' : '1px solid rgba(14, 165, 233, 0.25)',
+          borderRadius: '9999px',
+          padding: '4px 10px',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+          zIndex: 5,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setAutoRotate((prev) => !prev)}
+          style={{
+            background: autoRotate ? 'rgba(6, 182, 212, 0.18)' : 'transparent',
+            color: autoRotate ? '#38bdf8' : (isDark ? '#94a3b8' : '#475569'),
+            border: 'none',
+            borderRadius: '9999px',
+            padding: '6px 12px',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <span>{autoRotate ? '⏸ Detener Giro' : '🔄 Auto-Giro 360°'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => resetCameraRef.current?.()}
+          style={{
+            background: 'transparent',
+            color: isDark ? '#94a3b8' : '#475569',
+            border: 'none',
+            borderRadius: '9999px',
+            padding: '6px 12px',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          ⌖ Recentrar
+        </button>
+      </div>
+
+      {/* HUD de Telemetría */}
+      {showHud && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '14px',
+            left: '14px',
+            right: '14px',
+            pointerEvents: 'none',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            zIndex: 4,
+          }}
+        >
+          <div
             style={{
-              backgroundColor: isDark ? 'rgba(17, 26, 46, 0.88)' : 'rgba(255, 255, 255, 0.94)',
-              color: isDark ? '#22d3ee' : '#0E1B3E',
-              border: isDark ? '1px solid rgba(34, 211, 238, 0.35)' : '1px solid rgba(203, 213, 225, 0.9)',
-              borderRadius: '9999px',
-              padding: '6px 16px',
-              fontSize: '11px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: isDark ? '0 4px 16px rgba(0, 0, 0, 0.4)' : '0 2px 10px rgba(15, 23, 42, 0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.15s ease'
+              pointerEvents: 'auto',
+              background: isDark ? 'rgba(17, 26, 46, 0.85)' : 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(12px)',
+              border: isDark ? '1px solid rgba(56, 189, 248, 0.22)' : '1px solid rgba(14, 165, 233, 0.25)',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              maxWidth: '310px',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
             }}
           >
-            <span>{autoRotate ? '⏸ Detener Giro 360°' : '🔄 Auto-Giro 360°'}</span>
-          </button>
-        </div>
-      )}
-
-      {/* Controles superiores (solo en modo standalone) */}
-      {!embedded && (
-        <div style={styles.topBar}>
-          <div>
-            <span style={styles.tag}>RENDER PBR ALTA DEFINICIÓN · EVA SUIT</span>
-            <h3 style={styles.title}>Gemelo Digital del Astronauta</h3>
-          </div>
-          <div style={styles.btnGroup}>
-            <button
-              type="button"
-              onClick={() => setAutoRotate((v) => !v)}
-              style={styles.btn}
-            >
-              {autoRotate ? 'Detener giro 360°' : 'Girar 360°'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowHud((v) => !v)}
-              style={styles.btn}
-            >
-              {showHud ? 'Ocultar HUD' : 'Mostrar HUD'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Panel de telemetría acoplado (solo en modo standalone) */}
-      {!embedded && showHud && activeData && (
-        <>
-          <div style={styles.zoneList}>
-            {Object.values(telemetry).map((item) => {
-              const active = item.id === selectedZone;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleSelectZone(item.id)}
-                  style={{
-                    ...styles.zoneBtn,
-                    borderColor: active ? '#0284c7' : 'rgba(148, 163, 184, 0.35)',
-                    backgroundColor: active ? 'rgba(255, 255, 255, 0.96)' : 'rgba(255, 255, 255, 0.80)'
-                  }}
-                >
-                  <span
-                    style={{
-                      ...styles.dot,
-                      backgroundColor: STATUS_BADGE[item.status || 'optimal'].color
-                    }}
-                  />
-                  {item.name.split(' ')[0]}
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={styles.card}>
-            <div style={styles.cardTop}>
-              <div>
-                <div style={styles.region}>{activeData.region}</div>
-                <div style={styles.cardTitle}>{activeData.name}</div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#38bdf8', fontWeight: 700 }}>
+                {hoveredZone ? `Inspeccionando: ${hoveredZone.toUpperCase()}` : 'Zona Activa'}
+              </span>
               <span
                 style={{
-                  ...styles.statusPill,
-                  color: badgeStyle.color,
-                  backgroundColor: badgeStyle.bg
+                  fontSize: '0.68rem',
+                  fontWeight: 600,
+                  color: currentBadge.color,
+                  background: currentBadge.bg,
+                  padding: '2px 7px',
+                  borderRadius: '9999px',
+                  border: `1px solid ${currentBadge.color}33`,
                 }}
               >
-                {badgeStyle.label}
+                ● {currentBadge.label}
               </span>
             </div>
-            <div style={styles.metricLine}>
-              <span>{activeData.metric}</span>
-              <strong style={{ color: '#0f172a' }}>{activeData.value}</strong>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isDark ? '#f1f5f9' : '#0f172a', lineHeight: 1.25 }}>
+              {currentZoneData.name}
             </div>
-            <p style={styles.detail}>{activeData.detail}</p>
+            <div style={{ fontSize: '0.72rem', color: isDark ? '#94a3b8' : '#64748b', marginTop: '2px' }}>
+              {currentZoneData.metric}: <strong style={{ color: '#38bdf8' }}>{currentZoneData.value}</strong>
+            </div>
           </div>
-        </>
-      )}
-
-      {hoveredZone && (
-        <div style={styles.tooltip}>
-          Inspeccionar: {telemetry[hoveredZone]?.name}
         </div>
       )}
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
-
-const styles = {
-  wrapper: {
-    position: 'relative',
-    width: '100%',
-    height: '680px',
-    borderRadius: '18px',
-    overflow: 'hidden',
-    backgroundColor: '#eaf2fb',
-    border: '1px solid #cbd5e1',
-    boxShadow: '0 14px 36px rgba(15, 23, 42, 0.08)',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-    color: '#0f172a'
-  },
-  canvas: {
-    width: '100%',
-    height: '100%'
-  },
-  topBar: {
-    position: 'absolute',
-    top: '16px',
-    left: '16px',
-    right: '16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    pointerEvents: 'none',
-    gap: '12px',
-    flexWrap: 'wrap'
-  },
-  tag: {
-    fontSize: '11px',
-    fontWeight: 700,
-    letterSpacing: '0.07em',
-    color: '#0369a1',
-    backgroundColor: 'rgba(224, 242, 254, 0.92)',
-    padding: '4px 9px',
-    borderRadius: '6px',
-    border: '1px solid #bae6fd'
-  },
-  title: {
-    margin: '6px 0 0 0',
-    fontSize: '18px',
-    fontWeight: 700,
-    color: '#0f172a'
-  },
-  btnGroup: {
-    display: 'flex',
-    gap: '8px',
-    pointerEvents: 'auto'
-  },
-  btn: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    color: '#1e293b',
-    border: '1px solid #cbd5e1',
-    borderRadius: '8px',
-    padding: '7px 12px',
-    fontSize: '12px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    boxShadow: '0 2px 6px rgba(15, 23, 42, 0.05)'
-  },
-  zoneList: {
-    position: 'absolute',
-    top: '86px',
-    left: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '7px'
-  },
-  zoneBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '7px 12px',
-    borderRadius: '10px',
-    border: '1px solid',
-    color: '#0f172a',
-    fontSize: '12px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    backdropFilter: 'blur(8px)'
-  },
-  dot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%'
-  },
-  card: {
-    position: 'absolute',
-    bottom: '16px',
-    right: '16px',
-    width: '315px',
-    maxWidth: 'calc(100% - 32px)',
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
-    backdropFilter: 'blur(12px)',
-    borderRadius: '14px',
-    border: '1px solid #cbd5e1',
-    padding: '14px 16px',
-    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)'
-  },
-  cardTop: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: '8px'
-  },
-  region: {
-    fontSize: '10px',
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: '#64748b'
-  },
-  cardTitle: {
-    fontSize: '14px',
-    fontWeight: 700,
-    color: '#0f172a',
-    marginTop: '2px'
-  },
-  statusPill: {
-    fontSize: '11px',
-    fontWeight: 700,
-    padding: '3px 9px',
-    borderRadius: '999px'
-  },
-  metricLine: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: '10px',
-    paddingTop: '8px',
-    borderTop: '1px solid #e2e8f0',
-    fontSize: '12px',
-    color: '#475569'
-  },
-  detail: {
-    margin: '8px 0 0 0',
-    fontSize: '12px',
-    lineHeight: 1.45,
-    color: '#475569'
-  },
-  tooltip: {
-    position: 'absolute',
-    bottom: '16px',
-    left: '16px',
-    backgroundColor: 'rgba(15, 23, 42, 0.90)',
-    color: '#f8fafc',
-    fontSize: '12px',
-    padding: '6px 12px',
-    borderRadius: '8px'
-  }
-};

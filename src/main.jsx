@@ -3,11 +3,12 @@ import { createRoot } from 'react-dom/client'
 import './i18n/index.js'
 import './index.css'
 import App from './App.jsx'
+import { ensureDemoCrew } from './data/demoCrew.js'
 import { seedIfEmpty } from './db/db.js'
 import { startAutoSync } from './sync/queue.js'
 
-// Load the demo/catalog data on first run. Never block rendering on it.
-seedIfEmpty().catch((error) => {
+// Load the demo/catalog data and initial crew readings on first run. Never block rendering on it.
+seedIfEmpty().then(() => ensureDemoCrew()).catch((error) => {
   console.error('[db] Seeding failed', error)
 })
 

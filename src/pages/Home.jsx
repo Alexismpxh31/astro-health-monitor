@@ -98,7 +98,7 @@ const NASA_HRP_SYSTEMS = {
 }
 
 export default function Home() {
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const lang = i18n.language?.startsWith('es') ? 'es' : 'en'
   const isEs = lang === 'es'
   const session = useSession()

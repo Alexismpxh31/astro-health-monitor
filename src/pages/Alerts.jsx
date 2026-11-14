@@ -14,7 +14,7 @@ import './Alerts.css'
 const LEGACY_DEMO_USER_ID = '00000000-0000-4000-8000-000000000901'
 
 export default function Alerts() {
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const lang = i18n.resolvedLanguage || 'es'
   const isEs = lang.startsWith('es')
   const session = useSession()

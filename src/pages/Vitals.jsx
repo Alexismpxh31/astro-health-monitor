@@ -1,16 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
-  Activity,
   Heart,
   Wind,
   Thermometer,
   Radio,
   Gauge,
   Play,
-  RotateCw,
+  Square,
 } from 'lucide-react'
 import {
   LineChart,
@@ -42,7 +40,7 @@ const LIVE_INDICATORS_CONFIG = [
 ]
 
 export default function Vitals() {
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const lang = i18n.language?.startsWith('es') ? 'es' : 'en'
   const isEs = lang === 'es'
   const session = useSession()
@@ -122,9 +120,31 @@ export default function Vitals() {
           <span className="vitals-header-sub">NASA Space Biomedical Telemetry · Live Feed</span>
           <h1>{isEs ? 'Signos Vitales y Telemetría en Vivo' : 'Live Vital Signs & Telemetry'}</h1>
         </div>
-        <div className="vitals-pulse-indicator">
-          <div className="pulse-dot" />
-          <span>{isEs ? 'Telemetría Activa (1 Hz)' : 'Active Telemetry (1 Hz)'}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={handleToggleSimulation}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: isSimRunning ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 211, 238, 0.15)',
+              color: isSimRunning ? '#ef4444' : '#22d3ee',
+              border: isSimRunning ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(34, 211, 238, 0.3)',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {isSimRunning ? <Square size={13} /> : <Play size={13} />}
+            <span>{isSimRunning ? (isEs ? 'Pausar Flujo' : 'Pause Stream') : (isEs ? 'Reanudar Flujo' : 'Resume Stream')}</span>
+          </button>
+          <div className="vitals-pulse-indicator">
+            <div className="pulse-dot" />
+            <span>{isEs ? 'Telemetría Activa (1 Hz)' : 'Active Telemetry (1 Hz)'}</span>
+          </div>
         </div>
       </header>
 
