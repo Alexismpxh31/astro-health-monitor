@@ -418,14 +418,14 @@ export default function Home() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            minHeight: '480px',
+            minHeight: '520px',
             width: '100%',
             overflow: 'visible'
           }}
         >
           <AstronautModel3D
             embedded={true}
-            height="480px"
+            height="520px"
             selectedZone={ZONE_MAP[selectedId] || 'cardio'}
             onSelectZone={(zona) => {
               const mapped = REVERSE_ZONE_MAP[zona.id] || 'cardiovascular';
