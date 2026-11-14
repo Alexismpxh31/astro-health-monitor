@@ -3,7 +3,18 @@ import { VitalCard } from '../components/VitalCard.jsx';
 import { TelemetryChart } from '../components/TelemetryChart.jsx';
 import { simulator } from '../data/simulator.js';
 import { NASA_INDICATORS_MAP } from '../data/nasaHrpData.js';
-import { Play, Pause, AlertTriangle, Heart, Zap, RefreshCw, Radio } from 'lucide-react';
+import { 
+  Play, 
+  Pause, 
+  AlertTriangle, 
+  Heart, 
+  Zap, 
+  RefreshCw, 
+  Radio, 
+  Activity,
+  Flame,
+  ShieldCheck
+} from 'lucide-react';
 
 export default function Vitals() {
   const [vitals, setVitals] = useState(simulator.state);
@@ -34,73 +45,85 @@ export default function Vitals() {
   const currentThreshold = NASA_INDICATORS_MAP[selectedCode];
   const chartPoints = history[selectedCode] || [];
 
+  const METRIC_TABS = [
+    { code: 'HR', label: 'HR · Cardíaco' },
+    { code: 'SPO2', label: 'SpO2 · Oxígeno' },
+    { code: 'TSKIN', label: 'Tskin · Cutánea' },
+    { code: 'RR', label: 'RR · Respiración' },
+    { code: 'RAD_DAILY', label: 'Rad · Dosímetro' },
+    { code: 'SBP', label: 'SBP · Presión' }
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Header with Simulator Control and Hackathon Demo Anomaly Injectors */}
-      <div className="bg-space-surface/90 border border-space-border p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Flight Deck Header with Stream Control & Hackathon Anomaly Injections */}
+      <div className="p-5 rounded-2xl bg-[#0E1726]/90 border border-[#1E2E48] shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-mono text-space-cyan uppercase tracking-widest flex items-center gap-1.5">
-            <Radio className="w-4 h-4" />
-            TELEMETRÍA EN VIVO · CHALECO ASTROSKIN ISS
+          <span className="text-xs font-mono text-cyan-400 font-bold uppercase tracking-widest flex items-center gap-2">
+            <Radio className="w-4 h-4 animate-pulse" />
+            TELEMETRÍA EN DIRECTO · CHALECO INTELIGENTE ASTROSKIN (ISS)
           </span>
-          <h1 className="text-xl sm:text-2xl font-mono font-bold text-white mt-1">
-            Signos Vitales y Flujo Fisiológico
+          <h1 className="text-xl sm:text-2xl font-extrabold text-white mt-1 tracking-tight">
+            Monitoreo Fisiológico en Tiempo Real
           </h1>
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
+            Frecuencia de muestreo: 1.8s · Enlace de telemetría PWA & Dexie local
+          </p>
         </div>
 
-        {/* Live Demo Controls */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        {/* Live Demo & Anomaly Injections */}
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={toggleStream}
-            className={`min-h-[44px] px-4 py-2 rounded-xl border text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
+            className={`min-h-[44px] px-4 py-2 rounded-xl border text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-sm ${
               isRunning
-                ? 'bg-space-card border-space-border text-space-text hover:border-space-cyan'
-                : 'bg-emerald-950/40 border-emerald-500 text-emerald-300'
+                ? 'bg-[#14223A] border-[#1E2E48] text-slate-200 hover:border-cyan-400'
+                : 'bg-emerald-950/60 border-emerald-500/80 text-emerald-300'
             }`}
           >
-            {isRunning ? <Pause className="w-4 h-4 text-space-cyan" /> : <Play className="w-4 h-4" />}
-            {isRunning ? 'Pausar Telemetría' : 'Reanudar'}
+            {isRunning ? <Pause className="w-4 h-4 text-cyan-400" /> : <Play className="w-4 h-4 text-emerald-400" />}
+            {isRunning ? 'Pausar Telemetría' : 'Reanudar Stream'}
           </button>
 
-          {/* Hackathon Demo Anomaly Injection Buttons */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-space-bg border border-space-border">
+          {/* Hackathon Anomaly Injector Panel */}
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#070C15] border border-[#1E2E48]">
             <button
               onClick={() => simulator.triggerAnomaly('hypoxia')}
               title="Disparar Hipoxia crítica en demo"
-              className="px-2.5 py-1.5 rounded-lg bg-red-950/50 hover:bg-red-900 border border-red-500/70 text-red-300 text-[11px] font-mono flex items-center gap-1 transition-all"
+              className="px-2.5 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-500/60 text-red-300 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
             >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              Hypoxia (89% SpO2)
+              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+              Hipoxia (89%)
             </button>
             <button
               onClick={() => simulator.triggerAnomaly('tachycardia')}
               title="Disparar Taquicardia crítica en demo"
-              className="px-2.5 py-1.5 rounded-lg bg-amber-950/50 hover:bg-amber-900 border border-amber-500/70 text-amber-300 text-[11px] font-mono flex items-center gap-1 transition-all"
+              className="px-2.5 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/60 text-amber-300 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
             >
-              <Heart className="w-3.5 h-3.5" />
-              Taquicardia (138 bpm)
+              <Heart className="w-3.5 h-3.5 text-amber-400" />
+              Taquicardia (138)
             </button>
             <button
               onClick={() => simulator.triggerAnomaly('radiation')}
-              title="Disparar Evento de Protones Solares"
-              className="px-2.5 py-1.5 rounded-lg bg-purple-950/50 hover:bg-purple-900 border border-purple-500/70 text-purple-300 text-[11px] font-mono flex items-center gap-1 transition-all"
+              title="Disparar Tormenta de Radiación SPE"
+              className="px-2.5 py-1.5 rounded-lg bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/60 text-purple-300 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
             >
-              <Zap className="w-3.5 h-3.5" />
-              Radiación (2.15 mSv)
+              <Flame className="w-3.5 h-3.5 text-purple-400" />
+              Radiación (2.15)
             </button>
             <button
               onClick={() => simulator.triggerAnomaly('reset')}
-              title="Restablecer a valores normales"
-              className="px-2 py-1.5 rounded-lg bg-space-card hover:bg-space-hover border border-space-border text-space-muted hover:text-white text-[11px] font-mono flex items-center gap-1 transition-all"
+              title="Restablecer todos los valores al estado nominal"
+              className="px-2 py-1.5 rounded-lg bg-[#14223A] hover:bg-slate-800 border border-[#1E2E48] text-slate-300 text-[11px] font-mono font-bold flex items-center gap-1 transition-all"
             >
-              <RefreshCw className="w-3 h-3" />
+              <RefreshCw className="w-3 h-3 text-cyan-400" />
               Reset
             </button>
           </div>
         </div>
       </div>
 
-      {/* Vital Cards Grid */}
+      {/* Vital Cards Grid with Linear Range Indicators */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <VitalCard
           code="HR"
@@ -127,7 +150,7 @@ export default function Vitals() {
           name="Temperatura Cutánea"
           value={vitals.TSKIN}
           unit="°C"
-          level={vitals.TSKIN > 38.0 ? 'critical' : 'normal'}
+          level={vitals.TSKIN > 38.0 ? 'critical' : vitals.TSKIN > 37.3 ? 'caution' : 'normal'}
           threshold={NASA_INDICATORS_MAP.TSKIN}
           onClick={() => setSelectedCode('TSKIN')}
         />
@@ -137,33 +160,33 @@ export default function Vitals() {
           name="Frecuencia Respiratoria"
           value={vitals.RR}
           unit="rpm"
-          level={vitals.RR > 24 ? 'critical' : 'normal'}
+          level={vitals.RR > 24 ? 'critical' : vitals.RR > 18 ? 'caution' : 'normal'}
           threshold={NASA_INDICATORS_MAP.RR}
           onClick={() => setSelectedCode('RR')}
         />
       </div>
 
-      {/* Dynamic Chart Section with Selector Tabs */}
+      {/* Telemetry Chart with Aerospace Tab Selector */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            {['HR', 'SPO2', 'TSKIN', 'RR', 'RAD_DAILY', 'SBP'].map(code => (
+          <div className="flex flex-wrap items-center gap-2">
+            {METRIC_TABS.map(({ code, label }) => (
               <button
                 key={code}
                 onClick={() => setSelectedCode(code)}
-                className={`min-h-[40px] px-3.5 py-1.5 rounded-lg text-xs font-mono transition-all ${
+                className={`min-h-[42px] px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                   selectedCode === code
-                    ? 'bg-space-cyan text-space-bg font-bold shadow-glow-cyan'
-                    : 'bg-space-surface border border-space-border text-space-muted hover:text-white'
+                    ? 'bg-cyan-400 text-[#070C15] shadow-[0_0_12px_rgba(34,211,238,0.4)]'
+                    : 'bg-[#0E1726] border border-[#1E2E48] text-slate-300 hover:text-white hover:border-slate-600'
                 }`}
               >
-                {code}
+                {label}
               </button>
             ))}
           </div>
 
-          <span className="text-xs font-mono text-space-muted">
-            Ventana rodante en tiempo real
+          <span className="text-xs font-mono text-slate-400">
+            Ventana rodante en tiempo real (últimos 30 puntos)
           </span>
         </div>
 
