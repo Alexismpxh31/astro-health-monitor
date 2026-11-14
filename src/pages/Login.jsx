@@ -22,7 +22,7 @@ async function loadLoginUsers() {
     }))
 }
 
-// Everyone lands on "/": the astronaut dashboard, or "My missions" for the flight surgeon.
+// Everyone lands on "/": the astronaut dashboard, or the control center for the flight surgeon.
 const HOME_PATH = '/'
 
 export default function Login() {

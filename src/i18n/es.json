@@ -353,5 +353,33 @@
     "status": "Estado de la tripulación",
     "open": "Entrar a la misión",
     "change": "Cambiar de misión"
+  },
+  "control": {
+    "title": "Centro de control",
+    "greeting": "Hola, {{name}}",
+    "attentionTitle": "Requiere tu atención",
+    "allStable": "Toda la tripulación está estable. No hay alertas sin atender.",
+    "openAlerts_one": "{{count}} alerta sin atender",
+    "openAlerts_other": "{{count}} alertas sin atender",
+    "unreadNotes_one": "{{count}} nota sin leer",
+    "unreadNotes_other": "{{count}} notas sin leer",
+    "viewMember": "Ver tripulante",
+    "missionsTitle": "Tus misiones",
+    "allMissions": "Ver todas las misiones",
+    "notesTitle": "Notas recientes",
+    "noNotes": "Todavía no has enviado notas.",
+    "unread": "Sin leer",
+    "kpi": {
+      "astronauts_one": "astronauta vigilado",
+      "astronauts_other": "astronautas vigilados",
+      "critical_one": "en estado crítico",
+      "critical_other": "en estado crítico",
+      "warning_one": "en precaución",
+      "warning_other": "en precaución",
+      "unattended_one": "alerta sin atender",
+      "unattended_other": "alertas sin atender",
+      "unreadNotes_one": "nota sin leer",
+      "unreadNotes_other": "notas sin leer"
+    }
   }
 }

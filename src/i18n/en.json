@@ -353,5 +353,33 @@
     "status": "Crew status",
     "open": "Open mission",
     "change": "Change mission"
+  },
+  "control": {
+    "title": "Control center",
+    "greeting": "Hello, {{name}}",
+    "attentionTitle": "Needs your attention",
+    "allStable": "The whole crew is stable. No unattended alerts.",
+    "openAlerts_one": "{{count}} unattended alert",
+    "openAlerts_other": "{{count}} unattended alerts",
+    "unreadNotes_one": "{{count}} unread note",
+    "unreadNotes_other": "{{count}} unread notes",
+    "viewMember": "View crew member",
+    "missionsTitle": "Your missions",
+    "allMissions": "See all missions",
+    "notesTitle": "Recent notes",
+    "noNotes": "You have not sent notes yet.",
+    "unread": "Unread",
+    "kpi": {
+      "astronauts_one": "astronaut monitored",
+      "astronauts_other": "astronauts monitored",
+      "critical_one": "critical",
+      "critical_other": "critical",
+      "warning_one": "in warning",
+      "warning_other": "in warning",
+      "unattended_one": "unattended alert",
+      "unattended_other": "unattended alerts",
+      "unreadNotes_one": "unread note",
+      "unreadNotes_other": "unread notes"
+    }
   }
 }

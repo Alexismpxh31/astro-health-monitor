@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ROLE, useSession } from '../auth/session.js'
 import Icon from '../components/icons.jsx'
 import TrafficLight from '../components/TrafficLight.jsx'
@@ -9,7 +9,7 @@ import { ensureDemoCrew } from '../data/demoCrew.js'
 import { localName } from './crew/display.js'
 import { RingGauge, Sparkline } from './home/charts.jsx'
 import { loadHomeData } from './home/homeData.js'
-import { getCurrentMission } from './missions/missionStore.js'
+import ControlCenter from './home/ControlCenter.jsx'
 import ModelStage from './home/ModelStage.jsx'
 import './Home.css'
 
@@ -30,12 +30,9 @@ export default function Home() {
     ensureDemoCrew().catch((error) => console.error('[home] Could not prepare demo data', error))
   }, [])
 
-  // The flight surgeon has no health data of their own: their home is the mission they
-  // are following, or the list of their missions to pick one.
-  if (session?.roleCode === ROLE.FLIGHT_SURGEON) {
-    const missionId = getCurrentMission(session.userId)
-    return <Navigate to={missionId ? `/missions/${missionId}` : '/missions'} replace />
-  }
+  // The flight surgeon has no health data of their own: their home is the control
+  // center with every mission they follow.
+  if (session?.roleCode === ROLE.FLIGHT_SURGEON) return <ControlCenter />
   if (data === undefined) return <p className="muted">{t('crew.loading')}</p>
   if (data === null) return <p className="muted">{t('crewDetail.notFound')}</p>
 

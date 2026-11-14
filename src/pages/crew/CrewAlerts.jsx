@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import TrafficLight from '../../components/TrafficLight.jsx'
 import { recommendationText } from '../../rules/engine.js'
+import { alertNoteState } from './alertNote.js'
 import { loadCrewAlerts } from './crewAlerts.js'
 import { localName } from './display.js'
 import './CrewAlerts.css'
@@ -30,16 +31,8 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' })
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
 
-  function sendNote(item, advice) {
-    const draft = t('crewAlerts.draft', {
-      indicator: item.indicator ? localName(item.indicator, lang) : item.reading.indicatorCode,
-      value: numberFormat.format(item.reading.value),
-      unit: item.reading.unit,
-      time: timeFormat.format(new Date(item.alert.generatedAt)),
-      advice,
-    }).trim()
-    // The alert id travels with the note: when the astronaut reads it, the alert is attended.
-    navigate(`/crew/${item.user.id}`, { state: { noteDraft: draft, alertId: item.alert.id } })
+  function sendNote(item) {
+    navigate(`/crew/${item.user.id}`, { state: alertNoteState(t, lang, item) })
   }
 
   const items = (data?.items ?? []).filter((item) => !onlyOpen || !item.alert.attendedAt)
@@ -109,7 +102,7 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
                         : t('crewAlerts.open')}
                   </span>
                   {canSendNotes && (
-                    <button type="button" onClick={() => sendNote(item, advice)}>
+                    <button type="button" onClick={() => sendNote(item)}>
                       {t('crewAlerts.sendNote')}
                     </button>
                   )}

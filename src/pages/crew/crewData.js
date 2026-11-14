@@ -1,4 +1,5 @@
 import { db } from '../../db/db.js'
+import { loadCrewAlerts } from './crewAlerts.js'
 import { buildCrewStatus, hasRole, LEVEL } from './crewStatus.js'
 
 // Crew data shared by the mission list, the mission overview and the crew table.
@@ -106,4 +107,76 @@ export function formatCommDelay(mission) {
   if (!Number.isFinite(max)) return null
   if (max < 60) return `≈ ${max} s`
   return min && min !== max ? `${Math.round(min / 60)}–${Math.round(max / 60)} min` : `${Math.round(max / 60)} min`
+}
+
+/**
+ * Flight surgeon control center: every mission at once, ordered by what needs action.
+ *
+ * @param {string} userId - Flight surgeon.
+ * @returns {Promise<{
+ *   missions: Array<{ mission: Object, crewCount: number, counts: Record<string, number> }>,
+ *   totals: { astronauts: number, critical: number, warning: number, unattended: number, unreadNotes: number },
+ *   attention: Object[], recentNotes: Object[]
+ * }>}
+ */
+export async function loadControlCenter(userId) {
+  const ref = await loadReferenceData()
+  const missions = await Promise.all(
+    missionsOf(userId, ref).map(async (mission) => {
+      const astronauts = astronautsOf(mission.id, ref)
+      const rows = await statusRows(astronauts, ref)
+      const counts = Object.fromEntries(Object.values(LEVEL).map((level) => [level, 0]))
+      for (const row of rows) counts[row.overall] += 1
+      return { mission, astronauts, rows, crewCount: rows.length, counts }
+    }),
+  )
+
+  // One entry per astronaut (an astronaut could be in more than one mission: first one wins).
+  const byUser = new Map()
+  for (const { mission, astronauts, rows } of missions) {
+    for (const row of rows) {
+      if (byUser.has(row.user.id)) continue
+      const user = astronauts.find((item) => item.id === row.user.id) ?? row.user
+      byUser.set(row.user.id, { user, mission, row, alerts: [], unreadNotes: 0 })
+    }
+  }
+
+  const { items: alertItems } = await loadCrewAlerts([...byUser.values()].map((entry) => entry.user))
+  for (const item of alertItems) {
+    if (!item.alert.attendedAt) byUser.get(item.user.id)?.alerts.push(item)
+  }
+
+  const sentNotes = (await db.messages.where('senderId').equals(userId).toArray()).sort((a, b) =>
+    b.sentAt.localeCompare(a.sentAt),
+  )
+  for (const note of sentNotes) {
+    const entry = byUser.get(note.recipientId)
+    if (entry && !note.readAt) entry.unreadNotes += 1
+  }
+
+  // Needs action: critical first, then warning, then astronauts with open alerts or unread notes.
+  const severity = { CRITICAL: 3, WARNING: 2 }
+  const attention = [...byUser.values()]
+    .filter((entry) => entry.row.overall === LEVEL.CRITICAL || entry.row.overall === LEVEL.WARNING || entry.alerts.length || entry.unreadNotes)
+    .sort((a, b) => (severity[b.row.overall] ?? 0) - (severity[a.row.overall] ?? 0) || b.alerts.length - a.alerts.length)
+
+  const recentNotes = sentNotes.slice(0, 5).map((note) => ({
+    note,
+    recipient: byUser.get(note.recipientId)?.user ?? ref.users.find((user) => user.id === note.recipientId) ?? null,
+    mission: byUser.get(note.recipientId)?.mission ?? null,
+  }))
+
+  const rows = [...byUser.values()].map((entry) => entry.row)
+  return {
+    missions: missions.map(({ mission, crewCount, counts }) => ({ mission, crewCount, counts })),
+    totals: {
+      astronauts: rows.length,
+      critical: rows.filter((row) => row.overall === LEVEL.CRITICAL).length,
+      warning: rows.filter((row) => row.overall === LEVEL.WARNING).length,
+      unattended: [...byUser.values()].reduce((sum, entry) => sum + entry.alerts.length, 0),
+      unreadNotes: sentNotes.filter((note) => !note.readAt && byUser.has(note.recipientId)).length,
+    },
+    attention,
+    recentNotes,
+  }
 }
