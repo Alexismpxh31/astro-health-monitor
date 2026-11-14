@@ -330,5 +330,11 @@
       "pending_one": "dato pendiente de enviar",
       "pending_other": "datos pendientes de enviar"
     }
+  },
+  "bodyView": {
+    "title": "Vista del cuerpo",
+    "hint": "Toca un sistema para ver solo sus indicadores.",
+    "showAll": "Mostrar todos los indicadores",
+    "indicatorsOf": "Indicadores: {{system}}"
   }
 }

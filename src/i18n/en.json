@@ -330,5 +330,11 @@
       "pending_one": "item waiting to send",
       "pending_other": "items waiting to send"
     }
+  },
+  "bodyView": {
+    "title": "Body view",
+    "hint": "Tap a system to see only its indicators.",
+    "showAll": "Show all indicators",
+    "indicatorsOf": "Indicators: {{system}}"
   }
 }
