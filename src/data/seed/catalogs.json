@@ -8,26 +8,43 @@
     { "id": "00000000-0000-4000-8000-000000000202", "code": "RESP", "nameEs": "Respiratorio", "nameEn": "Respiratory" },
     { "id": "00000000-0000-4000-8000-000000000203", "code": "MUSCULOSKELETAL", "nameEs": "Musculoesquelético", "nameEn": "Musculoskeletal" },
     { "id": "00000000-0000-4000-8000-000000000204", "code": "RADIATION", "nameEs": "Radiación", "nameEn": "Radiation" },
-    { "id": "00000000-0000-4000-8000-000000000205", "code": "THERMAL", "nameEs": "Termorregulación", "nameEn": "Thermoregulation" }
+    { "id": "00000000-0000-4000-8000-000000000205", "code": "THERMAL", "nameEs": "Termorregulación", "nameEn": "Thermoregulation" },
+    { "id": "00000000-0000-4000-8000-000000000206", "code": "IMMUNE", "nameEs": "Inmunológico", "nameEn": "Immune" },
+    { "id": "00000000-0000-4000-8000-000000000207", "code": "BEHAVIORAL", "nameEs": "Conductual", "nameEn": "Behavioral" }
   ],
   "units": [
     { "id": "00000000-0000-4000-8000-000000000301", "symbol": "bpm", "nameEs": "Latidos por minuto", "nameEn": "Beats per minute" },
     { "id": "00000000-0000-4000-8000-000000000302", "symbol": "%", "nameEs": "Porcentaje", "nameEn": "Percent" },
     { "id": "00000000-0000-4000-8000-000000000303", "symbol": "mmHg", "nameEs": "Milímetros de mercurio", "nameEn": "Millimeters of mercury" },
-    { "id": "00000000-0000-4000-8000-000000000304", "symbol": "rpm", "nameEs": "Respiraciones por minuto", "nameEn": "Breaths per minute" },
+    { "id": "00000000-0000-4000-8000-000000000304", "symbol": "breaths/min", "nameEs": "Respiraciones por minuto", "nameEn": "Breaths per minute" },
     { "id": "00000000-0000-4000-8000-000000000305", "symbol": "°C", "nameEs": "Grados Celsius", "nameEn": "Degrees Celsius" },
     { "id": "00000000-0000-4000-8000-000000000306", "symbol": "g/cm²", "nameEs": "Gramos por centímetro cuadrado", "nameEn": "Grams per square centimeter" },
-    { "id": "00000000-0000-4000-8000-000000000307", "symbol": "mSv", "nameEs": "Milisievert", "nameEn": "Millisievert" }
+    { "id": "00000000-0000-4000-8000-000000000307", "symbol": "mSv", "nameEs": "Milisievert", "nameEn": "Millisievert" },
+    { "id": "00000000-0000-4000-8000-000000000308", "symbol": "%/month", "nameEs": "Cambio porcentual por mes", "nameEn": "Percent change per month" },
+    { "id": "00000000-0000-4000-8000-000000000309", "symbol": "% baseline", "nameEs": "Porcentaje del valor basal", "nameEn": "Percent of baseline" },
+    { "id": "00000000-0000-4000-8000-000000000310", "symbol": "mSv/day", "nameEs": "Milisievert por día", "nameEn": "Millisievert per day" },
+    { "id": "00000000-0000-4000-8000-000000000311", "symbol": "ms", "nameEs": "Milisegundos", "nameEn": "Milliseconds" },
+    { "id": "00000000-0000-4000-8000-000000000312", "symbol": "h/24h", "nameEs": "Horas por cada 24 horas", "nameEn": "Hours per 24 hours" },
+    { "id": "00000000-0000-4000-8000-000000000313", "symbol": "10³/µL", "nameEs": "Miles por microlitro", "nameEn": "Thousands per microliter" },
+    { "id": "00000000-0000-4000-8000-000000000314", "symbol": "pg/mL", "nameEs": "Picogramos por mililitro", "nameEn": "Picograms per milliliter" },
+    { "id": "00000000-0000-4000-8000-000000000315", "symbol": "nmol/L", "nameEs": "Nanomoles por litro", "nameEn": "Nanomoles per liter" }
   ],
   "indicators": [
     { "id": "00000000-0000-4000-8000-000000000401", "code": "HR", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000301", "nameEs": "Frecuencia cardíaca", "nameEn": "Heart rate" },
-    { "id": "00000000-0000-4000-8000-000000000402", "code": "SPO2", "bodySystemId": "00000000-0000-4000-8000-000000000202", "unitId": "00000000-0000-4000-8000-000000000302", "nameEs": "Saturación de oxígeno", "nameEn": "Oxygen saturation" },
+    { "id": "00000000-0000-4000-8000-000000000402", "code": "SPO2", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000302", "nameEs": "Saturación de oxígeno", "nameEn": "Oxygen saturation" },
     { "id": "00000000-0000-4000-8000-000000000403", "code": "SBP", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000303", "nameEs": "Presión sistólica", "nameEn": "Systolic blood pressure" },
     { "id": "00000000-0000-4000-8000-000000000404", "code": "DBP", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000303", "nameEs": "Presión diastólica", "nameEn": "Diastolic blood pressure" },
-    { "id": "00000000-0000-4000-8000-000000000405", "code": "RR", "bodySystemId": "00000000-0000-4000-8000-000000000202", "unitId": "00000000-0000-4000-8000-000000000304", "nameEs": "Frecuencia respiratoria", "nameEn": "Respiratory rate" },
-    { "id": "00000000-0000-4000-8000-000000000406", "code": "TSKIN", "bodySystemId": "00000000-0000-4000-8000-000000000205", "unitId": "00000000-0000-4000-8000-000000000305", "nameEs": "Temperatura de la piel", "nameEn": "Skin temperature" },
-    { "id": "00000000-0000-4000-8000-000000000407", "code": "BMD", "bodySystemId": "00000000-0000-4000-8000-000000000203", "unitId": "00000000-0000-4000-8000-000000000306", "nameEs": "Densidad mineral ósea", "nameEn": "Bone mineral density" },
-    { "id": "00000000-0000-4000-8000-000000000408", "code": "RAD_DOSE", "bodySystemId": "00000000-0000-4000-8000-000000000204", "unitId": "00000000-0000-4000-8000-000000000307", "nameEs": "Dosis de radiación", "nameEn": "Radiation dose" }
+    { "id": "00000000-0000-4000-8000-000000000405", "code": "RR", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000304", "nameEs": "Frecuencia respiratoria", "nameEn": "Respiratory rate" },
+    { "id": "00000000-0000-4000-8000-000000000406", "code": "TSKIN", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000305", "nameEs": "Temperatura de la piel", "nameEn": "Skin temperature" },
+    { "id": "00000000-0000-4000-8000-000000000407", "code": "BMD", "bodySystemId": "00000000-0000-4000-8000-000000000203", "unitId": "00000000-0000-4000-8000-000000000308", "nameEs": "Densidad mineral ósea", "nameEn": "Bone mineral density" },
+    { "id": "00000000-0000-4000-8000-000000000408", "code": "RAD_D", "bodySystemId": "00000000-0000-4000-8000-000000000204", "unitId": "00000000-0000-4000-8000-000000000310", "nameEs": "Dosis diaria de radiación", "nameEn": "Daily radiation dose" },
+    { "id": "00000000-0000-4000-8000-000000000409", "code": "MUSCLE", "bodySystemId": "00000000-0000-4000-8000-000000000203", "unitId": "00000000-0000-4000-8000-000000000309", "nameEs": "Masa muscular", "nameEn": "Muscle mass" },
+    { "id": "00000000-0000-4000-8000-000000000410", "code": "RAD_C", "bodySystemId": "00000000-0000-4000-8000-000000000204", "unitId": "00000000-0000-4000-8000-000000000307", "nameEs": "Dosis acumulada de radiación", "nameEn": "Cumulative radiation dose" },
+    { "id": "00000000-0000-4000-8000-000000000411", "code": "PVT", "bodySystemId": "00000000-0000-4000-8000-000000000207", "unitId": "00000000-0000-4000-8000-000000000311", "nameEs": "Tiempo de reacción (PVT)", "nameEn": "Reaction time (PVT)" },
+    { "id": "00000000-0000-4000-8000-000000000412", "code": "SLEEP", "bodySystemId": "00000000-0000-4000-8000-000000000207", "unitId": "00000000-0000-4000-8000-000000000312", "nameEs": "Sueño", "nameEn": "Sleep" },
+    { "id": "00000000-0000-4000-8000-000000000413", "code": "WBC", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000313", "nameEs": "Leucocitos", "nameEn": "White blood cells" },
+    { "id": "00000000-0000-4000-8000-000000000414", "code": "IL6", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000314", "nameEs": "Interleucina-6", "nameEn": "Interleukin-6" },
+    { "id": "00000000-0000-4000-8000-000000000415", "code": "CORT", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000315", "nameEs": "Cortisol", "nameEn": "Cortisol" }
   ],
   "alertLevels": [
     { "id": "00000000-0000-4000-8000-000000000501", "code": "NORMAL", "severity": 0, "nameEs": "Normal", "nameEn": "Normal" },
