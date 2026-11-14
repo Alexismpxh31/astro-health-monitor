@@ -5,7 +5,31 @@ import { getSession } from '../auth/session.js'
 import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import catalogs from '../data/seed/catalogs.json'
 import { db, seedIfEmpty } from '../db/db.js'
+import { createReading } from '../models/reading.js'
+import { evaluateReading, recommendationText } from '../rules/engine.js'
 import './Checkin.css'
+
+/** indicator code -> unit symbol, from the local catalog. */
+async function getUnitByIndicatorCode() {
+  const [indicators, units] = await Promise.all([db.indicators.toArray(), db.units.toArray()])
+  const symbolByUnitId = Object.fromEntries(units.map((unit) => [unit.id, unit.symbol]))
+  return Object.fromEntries(indicators.map((indicator) => [indicator.code, symbolByUnitId[indicator.unitId] ?? '']))
+}
+
+/** Same lookup as the engine: the recommendation for the exact direction, else the generic one. */
+async function findRecommendation(indicatorCode, levelCode, direction) {
+  const [indicator, alertLevels] = await Promise.all([
+    db.indicators.where('code').equals(indicatorCode).first(),
+    db.alertLevels.toArray(),
+  ])
+  const alertLevel = alertLevels.find((row) => row.code === levelCode)
+  if (!indicator || !alertLevel) return null
+  const rows = await db.recommendations
+    .where('[indicatorId+alertLevelId]')
+    .equals([indicator.id, alertLevel.id])
+    .toArray()
+  return rows.find((row) => row.direction === direction) ?? rows.find((row) => row.direction == null) ?? null
+}
 
 export default function Checkin() {
   const { t, i18n } = useTranslation()
@@ -87,78 +111,29 @@ export default function Checkin() {
   }
 
   /**
-   * Evalúa cada indicador contra db.thresholds y obtiene la recomendación oficial
-   * desde db.recommendations (con respaldo en i18n si aún no se ha sembrado).
+   * Runs the check-in readings through the rules engine (same thresholds, levels,
+   * high/low recommendations, de-duplication and critical notification as the
+   * rest of the app) and collects the advice to show on screen.
    */
-  const evaluateWithDatabase = async (metrics) => {
-    const [indicators, thresholds, alertLevels, recommendations, units] = await Promise.all([
-      db.indicators.toArray(),
-      db.thresholds.toArray(),
-      db.alertLevels.toArray(),
-      db.recommendations.toArray(),
-      db.units.toArray(),
-    ])
-
-    const indByCode = Object.fromEntries(indicators.map((i) => [i.code, i]))
-    const levelByCode = Object.fromEntries(alertLevels.map((l) => [l.code, l]))
-    const unitById = Object.fromEntries(units.map((u) => [u.id, u.symbol]))
-
+  const evaluateWithEngine = async (readings) => {
     let overallLevel = 'normal'
     const findings = []
 
-    for (const { code, value, readingId } of metrics) {
-      if (value === null || value === undefined) continue
-      const indicator = indByCode[code]
-      if (!indicator) continue
+    for (const reading of readings) {
+      const { level, direction, alert } = await evaluateReading(reading)
+      if (!level || level === 'normal') continue
 
-      // Priorizar umbral personal del astronauta si el médico de vuelo lo ajustó
-      const threshold =
-        thresholds.find((th) => th.indicatorId === indicator.id && th.userId === userId) ||
-        thresholds.find((th) => th.indicatorId === indicator.id && th.userId == null)
+      if (level === 'critical') overallLevel = 'critical'
+      else if (overallLevel === 'normal') overallLevel = 'caution'
 
-      if (!threshold) continue
-
-      let levelCode = 'normal'
-      let direction = null
-
-      if (value < threshold.minCritical) {
-        levelCode = 'critical'
-        direction = 'low'
-      } else if (value > threshold.maxCritical) {
-        levelCode = 'critical'
-        direction = 'high'
-      } else if (value < threshold.minNormal) {
-        levelCode = 'caution'
-        direction = 'low'
-      } else if (value > threshold.maxNormal) {
-        levelCode = 'caution'
-        direction = 'high'
-      }
-
-      if (levelCode === 'normal') continue
-
-      if (levelCode === 'critical') overallLevel = 'critical'
-      else if (levelCode === 'caution' && overallLevel === 'normal') overallLevel = 'caution'
-
-      const levelObj = levelByCode[levelCode]
-      const rec = recommendations.find(
-        (r) =>
-          r.indicatorId === indicator.id &&
-          r.alertLevelId === levelObj?.id &&
-          (r.direction === direction || r.direction == null)
-      )
-
-      const unitSymbol = unitById[indicator.unitId] || ''
-      const rawText = rec?.text?.[lang] || rec?.text?.es
-      const formattedText = rawText
-        ? rawText.replace(/%value%/g, String(value)).replace(/%unit%/g, unitSymbol)
-        : t(`checkin.recs.REC_${code}_${levelCode.toUpperCase()}`, { value })
-
-      findings.push({
-        text: formattedText,
-        readingId,
-        recommendationId: rec?.id ?? null,
-      })
+      // The engine skips a repeated alert within its cooldown: look the advice up anyway.
+      const recommendation = alert?.recommendationId
+        ? await db.recommendations.get(alert.recommendationId)
+        : await findRecommendation(reading.indicatorCode, level, direction)
+      const text =
+        recommendationText(recommendation, reading, lang) ||
+        t(`checkin.recs.REC_${reading.indicatorCode}_${level.toUpperCase()}`, { value: reading.value })
+      findings.push({ text })
     }
 
     return { level: overallLevel, findings }
@@ -174,24 +149,19 @@ export default function Checkin() {
     const combinedNotes = [cleanNotes, pvtTag].filter(Boolean).join(' ') || null
 
     let checkinId = crypto.randomUUID()
-    const sleepReadingId = crypto.randomUUID()
-    const moodReadingId = crypto.randomUUID()
-    const stressReadingId = crypto.randomUUID()
-    const pvtReadingId = pvtMs !== null ? crypto.randomUUID() : null
-
-    const result = await evaluateWithDatabase([
-      { code: 'SLEEP_H', value: sleepHours, readingId: sleepReadingId },
-      { code: 'MOOD', value: mood, readingId: moodReadingId },
-      { code: 'STRESS', value: stress, readingId: stressReadingId },
-      { code: 'PVT', value: pvtMs, readingId: pvtReadingId },
-    ])
+    const units = await getUnitByIndicatorCode()
+    const reading = (indicatorCode, value) => ({
+      ...createReading({ userId, indicatorCode, value, unit: units[indicatorCode] ?? '', source: 'simulated' }),
+      measuredAt: nowIso,
+    })
+    const readingRows = [reading('SLEEP_H', sleepHours), reading('MOOD', mood), reading('STRESS', stress)]
+    if (pvtMs !== null) readingRows.push(reading('PVT', pvtMs))
 
     await db.transaction(
       'rw',
       db.dailyCheckins,
       db.checkinSymptoms,
       db.readings,
-      db.alerts,
       async () => {
         const existing = await db.dailyCheckins
           .where('[userId+date]')
@@ -232,67 +202,13 @@ export default function Checkin() {
           )
         }
 
-        // Registrar también las lecturas en db.readings para gráficas y motor de alertas
-        const readingRows = [
-          {
-            id: sleepReadingId,
-            userId,
-            indicatorCode: 'SLEEP_H',
-            value: sleepHours,
-            measuredAt: nowIso,
-            source: 'simulated',
-            syncStatus: 'pending',
-          },
-          {
-            id: moodReadingId,
-            userId,
-            indicatorCode: 'MOOD',
-            value: mood,
-            measuredAt: nowIso,
-            source: 'simulated',
-            syncStatus: 'pending',
-          },
-          {
-            id: stressReadingId,
-            userId,
-            indicatorCode: 'STRESS',
-            value: stress,
-            measuredAt: nowIso,
-            source: 'simulated',
-            syncStatus: 'pending',
-          },
-        ]
-
-        if (pvtMs !== null && pvtReadingId) {
-          readingRows.push({
-            id: pvtReadingId,
-            userId,
-            indicatorCode: 'PVT',
-            value: pvtMs,
-            measuredAt: nowIso,
-            source: 'simulated',
-            syncStatus: 'pending',
-          })
-        }
-
+        // Readings also go to db.readings, so charts and the flight surgeon panel see them.
         await db.readings.bulkPut(readingRows)
-
-        // Si hubo hallazgos fuera de rango, generar alertas clínicas locales
-        if (result.findings.length > 0) {
-          await db.alerts.bulkPut(
-            result.findings.map((f) => ({
-              id: crypto.randomUUID(),
-              readingId: f.readingId,
-              recommendationId: f.recommendationId,
-              generatedAt: nowIso,
-              attendedAt: null,
-              syncStatus: 'pending',
-            }))
-          )
-        }
       }
     )
 
+    // After saving: the rules engine evaluates each reading and stores the alerts.
+    const result = await evaluateWithEngine(readingRows)
     setEvaluation({
       level: result.level,
       recommendations: result.findings.map((f) => f.text),
