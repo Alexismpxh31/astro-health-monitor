@@ -93,7 +93,15 @@
   "comms": {
     "loading": "Consultando registros pendientes…",
     "pendingCount_one": "{{count}} registro pendiente de sincronizar",
-    "pendingCount_other": "{{count}} registros pendientes de sincronizar"
+    "pendingCount_other": "{{count}} registros pendientes de sincronizar",
+    "notes": {
+  "title": "Notas del médico de vuelo",
+  "loading": "Cargando notas…",
+  "empty": "Todavía no tienes notas del médico.",
+  "markAsRead": "Marcar como leída",
+  "readError": "No se pudo marcar la nota como leída. Inténtalo de nuevo."
+}
+    
   },
   "common": {
     "underConstruction": "En construcción",
