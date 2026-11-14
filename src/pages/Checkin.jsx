@@ -7,7 +7,7 @@ import { db, seedIfEmpty } from '../db/db.js'
 import './Checkin.css'
 
 // Matches Demo Astronaut in src/data/seed/users.json when session stub returns null
-const DEMO_ASTRONAUT_ID = '00000000-0000-4000-8000-000000000901'
+const DEMO_ASTRONAUT_ID = 'a0000000-0000-4000-8000-000000000002'
 
 export default function Checkin() {
   const { t, i18n } = useTranslation()
