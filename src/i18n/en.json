@@ -93,7 +93,14 @@
   "comms": {
     "loading": "Checking pending records…",
     "pendingCount_one": "{{count}} record pending sync",
-    "pendingCount_other": "{{count}} records pending sync"
+    "pendingCount_other": "{{count}} records pending sync",
+    "notes": {
+  "title": "Flight surgeon notes",
+  "loading": "Loading notes…",
+  "empty": "You have no notes from the flight surgeon yet.",
+  "markAsRead": "Mark as read",
+  "readError": "Could not mark the note as read. Please try again."
+}
   },
   "common": {
     "underConstruction": "Under construction",

@@ -1,17 +1,9 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import catalogs from '../data/seed/catalogs.json'
-import usersSeed from '../data/seed/users.json'
 import * as simulator from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { recommendationText, requestNotificationPermission } from '../rules/engine.js'
-
-// The simulator always feeds the demo astronaut from the seed.
-const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'astronaut')?.id
-const DEMO_ASTRONAUT_ID =
-  usersSeed.users.find((user) => user.roleId === ASTRONAUT_ROLE_ID)?.id ??
-  'a0000000-0000-4000-8000-000000000002'
 
 // alertLevels.code -> CSS color variable. The level name is always shown as text too.
 const LEVEL_COLORS = {
@@ -65,7 +57,8 @@ export default function Sensors() {
     } else {
       // Ask for notification permission here because it needs a user gesture.
       requestNotificationPermission()
-      simulator.start(DEMO_ASTRONAUT_ID)
+      // No user id: the simulator feeds the logged-in user or the demo astronaut.
+      simulator.start()
     }
     setRunning(simulator.isRunning())
   }
