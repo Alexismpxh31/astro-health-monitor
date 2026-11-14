@@ -1,5 +1,6 @@
 import { db, seedIfEmpty } from '../db/db.js'
 import { createReading } from '../models/reading.js'
+import { evaluateReading } from '../rules/engine.js'
 import demoCrew from './seed/demoCrew.json'
 
 // Simulated vital signs for the flight surgeon panel demo.
@@ -50,12 +51,17 @@ function buildSnapshot(unitByCode, measuredAt) {
 /** Official demo astronauts that receive readings from this module. */
 export const DEMO_CREW_USER_IDS = Object.keys(demoCrew.baselines)
 
+/** Runs new readings through the rules engine so they raise alerts like real sensor data. */
+async function evaluateAll(readings) {
+  for (const reading of readings) await evaluateReading(reading)
+}
+
 async function seedDemoCrew() {
   // The users, crew and catalogs come from the team seed (users.json, catalogs.json).
   await seedIfEmpty()
 
-  await db.transaction('rw', [db.readings, db.indicators, db.units], async () => {
-    if ((await db.readings.where('userId').anyOf(DEMO_CREW_USER_IDS).count()) > 0) return
+  const latest = await db.transaction('rw', [db.readings, db.indicators, db.units], async () => {
+    if ((await db.readings.where('userId').anyOf(DEMO_CREW_USER_IDS).count()) > 0) return []
 
     const unitByCode = await getUnitByIndicatorCode()
     const now = Date.now()
@@ -65,7 +71,11 @@ async function seedDemoCrew() {
       history.push(...buildSnapshot(unitByCode, measuredAt))
     }
     await db.readings.bulkAdd(history)
+    const newest = history.at(-1).measuredAt
+    return history.filter((reading) => reading.measuredAt === newest)
   })
+  // Only the newest snapshot is evaluated, so the history does not flood the alert list.
+  await evaluateAll(latest)
 }
 
 let ensurePromise = null
@@ -92,7 +102,9 @@ export function ensureDemoCrew() {
 export async function addDemoReadings() {
   await ensureDemoCrew()
   const unitByCode = await getUnitByIndicatorCode()
-  await db.readings.bulkAdd(buildSnapshot(unitByCode, new Date().toISOString()))
+  const readings = buildSnapshot(unitByCode, new Date().toISOString())
+  await db.readings.bulkAdd(readings)
+  await evaluateAll(readings)
 }
 
 // ---------- Live mode ----------
@@ -171,4 +183,5 @@ export async function addLiveDemoReadings() {
     })),
   )
   await db.readings.bulkAdd(readings)
+  await evaluateAll(readings)
 }

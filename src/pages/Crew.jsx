@@ -7,6 +7,7 @@ import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
 import { db } from '../db/db.js'
 import { buildCrewStatus, hasRole, LEVEL } from './crew/crewStatus.js'
 import { DISPLAY_CODE } from './crew/display.js'
+import CrewAlerts from './crew/CrewAlerts.jsx'
 import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
 import { useLiveDemo } from './crew/useLiveDemo.js'
 import './Crew.css'
@@ -28,8 +29,10 @@ async function loadCrewData() {
     db.thresholds.toArray(),
   ])
 
-  const crewUserIds = new Set(crew.map((member) => member.userId))
-  const astronauts = users.filter((user) => crewUserIds.has(user.id) && hasRole(roles, user, ASTRONAUT_ROLE_CODE))
+  const crewByUserId = new Map(crew.map((member) => [member.userId, member]))
+  const astronauts = users
+    .filter((user) => crewByUserId.has(user.id) && hasRole(roles, user, ASTRONAUT_ROLE_CODE))
+    .map((user) => ({ ...user, isMedicalOfficer: Boolean(crewByUserId.get(user.id).isMedicalOfficer) }))
   const readings = astronauts.length
     ? await db.readings.where('userId').anyOf(astronauts.map((user) => user.id)).toArray()
     : []
@@ -42,6 +45,7 @@ async function loadCrewData() {
   return {
     mission: missions[0] ?? null,
     bodySystems: systemsWithIndicators,
+    astronauts,
     rows: buildCrewStatus({ astronauts, bodySystems: systemsWithIndicators, indicators, thresholds, readings }),
   }
 }
@@ -96,7 +100,7 @@ export default function Crew() {
     )
   }
 
-  const { mission, bodySystems, rows } = data
+  const { mission, bodySystems, astronauts, rows } = data
   const hasSimulatedData = rows.some((row) => row.hasSimulatedData)
   const countByLevel = Object.fromEntries(
     SUMMARY_LEVELS.map((level) => [level, rows.filter((row) => row.overall === level).length]),
@@ -183,6 +187,9 @@ export default function Crew() {
                         <Link to={`/crew/${row.user.id}`} className="crew-member-link">
                           {row.user.name}
                         </Link>
+                        {row.user.isMedicalOfficer && (
+                          <span className="crew-officer-badge">{t('crew.medicalOfficer')}</span>
+                        )}
                       </th>
                       <td data-label={t('crew.overall')}>
                         <span className="crew-cell">
@@ -213,6 +220,7 @@ export default function Crew() {
               </table>
             </div>
           )}
+          <CrewAlerts users={astronauts} />
         </>
       )}
     </section>

@@ -44,7 +44,8 @@
     "loading": "Cargando tripulación…",
     "empty": "No hay astronautas asignados a esta misión.",
     "loadError": "No se pudo preparar la tripulación de demostración. Recarga la página.",
-    "simulateError": "No se pudieron generar lecturas simuladas. Inténtalo de nuevo."
+    "simulateError": "No se pudieron generar lecturas simuladas. Inténtalo de nuevo.",
+    "medicalOfficer": "Oficial médico"
   },
   "crewDetail": {
     "back": "Volver a la tripulación",
@@ -95,12 +96,12 @@
     "pendingCount_one": "{{count}} registro pendiente de sincronizar",
     "pendingCount_other": "{{count}} registros pendientes de sincronizar",
     "notes": {
-  "title": "Notas del médico de vuelo",
-  "loading": "Cargando notas…",
-  "empty": "Todavía no tienes notas del médico.",
-  "markAsRead": "Marcar como leída",
-  "readError": "No se pudo marcar la nota como leída. Inténtalo de nuevo."
-}
+      "title": "Notas del médico de vuelo",
+      "loading": "Cargando notas…",
+      "empty": "Todavía no tienes notas del médico.",
+      "markAsRead": "Marcar como leída",
+      "readError": "No se pudo marcar la nota como leída. Inténtalo de nuevo."
+    }
   },
   "common": {
     "underConstruction": "En construcción",
@@ -198,5 +199,23 @@
   "directions": {
     "high": "alto",
     "low": "bajo"
+  },
+  "crewAlerts": {
+    "title": "Alertas de la tripulación",
+    "unattended_one": "{{count}} alerta sin atender",
+    "unattended_other": "{{count}} alertas sin atender",
+    "onlyOpen": "Solo sin atender",
+    "empty": "Todavía no hay alertas de la tripulación.",
+    "emptyOpen": "No hay alertas sin atender.",
+    "open": "Sin atender",
+    "attended": "Atendida {{time}}",
+    "sendNote": "Enviar nota",
+    "more_one": "Y {{count}} alerta más.",
+    "more_other": "Y {{count}} alertas más.",
+    "draft": "Vi tu alerta de {{indicator}} ({{value}} {{unit}}) de las {{time}}. {{advice}} Avísame cuando lo hayas hecho.",
+    "direction": {
+      "high": "subió",
+      "low": "bajó"
+    }
   }
 }
