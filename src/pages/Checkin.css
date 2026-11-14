@@ -109,7 +109,7 @@
 }
 
 .seg-btn.is-active {
-  background-color: rgba(34, 211, 238, 0.14);
+  background-color: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -178,7 +178,7 @@
 }
 
 .pvt-trigger.waiting {
-  background-color: rgba(245, 158, 11, 0.16);
+  background-color: var(--warn-soft);
   border-color: var(--warn);
   color: var(--warn);
 }
@@ -190,7 +190,7 @@
 }
 
 .pvt-trigger.early {
-  background-color: rgba(239, 68, 68, 0.16);
+  background-color: var(--danger-soft);
   border-color: var(--danger);
   color: var(--danger);
 }
@@ -238,7 +238,7 @@
 }
 
 .chip-btn.is-selected {
-  background-color: rgba(34, 211, 238, 0.14);
+  background-color: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
 }

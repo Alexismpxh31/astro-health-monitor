@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Astro Health Monitor"
+    "name": "Astro Health Monitor",
+    "tagline": "Crew medical monitoring",
+    "team": "Team Riobamba",
+    "event": "Space Apps 2026 · Riobamba"
   },
   "pages": {
     "login": "Log in",
@@ -260,6 +263,54 @@
     "direction": {
       "high": "went up",
       "low": "went down"
+    }
+  },
+  "theme": {
+    "switchTo": {
+      "light": "Switch to light theme",
+      "dark": "Switch to dark theme"
+    }
+  },
+  "home": {
+    "title": "Hello, {{name}}",
+    "lastReading": "Last reading: {{time}}",
+    "noReadingsYet": "No readings yet.",
+    "cards": {
+      "bp": "Blood pressure",
+      "spo2": "Blood oxygen",
+      "hr": "Heart rate"
+    },
+    "emptyTitle": "No readings yet.",
+    "emptyText": "Start the simulator in Sensors to see your vital signs.",
+    "goSensors": "Go to Sensors",
+    "systemsTitle": "Body systems",
+    "clinicalTitle": "System card",
+    "hazard": "Hazard (NASA HRP)",
+    "risk": "Risk",
+    "viewHistory": "View system history",
+    "modelSoon": "3D model in progress",
+    "modelHint": "The 3D astronaut will appear here with the selected system highlighted.",
+    "systems": {
+      "cardiovascular": {
+        "hazard": "Altered gravity (microgravity)",
+        "risk": "Cardiovascular adaptations and orthostatic intolerance when returning to gravity."
+      },
+      "musculoskeletal": {
+        "hazard": "Altered gravity (microgravity)",
+        "risk": "Bone density loss (1 to 1.5% per month) and loss of muscle mass and strength."
+      },
+      "immune": {
+        "hazard": "Hostile closed environment",
+        "risk": "Altered immune responses and reactivation of latent viruses."
+      },
+      "behavioral": {
+        "hazard": "Isolation and confinement",
+        "risk": "Insufficient sleep, fatigue and cognitive or mood changes."
+      },
+      "radiation": {
+        "hazard": "Space radiation",
+        "risk": "Higher cancer risk and central nervous system effects; 600 mSv career limit."
+      }
     }
   }
 }

@@ -1,22 +1,74 @@
+/* =====================================================================
+   AstroSalud design tokens.
+   Light theme (default) inspired by a mission-control dashboard: pale sky
+   background with an Earth arc, glass cards, navy side navigation.
+   Dark theme keeps the original palette of the team spec (#0B1220 + cyan).
+   Every color in the app comes from these tokens.
+   ===================================================================== */
 :root {
-  --bg: #0b1220;
-  --surface: #111a2e;
-  --accent: #22d3ee;
-  --blue: #3b82f6;
-  --text: #e2e8f0;
-  --ok: #22c55e;
-  --warn: #f59e0b;
-  --danger: #ef4444;
+  --bg: #eef3fa;
+  --bg-deep: #e2eaf6;
+  --surface: rgba(255, 255, 255, 0.76);
+  --surface-solid: #ffffff;
+  --accent: #0b57d0;
+  --accent-soft: rgba(11, 87, 208, 0.1);
+  --blue: #1d4ed8;
+  --text: #0e1b3e;
+  --muted: #56667f;
+  --border: rgba(15, 35, 80, 0.11);
+  --ok: #047857;
+  --warn: #b45309;
+  --danger: #dc2626;
+  --ok-soft: rgba(4, 120, 87, 0.11);
+  --warn-soft: rgba(180, 83, 9, 0.11);
+  --danger-soft: rgba(220, 38, 38, 0.1);
+  --shadow: 0 12px 32px -16px rgba(16, 42, 94, 0.3);
+  --radius: 16px;
+  --radius-lg: 22px;
 
-  --muted: #94a3b8;
-  --border: #1e293b;
-  --radius: 12px;
+  --sidebar-bg: linear-gradient(185deg, #06122e 0%, #0a1d4a 55%, #0d2b6b 100%);
+  --sidebar-fg: #c9d8f5;
+  --sidebar-muted: #7f95c2;
+  --sidebar-active: rgba(80, 140, 255, 0.22);
+  --sidebar-active-border: #5b9bff;
+  --planet-core: rgba(59, 130, 246, 0.26);
+  --planet-rim: rgba(147, 197, 253, 0.5);
 
-  color-scheme: dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   color: var(--text);
   background-color: var(--bg);
+}
+
+:root[data-theme='dark'] {
+  --bg: #0b1220;
+  --bg-deep: #070c17;
+  --surface: rgba(17, 26, 46, 0.82);
+  --surface-solid: #111a2e;
+  --accent: #22d3ee;
+  --accent-soft: rgba(34, 211, 238, 0.12);
+  --blue: #3b82f6;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #1e293b;
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --ok-soft: rgba(34, 197, 94, 0.14);
+  --warn-soft: rgba(245, 158, 11, 0.14);
+  --danger-soft: rgba(239, 68, 68, 0.14);
+  --shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.7);
+
+  --sidebar-bg: linear-gradient(185deg, #050a14 0%, #0a1430 60%, #0c1b40 100%);
+  --sidebar-fg: #cbd5e1;
+  --sidebar-muted: #64748b;
+  --sidebar-active: rgba(34, 211, 238, 0.14);
+  --sidebar-active-border: #22d3ee;
+  --planet-core: rgba(34, 211, 238, 0.08);
+  --planet-rim: rgba(59, 130, 246, 0.22);
+
+  color-scheme: dark;
 }
 
 *,
@@ -34,15 +86,17 @@ body {
 
 h1 {
   margin: 0 0 0.5rem;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  line-height: 1.2;
+  font-size: clamp(1.6rem, 3.6vw, 2.1rem);
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 
 a {
   color: var(--accent);
 }
 
-/* Touch targets: at least 48x48 px. */
+/* Touch targets: at least 48x48 px (hard to tap precisely in microgravity). */
 button,
 .nav-link {
   min-width: 48px;
@@ -73,45 +127,201 @@ button:hover {
   color: var(--muted);
 }
 
+.icon {
+  flex: none;
+}
+
+/* Glass panels: every card-like block of the app gets the same blur and shadow. */
+.glass,
+.crew-table-wrap,
+.crew-filter,
+.indicator-card,
+.notes-panel,
+.crew-alert,
+.sim-panel,
+.sim-row,
+.login-pin,
+.login-user,
+.checkin-card {
+  background-color: var(--surface);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  padding: 0;
+  border-radius: 50%;
+}
+
 /* ---------- App shell ---------- */
 
 .app-shell {
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
+  /* Earth arc in the top-right corner, drawn with gradients (no image). */
+  background:
+    radial-gradient(circle at 108% -26%, transparent 0 39%, var(--planet-rim) 39.4%, transparent 41.5%),
+    radial-gradient(circle at 108% -26%, var(--planet-core) 0 39%, transparent 39.5%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+  background-attachment: fixed;
 }
 
+.app-shell.has-nav {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+
+.main-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Side navigation */
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  height: 100vh;
+  height: 100dvh;
+  padding: 24px 14px;
+  color: var(--sidebar-fg);
+  background: var(--sidebar-bg);
+  border-radius: 0 28px 28px 0;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 6px;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.sidebar-brand-name {
+  font-size: 1.25rem;
+  font-weight: 750;
+  color: #ffffff;
+}
+
+.sidebar-brand-sub {
+  font-size: 0.75rem;
+  color: var(--sidebar-muted);
+}
+
+.main-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  font-weight: 600;
+  color: var(--sidebar-fg);
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background-color: var(--sidebar-active);
+  border-color: var(--sidebar-active-border);
+  box-shadow: 0 0 22px -6px var(--sidebar-active-border);
+}
+
+.sidebar-foot {
+  margin: auto 0 0;
+  padding: 0 8px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sidebar-muted);
+}
+
+/* Top bar */
 .top-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--surface);
-  border-bottom: 1px solid var(--border);
+  gap: 12px 20px;
+  padding: 22px 32px 14px;
+}
+
+.title-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.title-text {
+  display: flex;
+  flex-direction: column;
+  padding-left: 14px;
+  border-left: 4px solid var(--accent);
 }
 
 .app-name {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--accent);
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.app-tagline {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .top-bar-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
 }
 
 .connection-status {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 16px;
   font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
 }
 
 .connection-dot {
@@ -119,6 +329,7 @@ button:hover {
   height: 10px;
   border-radius: 50%;
   background-color: currentColor;
+  box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 18%, transparent);
 }
 
 .connection-status.is-online {
@@ -131,7 +342,19 @@ button:hover {
 
 .lang-switch {
   display: flex;
-  gap: 0.25rem;
+  gap: 4px;
+  padding: 3px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.lang-button {
+  min-height: 42px;
+  padding: 0 12px;
+  background: none;
+  border-color: transparent;
+  border-radius: 999px;
 }
 
 .lang-button[aria-pressed='true'] {
@@ -140,52 +363,66 @@ button:hover {
   border-color: var(--accent);
 }
 
-.main-nav {
-  display: flex;
-  gap: 0.25rem;
-  padding: 0.5rem 1rem;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-link {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0.875rem;
-  font-weight: 600;
-  color: var(--text);
-  text-decoration: none;
-  white-space: nowrap;
-  border-radius: var(--radius);
-}
-
-.nav-link:hover {
-  background-color: var(--surface);
-}
-
-.nav-link.active {
-  color: var(--accent);
-  background-color: var(--surface);
-}
-
 .content {
   flex: 1;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 8px 32px 40px;
 }
 
-@media (min-width: 768px) {
-  .top-bar,
+/* Phones and small tablets: the side navigation becomes a bottom bar. */
+@media (max-width: 900px) {
+  .app-shell.has-nav {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 30;
+    flex-direction: row;
+    gap: 0;
+    height: auto;
+    padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+    border-radius: 20px 20px 0 0;
+  }
+
+  .sidebar-brand,
+  .sidebar-foot {
+    display: none;
+  }
+
   .main-nav {
-    padding-inline: 1.5rem;
+    flex: 1;
+    flex-direction: row;
+    gap: 2px;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    flex: 1 0 64px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    font-size: 0.68rem;
+  }
+
+  .nav-link.active {
+    box-shadow: none;
+  }
+
+  .top-bar {
+    padding: 14px 16px 8px;
   }
 
   .content {
-    padding: 1.5rem;
+    padding: 4px 16px 112px;
+  }
+
+  .app-shell.no-nav .content {
+    padding-bottom: 32px;
   }
 }
 
@@ -311,14 +548,38 @@ h2 {
 .session-box {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 10px;
+  padding: 3px 3px 3px 6px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.session-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--blue), #0b1f4d);
+  border-radius: 50%;
+}
+
+.session-box .icon-button {
+  width: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  height: 42px;
+  border-color: transparent;
+  background: none;
 }
 
 .session-user {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
-  text-align: right;
+  text-align: left;
 }
 
 .session-name {
@@ -502,5 +763,55 @@ h2 {
 
   .login-pin {
     padding: 1rem 0.75rem;
+  }
+}
+
+/* Compact top bar on phones: name and tagline on top, controls in one row. */
+@media (max-width: 600px) {
+  .top-bar-actions {
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .connection-status {
+    flex: 1;
+    min-width: 0;
+    padding: 0 10px;
+    font-size: 0.8rem;
+  }
+
+  .session-user {
+    display: none;
+  }
+
+  .session-box {
+    flex-basis: auto;
+    padding: 3px;
+  }
+
+  .lang-button {
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-bar-actions {
+    flex-wrap: wrap;
+  }
+
+  .connection-status {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .theme-toggle {
+    margin-left: auto;
+  }
+
+  .nav-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

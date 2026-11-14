@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Astro Health Monitor"
+    "name": "Astro Health Monitor",
+    "tagline": "Monitoreo médico de la tripulación",
+    "team": "Equipo Riobamba",
+    "event": "Space Apps 2026 · Riobamba"
   },
   "pages": {
     "login": "Iniciar sesión",
@@ -260,6 +263,54 @@
     "direction": {
       "high": "subió",
       "low": "bajó"
+    }
+  },
+  "theme": {
+    "switchTo": {
+      "light": "Cambiar a tema claro",
+      "dark": "Cambiar a tema oscuro"
+    }
+  },
+  "home": {
+    "title": "Hola, {{name}}",
+    "lastReading": "Última lectura: {{time}}",
+    "noReadingsYet": "Todavía no hay lecturas.",
+    "cards": {
+      "bp": "Presión arterial",
+      "spo2": "Oxígeno en sangre",
+      "hr": "Frecuencia cardíaca"
+    },
+    "emptyTitle": "Sin lecturas todavía.",
+    "emptyText": "Inicia el simulador en Sensores para ver tus signos vitales.",
+    "goSensors": "Ir a Sensores",
+    "systemsTitle": "Sistemas del cuerpo",
+    "clinicalTitle": "Ficha del sistema",
+    "hazard": "Peligro (NASA HRP)",
+    "risk": "Riesgo",
+    "viewHistory": "Ver historial del sistema",
+    "modelSoon": "Modelo 3D en preparación",
+    "modelHint": "Aquí se verá el astronauta en 3D con el sistema seleccionado resaltado.",
+    "systems": {
+      "cardiovascular": {
+        "hazard": "Gravedad alterada (microgravedad)",
+        "risk": "Adaptaciones cardiovasculares e intolerancia ortostática al volver a la gravedad."
+      },
+      "musculoskeletal": {
+        "hazard": "Gravedad alterada (microgravedad)",
+        "risk": "Pérdida de densidad ósea (1 a 1,5 % al mes) y de masa y fuerza muscular."
+      },
+      "immune": {
+        "hazard": "Ambiente cerrado y hostil",
+        "risk": "Respuestas alteradas del sistema inmune y reactivación de virus latentes."
+      },
+      "behavioral": {
+        "hazard": "Aislamiento y confinamiento",
+        "risk": "Sueño insuficiente, fatiga y cambios cognitivos o de ánimo."
+      },
+      "radiation": {
+        "hazard": "Radiación espacial",
+        "risk": "Mayor riesgo de cáncer y efectos en el sistema nervioso central; límite de carrera de 600 mSv."
+      }
     }
   }
 }
