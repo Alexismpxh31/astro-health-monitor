@@ -18,6 +18,78 @@
     "online": "Online",
     "offline": "No signal"
   },
+  "trafficLight": {
+    "NORMAL": "Normal",
+    "WARNING": "Warning",
+    "CRITICAL": "Critical",
+    "NO_DATA": "Not assessed"
+  },
+  "crew": {
+    "subtitle_one": "Mission {{mission}}: {{count}} astronaut",
+    "subtitle_other": "Mission {{mission}}: {{count}} astronauts",
+    "member": "Crew member",
+    "overall": "Overall status",
+    "lastReading": "Last reading",
+    "simulate": "Generate simulated readings",
+    "simulating": "Generating…",
+    "simulatedNote": "Includes simulated data for the demo. This is not real medical data.",
+    "liveOff": "Live simulation",
+    "liveOn": "Live: stop",
+    "filterLabel": "Filter crew by status",
+    "showAll": "Show all",
+    "visibleCount_one": "Showing {{count}} crew member",
+    "visibleCount_other": "Showing {{count}} crew members",
+    "emptyFilter": "No crew member is in “{{level}}” status.",
+    "tableCaption": "Health status of each crew member by body system",
+    "loading": "Loading crew…",
+    "empty": "No astronauts are assigned to this mission.",
+    "loadError": "The demo crew could not be prepared. Reload the page.",
+    "simulateError": "Simulated readings could not be generated. Try again."
+  },
+  "crewDetail": {
+    "back": "Back to crew",
+    "notFound": "This crew member was not found.",
+    "exportCsv": "Export CSV",
+    "indicators": "Indicators",
+    "noReadings": "There are no readings for this crew member yet.",
+    "chartLabel": "{{name}} trend, last {{count}} readings",
+    "generalThreshold": "General threshold",
+    "personalThreshold": "Personal threshold",
+    "noThreshold": "No threshold set",
+    "adjustThreshold": "Adjust threshold",
+    "baseline": {
+      "usual": "Usual value (last 24 h): {{value}} {{unit}}",
+      "calibrating": "Calibrating usual value: {{count}} of {{total}} readings"
+    },
+    "threshold": {
+      "hint": "Values in {{unit}}. Leave a field empty for no limit on that side.",
+      "hintBaseline": "Deviation from the crew member's usual value, in {{unit}} (e.g. −0.7 and 0.8). Leave a field empty for no limit on that side.",
+      "minCritical": "Critical minimum",
+      "minNormal": "Normal minimum",
+      "maxNormal": "Normal maximum",
+      "maxCritical": "Critical maximum",
+      "save": "Save threshold",
+      "cancel": "Cancel",
+      "reset": "Use general threshold",
+      "errorNumber": "Use numbers only.",
+      "errorEmpty": "Enter at least one limit.",
+      "errorOrder": "Limits must go from low to high: critical minimum ≤ normal minimum ≤ normal maximum ≤ critical maximum.",
+      "saveError": "The threshold could not be saved. Try again."
+    },
+    "notes": {
+      "title": "Notes to the astronaut",
+      "label": "New note",
+      "placeholder": "E.g.: Measure SpO₂ again in 10 minutes.",
+      "send": "Send note",
+      "sending": "Sending…",
+      "empty": "You have not sent notes to this crew member yet.",
+      "pending": "Waiting to send",
+      "synced": "Sent",
+      "read": "Read",
+      "noSender": "No flight surgeon is logged in.",
+      "sendError": "The note could not be saved. Try again."
+    }
+  },
   "comms": {
     "loading": "Checking pending records…",
     "pendingCount_one": "{{count}} record pending sync",

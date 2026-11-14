@@ -342,7 +342,7 @@ export const simulator = {
 
 /** Builds (without storing) a reading with the latest simulated value of an indicator. */
 export function generateReading(forUserId, indicatorCode) {
-  let unit = ''
+  let unit
   try {
     unit = unitOf(indicatorCode)
   } catch {
