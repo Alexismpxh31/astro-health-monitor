@@ -26,6 +26,9 @@
 --    REC_PVT_HIGH_CAUTION, REC_SLEEP_H_LOW_CAUTION, REC_BMD_LOW_CAUTION, REC_BMD_LOW_CRITICAL,
 --    REC_MUSCLE_LOW_CAUTION, REC_RAD_D_HIGH_CAUTION, REC_RAD_D_HIGH_CRITICAL, REC_RAD_DOSE_HIGH_CRITICAL.
 --  * Catalog: RAD_D is_live = true, RAD_DOSE is_live = false, TSKIN belongs to 'immune'.
+--  * missions: new columns name_es, name_en, comm_delay_min_sec, comm_delay_max_sec; second demo
+--    mission (Mars transit) with astronauts Four (PIN 4444) and Five (PIN 5555, medical officer).
+--  * messages: new column alert_id (note sent from an alert; reading it marks the alert attended).
 --
 -- OFFICIAL INDICATOR CODES (18)
 --   HR, SPO2, SBP, DBP, RR, TSKIN, BMD, CTX, IL6, CORTISOL, SLEEP_H, MOOD,
@@ -107,13 +110,26 @@ create table sensor_types (
 -- 2. Mission
 -- =====================================================================
 create table missions (
-  id          uuid primary key default gen_random_uuid(),
-  name        varchar(100) not null,
-  destination varchar(100),
-  start_date  timestamptz,
-  end_date    timestamptz,
-  check (end_date is null or start_date is null or end_date >= start_date)
+  id                 uuid primary key default gen_random_uuid(),
+  name               varchar(100) not null,
+  destination        varchar(100),
+  start_date         timestamptz,
+  end_date           timestamptz,
+  name_es            varchar(100),          -- display names; `name` stays the internal label
+  name_en            varchar(100),
+  comm_delay_min_sec integer,               -- one-way Earth <-> crew signal delay (ISS ≈ 1 s, Mars 180–1320 s)
+  comm_delay_max_sec integer,
+  check (end_date is null or start_date is null or end_date >= start_date),
+  constraint chk_missions_comm_delay check (
+    comm_delay_min_sec is null or comm_delay_max_sec is null
+    or (comm_delay_min_sec >= 0 and comm_delay_max_sec >= comm_delay_min_sec)
+  )
 );
+-- Idempotent upgrade for a missions table created before these columns existed (no-op on a fresh install).
+alter table missions add column if not exists name_es varchar(100);
+alter table missions add column if not exists name_en varchar(100);
+alter table missions add column if not exists comm_delay_min_sec integer;
+alter table missions add column if not exists comm_delay_max_sec integer;
 
 create table users (
   id           uuid primary key default gen_random_uuid(),
@@ -231,10 +247,16 @@ create table messages (
   content      text not null check (length(content) > 0),
   sent_at      timestamptz not null default now(),
   read_at      timestamptz,
+  -- Note sent from an alert (flight surgeon -> astronaut). When the astronaut reads it,
+  -- the client marks that alert as attended (src/pages/Comms.jsx).
+  alert_id     uuid references alerts(id) on delete set null,
   updated_at   timestamptz not null default now(),
   check (sender_id <> recipient_id)
 );
 create index messages_recipient_idx on messages (recipient_id, sent_at desc);
+create index messages_alert_idx on messages (alert_id) where alert_id is not null;
+-- Idempotent upgrade for a messages table created before `alert_id` existed (no-op on a fresh install).
+alter table messages add column if not exists alert_id uuid references alerts(id) on delete set null;
 
 -- updated_at triggers (server-wins tables: client pulls rows with updated_at > lastSync)
 create function public.set_updated_at() returns trigger language plpgsql as $$
@@ -530,10 +552,13 @@ join alert_levels l on l.code = v.level_code
 on conflict (id) do update set indicator_id = excluded.indicator_id, alert_level_id = excluded.alert_level_id,
   direction = excluded.direction, text = excluded.text;
 
--- Demo mission and crew (fake people, demo PINs: surgeon 9999, astronauts 1111 / 2222 / 3333)
-insert into missions (id, name, destination, start_date, end_date) values
-  ('b0000000-0000-4000-8000-000000000001', 'Demo Mission (simulated data)', 'ISS (demo)', null, null)
-on conflict (id) do nothing;
+-- Demo missions and crew (fake people, demo PINs: surgeon 9999, astronauts 1111 / 2222 / 3333 / 4444 / 5555)
+insert into missions (id, name, destination, start_date, end_date, name_es, name_en, comm_delay_min_sec, comm_delay_max_sec) values
+  ('b0000000-0000-4000-8000-000000000001', 'Demo Mission (simulated data)', 'ISS (demo)', null, null, 'Expedición ISS (simulada)', 'ISS Expedition (simulated)', 1, 1),
+  ('b0000000-0000-4000-8000-000000000002', 'Mars Transit (simulated data)', 'Mars (demo)', null, null, 'Tránsito a Marte (simulada)', 'Mars Transit (simulated)', 180, 1320)
+on conflict (id) do update set name = excluded.name, destination = excluded.destination,
+  name_es = excluded.name_es, name_en = excluded.name_en,
+  comm_delay_min_sec = excluded.comm_delay_min_sec, comm_delay_max_sec = excluded.comm_delay_max_sec;
 
 insert into users (id, first_name, last_name, role_id, pin_salt, pin_hash)
 select v.id::uuid, v.first_name, v.last_name, r.id, v.pin_salt, v.pin_hash
@@ -541,7 +566,9 @@ from (values
   ('a0000000-0000-4000-8000-000000000001', 'Flight', 'Surgeon (demo)', 'flight_surgeon', '91936b3bdb47b76b', '0c50a14a24d6abdde0c8d65fe9a01e6e1284f64f3e75ed26fae2fae2e58489eb'),
   ('a0000000-0000-4000-8000-000000000002', 'Astronaut', 'One (demo)', 'astronaut', '09a4abba40eef513', 'f4bf96466abd6d390f6a70635ead9139bd68ed64dc7b4ec83886ba1a3c1dab06'),
   ('a0000000-0000-4000-8000-000000000003', 'Astronaut', 'Two (demo)', 'astronaut', 'd1b13074e4b303b3', '34d97676fdc77821a058a217637fac99a4c0842ee30c7f629e89887e284a79a1'),
-  ('a0000000-0000-4000-8000-000000000004', 'Astronaut', 'Three (demo)', 'astronaut', '8814fcc1fcfd1467', 'da3e5f0b13f499c19c42985254c4a3cfe2a25490ae2ffbdbb73d64095628291b')
+  ('a0000000-0000-4000-8000-000000000004', 'Astronaut', 'Three (demo)', 'astronaut', '8814fcc1fcfd1467', 'da3e5f0b13f499c19c42985254c4a3cfe2a25490ae2ffbdbb73d64095628291b'),
+  ('a0000000-0000-4000-8000-000000000005', 'Astronaut', 'Four (demo)', 'astronaut', '444dd0795d4f504f', '2ae0868709c8f2cc3aad5fdef845c6cdc73f9375deed9d94e1307c6d646337b4'),
+  ('a0000000-0000-4000-8000-000000000006', 'Astronaut', 'Five (demo)', 'astronaut', '5703b79779806764', '76f50fea422fc0f9c10c1f1df97c64a1ad6d96747bd45d938a5875899058955a')
 ) as v(id, first_name, last_name, role_code, pin_salt, pin_hash)
 join roles r on r.code = v.role_code
 on conflict (id) do nothing;
@@ -550,14 +577,17 @@ insert into crew (mission_id, user_id, is_medical_officer) values
   ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001', false),
   ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002', false),
   ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000003', true),
-  ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000004', false)
+  ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000004', false),
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000001', false),
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000005', false),
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000006', true)
 on conflict do nothing;
 
 -- To let a demo user call the API, create them in Supabase Auth (Dashboard > Authentication > Users) and link:
 --   update users set auth_user_id = '<auth uuid>' where id = 'a0000000-0000-4000-8000-000000000002';
 
 -- =====================================================================
--- 6. Verification. Expected: indicators = 18, thresholds = 18, recommendations = 60, users = 4
+-- 6. Verification. Expected: indicators = 18, thresholds = 18, recommendations = 60, users = 6
 -- =====================================================================
 select
   (select count(*) from indicators) as indicators,

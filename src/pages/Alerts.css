@@ -46,7 +46,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--muted);
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: var(--surface-solid);
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
@@ -55,12 +55,12 @@
 
 .filter-btn:hover {
   color: var(--text);
-  border-color: rgba(34, 211, 238, 0.4);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .filter-btn.is-active {
   color: var(--accent);
-  background-color: rgba(34, 211, 238, 0.1);
+  background-color: var(--accent-soft);
   border-color: var(--accent);
 }
 
@@ -119,20 +119,20 @@
 
 .alert-card.is-critical .alert-icon-wrap {
   color: var(--danger);
-  background-color: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: var(--danger-soft);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
 }
 
 .alert-card.is-caution .alert-icon-wrap {
   color: var(--warn);
-  background-color: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background-color: var(--warn-soft);
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
 }
 
 .alert-card.is-attended .alert-icon-wrap {
   color: var(--ok);
-  background-color: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background-color: var(--ok-soft);
+  border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent);
 }
 
 .alert-card-heading {
@@ -159,7 +159,7 @@
   padding: 0.2rem 0.5rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 700;
-  background-color: rgba(15, 23, 42, 0.7);
+  background-color: var(--surface-solid);
   border: 1px solid var(--border);
   border-radius: 6px;
 }
@@ -170,8 +170,8 @@
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.08), rgba(15, 23, 42, 0.8));
-  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
   border-radius: 8px;
 }
 
@@ -214,7 +214,7 @@
   padding: 0 1rem;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0b1220;
+  color: #ffffff;
   background-color: var(--ok);
   border: none;
   border-radius: 8px;
@@ -223,7 +223,7 @@
 }
 
 .alert-done-btn:hover {
-  background-color: #4ade80;
+  filter: brightness(1.08);
 }
 
 .alert-attended-badge {

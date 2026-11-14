@@ -1,71 +1,44 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import './AstronautModel3D.css';
 
+// Zones of the suit model -> body systems of the catalog (src/data/seed/catalogs.json).
+// The status and the reading shown in the HUD come from the parent (`zoneStatus`, `zoneDetail`).
 const ZONE_SYSTEM_MAP = {
   neuro: {
     systemId: 'behavioral',
     zoneCode: 'neuro',
-    name: 'Casco y Sistema Neuro-Vestibular',
-    nameEn: 'Helmet & Neuro-Vestibular System',
-    region: 'Visor Presurizado / Unidad Cefálica',
-    metric: 'Presión Casco · O₂',
-    value: '4.30 psi · 99.6 %',
-    status: 'optimal',
-    detail: 'Sello cervical hermético nominal; parámetros ópticos y vestibulares estables.',
+    name: 'Casco y sistema neuro-vestibular',
+    nameEn: 'Helmet & neuro-vestibular system',
   },
   cardio: {
     systemId: 'cardiovascular',
     zoneCode: 'cardio',
-    name: 'Coraza Pectoral (HUT) y Mochila PLSS',
-    nameEn: 'Torso (HUT) & PLSS Life Support',
-    region: 'Tórax y Soporte Vital Primario',
-    metric: 'Ritmo Cardíaco · Refrigeración LCVG',
-    value: '74 BPM · 21.2 °C',
-    status: 'optimal',
-    detail: 'Circulación térmica y gasto cardíaco en rangos nominales de misión.',
+    name: 'Coraza pectoral (HUT) y mochila PLSS',
+    nameEn: 'Torso (HUT) & PLSS life support',
   },
   metabolic: {
     systemId: 'immune',
     zoneCode: 'metabolic',
-    name: 'Corsé Abdominal y Regulación Pélvica',
-    nameEn: 'Abdominal Yoke & Metabolic Harness',
-    region: 'Cintura Articulada / Inmune & SANS',
-    metric: 'Hidratación · Termorregulación',
-    value: '96.5 % · Nominal',
-    status: 'optimal',
-    detail: 'Presión compartimental estable; balance electrolítico controlado.',
+    name: 'Corsé abdominal y regulación pélvica',
+    nameEn: 'Abdominal yoke & metabolic harness',
   },
   musculo: {
     systemId: 'musculoskeletal',
     zoneCode: 'musculo',
-    name: 'Extremidades, Guantes y Botas EVA',
-    nameEn: 'EVA Limbs, Gloves & Lunar Boots',
-    region: 'Articulaciones de Fuelle y Tracción Lunar',
-    metric: 'Carga Mecánica · Articular',
-    value: '94 % · Nominal',
-    status: 'optimal',
-    detail: 'Fuelles de codo/rodilla y suelas de alta tracción operando con fluidez.',
+    name: 'Extremidades, guantes y botas EVA',
+    nameEn: 'EVA limbs, gloves & boots',
   },
   radiation: {
     systemId: 'radiation',
     zoneCode: 'radiation',
-    name: 'Blindaje Multicapa (TMG) y Dosimetría',
-    nameEn: 'Multilayer Insulation & Dosimetry',
-    region: 'Mochila PLSS y Blindaje Integral',
-    metric: 'Tasa Dosis Diaria Absorbida',
-    value: '0.35 mSv/d',
-    status: 'optimal',
-    detail: 'Atenuación biológica contra radiación cósmica galáctica en rango seguro.',
+    name: 'Blindaje multicapa (TMG) y dosimetría',
+    nameEn: 'Multilayer insulation & dosimetry',
   },
-};
-
-const STATUS_BADGE = {
-  optimal: { color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.14)', label: 'Nominal' },
-  warning: { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.14)', label: 'Precaución' },
-  critical: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.14)', label: 'Alerta' },
 };
 
 /**
@@ -177,17 +150,29 @@ function createProceduralFallback(scene, interactiveMeshes, meshesByZone, platfo
 
 /**
  * AstronautModel3D
- * Carga el modelo de producción glTF (/models/astronauta.glb)
- * con fallback procedural PBR automático para garantizar 100% de disponibilidad.
+ * Loads the production glTF model (/models/astronauta.glb) with an automatic
+ * procedural PBR fallback, so the stage always renders.
+ *
+ * @param {Object} props
+ * @param {'light'|'dark'} [props.theme] - Follows the app theme (see src/theme/theme.js).
+ * @param {string|null} [props.selectedZone] - Highlighted zone: 'neuro' | 'cardio' | 'metabolic' | 'musculo' | 'radiation'.
+ * @param {Record<string, 'optimal'|'warning'|'critical'>} [props.zoneStatus] - Status badge per zone.
+ * @param {Record<string, string>} [props.zoneDetail] - One line per zone for the HUD (e.g. the reading behind its status).
+ * @param {(zone: { id: string, zoneCode: string, name: string }) => void} [props.onSelectZone] - Click on a zone; `id` is the body system code.
+ * @param {string} [props.height]
+ * @param {boolean} [props.showHud]
  */
 export default function AstronautModel3D({
   theme = 'dark',
-  embedded = true,
   selectedZone = 'cardio',
+  zoneStatus = {},
+  zoneDetail = {},
   onSelectZone,
   height = '530px',
   showHud = true,
 }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.resolvedLanguage === 'en';
   const mountRef = useRef(null);
   const controlsRef = useRef(null);
   const resetCameraRef = useRef(null);
@@ -202,8 +187,8 @@ export default function AstronautModel3D({
   const [loading, setLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
 
-  const activeZone = selectedZone || 'cardio';
-  const isDark = theme === 'dark' || embedded;
+  const activeZone = selectedZone || null;
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const container = mountRef.current;
@@ -220,8 +205,9 @@ export default function AstronautModel3D({
     const heightPx = container.clientHeight || 530;
 
     const camera = new THREE.PerspectiveCamera(40, width / heightPx, 0.1, 50);
-    const initialCamPos = new THREE.Vector3(0, 1.25, 2.85);
-    const cameraTarget = new THREE.Vector3(0, 1.04, 0);
+    // Far enough to keep the helmet below the HUD and the boots above the controls.
+    const initialCamPos = new THREE.Vector3(0, 1.5, 3.9);
+    const cameraTarget = new THREE.Vector3(0, 1.1, 0);
     camera.position.copy(initialCamPos);
 
     // 2. Renderer PBR con ToneMapping
@@ -548,12 +534,16 @@ export default function AstronautModel3D({
       renderer.setSize(w, h);
     };
     window.addEventListener('resize', handleResize);
+    // The stage also changes size without a window resize (layout breakpoints, sidebar).
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(handleResize);
+    resizeObserver?.observe(container);
 
     return () => {
       isDisposed = true;
       clearTimeout(glbTimeoutId);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
+      resizeObserver?.disconnect();
       dom.removeEventListener('pointermove', onPointerMove);
       dom.removeEventListener('click', onClick);
 
@@ -587,177 +577,49 @@ export default function AstronautModel3D({
     }
   }, [activeZone]);
 
-  const currentZoneData = ZONE_SYSTEM_MAP[activeZone] || ZONE_SYSTEM_MAP.cardio;
-  const currentBadge = STATUS_BADGE[currentZoneData.status] || STATUS_BADGE.optimal;
+  const currentZoneData = activeZone ? ZONE_SYSTEM_MAP[activeZone] : null;
+  const status = (activeZone && zoneStatus[activeZone]) || 'optimal';
+  const zoneName = (zone) => (zone ? (isEn ? ZONE_SYSTEM_MAP[zone].nameEn : ZONE_SYSTEM_MAP[zone].name) : '');
 
   return (
-    <div
-      className={`astronaut-3d-wrapper ${isDark ? 'is-dark' : 'is-light'}`}
-      style={{
-        position: 'relative',
-        width: '100%',
-        height,
-        minHeight: '440px',
-        overflow: 'hidden',
-        borderRadius: '16px',
-        userSelect: 'none',
-      }}
-    >
-      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+    <div className={`astronaut-3d ${isDark ? 'is-dark' : 'is-light'}`} style={{ height }}>
+      <div ref={mountRef} className="astronaut-3d-canvas" />
 
-      {/* Loading overlay */}
       {loading && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(11, 18, 32, 0.75)',
-            backdropFilter: 'blur(8px)',
-            zIndex: 10,
-            color: '#38bdf8',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-          }}
-        >
-          <div
-            style={{
-              width: '44px',
-              height: '44px',
-              border: '3px solid rgba(56, 189, 248, 0.2)',
-              borderTopColor: '#38bdf8',
-              borderRadius: '50%',
-              animation: 'spin 0.9s linear infinite',
-              marginBottom: '14px',
-            }}
-          />
-          <span style={{ fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.04em' }}>
-            Iniciando Telemetría EVA 3D... {loadProgress > 0 ? `${loadProgress}%` : ''}
+        <div className="astronaut-3d-loading" role="status">
+          <div className="astronaut-3d-spinner" aria-hidden="true" />
+          <span>
+            {t('model3d.loading')} {loadProgress > 0 ? `${loadProgress}%` : ''}
           </span>
         </div>
       )}
 
-      {/* Controles flotantes */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '16px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          gap: '8px',
-          background: isDark ? 'rgba(17, 26, 46, 0.88)' : 'rgba(255, 255, 255, 0.88)',
-          backdropFilter: 'blur(12px)',
-          border: isDark ? '1px solid rgba(56, 189, 248, 0.2)' : '1px solid rgba(14, 165, 233, 0.25)',
-          borderRadius: '9999px',
-          padding: '4px 10px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
-          zIndex: 5,
-        }}
-      >
+      <div className="astronaut-3d-controls">
         <button
           type="button"
+          className={autoRotate ? 'is-on' : ''}
+          aria-pressed={autoRotate}
           onClick={() => setAutoRotate((prev) => !prev)}
-          style={{
-            background: autoRotate ? 'rgba(6, 182, 212, 0.18)' : 'transparent',
-            color: autoRotate ? '#38bdf8' : (isDark ? '#94a3b8' : '#475569'),
-            border: 'none',
-            borderRadius: '9999px',
-            padding: '6px 12px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            transition: 'all 0.15s ease',
-          }}
         >
-          <span>{autoRotate ? '⏸ Detener Giro' : '🔄 Auto-Giro 360°'}</span>
+          {autoRotate ? t('model3d.stopRotation') : t('model3d.autoRotate')}
         </button>
-
-        <button
-          type="button"
-          onClick={() => resetCameraRef.current?.()}
-          style={{
-            background: 'transparent',
-            color: isDark ? '#94a3b8' : '#475569',
-            border: 'none',
-            borderRadius: '9999px',
-            padding: '6px 12px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          ⌖ Recentrar
+        <button type="button" onClick={() => resetCameraRef.current?.()}>
+          {t('model3d.recenter')}
         </button>
       </div>
 
-      {/* HUD de Telemetría */}
-      {showHud && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '14px',
-            left: '14px',
-            right: '14px',
-            pointerEvents: 'none',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            zIndex: 4,
-          }}
-        >
-          <div
-            style={{
-              pointerEvents: 'auto',
-              background: isDark ? 'rgba(17, 26, 46, 0.85)' : 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(12px)',
-              border: isDark ? '1px solid rgba(56, 189, 248, 0.22)' : '1px solid rgba(14, 165, 233, 0.25)',
-              borderRadius: '12px',
-              padding: '10px 14px',
-              maxWidth: '310px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#38bdf8', fontWeight: 700 }}>
-                {hoveredZone ? `Inspeccionando: ${hoveredZone.toUpperCase()}` : 'Zona Activa'}
-              </span>
-              <span
-                style={{
-                  fontSize: '0.68rem',
-                  fontWeight: 600,
-                  color: currentBadge.color,
-                  background: currentBadge.bg,
-                  padding: '2px 7px',
-                  borderRadius: '9999px',
-                  border: `1px solid ${currentBadge.color}33`,
-                }}
-              >
-                ● {currentBadge.label}
-              </span>
-            </div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isDark ? '#f1f5f9' : '#0f172a', lineHeight: 1.25 }}>
-              {currentZoneData.name}
-            </div>
-            <div style={{ fontSize: '0.72rem', color: isDark ? '#94a3b8' : '#64748b', marginTop: '2px' }}>
-              {currentZoneData.metric}: <strong style={{ color: '#38bdf8' }}>{currentZoneData.value}</strong>
-            </div>
+      {showHud && currentZoneData && (
+        <div className="astronaut-3d-hud">
+          <div className="astronaut-3d-hud-top">
+            <span className="astronaut-3d-hud-label">
+              {hoveredZone ? t('model3d.inspecting', { zone: zoneName(hoveredZone) }) : t('model3d.activeZone')}
+            </span>
+            <span className={`astronaut-3d-badge is-${status}`}>{t(`model3d.status.${status}`)}</span>
           </div>
+          <div className="astronaut-3d-hud-name">{zoneName(activeZone)}</div>
+          {zoneDetail[activeZone] && <div className="astronaut-3d-hud-detail">{zoneDetail[activeZone]}</div>}
         </div>
       )}
-
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

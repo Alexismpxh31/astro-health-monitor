@@ -13,6 +13,27 @@ Built for NASA Space Apps 2026. UI in Spanish and English; code, variables and c
 - [React Router](https://reactrouter.com/) – routing
 - [i18next](https://www.i18next.com/) + `react-i18next` – ES / EN
 - [Recharts](https://recharts.org/) – charts
+- [three.js](https://threejs.org/) – interactive 3D astronaut (glTF model with a procedural fallback)
+
+## Roles and flow
+
+Everyone logs in with a 4-digit PIN that is checked on the device (SHA-256, works offline). Demo users: flight surgeon `9999`; astronauts One `1111`, Two `2222` (ISS medical officer), Three `3333`, Four `4444`, Five `5555` (Mars medical officer).
+
+**Astronaut**
+
+1. `/` Home: blood pressure, SpO₂ and heart rate cards, the five body systems with their traffic light, the 3D astronaut (click a zone or a system to select it) and the clinical card of the selected system (NASA HRP hazard and risk).
+2. `/vitals`, `/system/:code`, `/alerts`, `/checkin`, `/sensors`, `/comms`: live charts, system history, alerts with the recommended action, daily self-report, simulator / Bluetooth sensor, and notes from the flight surgeon.
+
+**Flight surgeon**
+
+1. `/` Control center: every mission at once (astronauts, critical, warning, unattended alerts, unread notes), the crew members that need attention first, mission shortcuts and recent notes.
+2. `/missions` → `/missions/:id`: pick a mission (ISS, Mars transit) and see its crew. The signal delay of the mission is shown next to its name.
+3. `/crew` → `/crew/:userId`: crew table filtered by the current mission, then the detail of one astronaut: body view (3D + systems), indicator cards with trends and thresholds, alerts and notes.
+4. **Note ↔ alert**: "Enviar nota" from an alert pre-fills the note and links it (`alertId`). When the astronaut marks the note as read in `/comms`, the alert becomes attended for the surgeon.
+
+The crew medical officer (an astronaut) sees the crew table of their own mission in read-only mode.
+
+**Theme**: light by default with a dark toggle in the top bar (`src/theme/theme.js`, `<html data-theme>`). Every color comes from the tokens in `src/index.css`; charts and the 3D stage pick their palette from `useTheme()`.
 
 ## Getting started
 
@@ -52,14 +73,19 @@ public/               PWA icons (icon.svg, pwa-192x192.png, pwa-512x512.png)
 src/
   pages/              One file per screen (Login, Home, Vitals, SystemDetail, Alerts,
                       Checkin, Sensors, Comms, Crew, CrewMember)
-  components/         Shared UI (Layout, ConnectionStatus)
+    home/             Astronaut dashboard pieces, ControlCenter (surgeon home), MissionOverview, ModelStage
+    missions/         Mission list and the current-mission store
+    crew/             Crew table, member detail, alerts, notes, body view, chart themes
+  components/         Shared UI (Layout, ConnectionStatus, AstronautModel3D, ThemeToggle, icons)
+  theme/theme.js      Light / dark theme store (useTheme)
   data/
     simulator.js      Simulated vital signs
+    demoCrew.js       Starting history of the demo astronauts
     adapters/         Dataset adapters (dataset rows -> Reading)
-    seed/             JSON loaded into IndexedDB on first run
+    seed/             JSON loaded into IndexedDB on first run (single source of truth, see below)
   db/db.js            Dexie schema (AstroHealthDB) + seedIfEmpty()
-  rules/engine.js     Thresholds -> alerts
-  sync/               Supabase client + sync queue
+  rules/              engine.js (thresholds -> alerts), baseline.js (personal baseline)
+  sync/               Supabase client + sync queue (push pending rows, pull notes)
   bluetooth/          Web Bluetooth heart rate sensor
   auth/               PIN + local session
   i18n/               i18next setup, es.json, en.json
@@ -91,7 +117,7 @@ git checkout -b name/task
 
 ## AI usage
 
-Claude (Anthropic) was used as a coding assistant for the initial project setup (PWA configuration, folder structure, database schema, routing, i18n and placeholders).
+Claude (Anthropic) was used as a coding assistant: initial project setup (PWA configuration, folder structure, database schema, routing, i18n), the flight surgeon panel, the visual redesign (theme tokens, side navigation, control center, missions flow) and the integration of the team's branches. Clinical thresholds, recommendations and the NASA HRP texts were reviewed by the team against the official sources listed in the seed files; the demo data is simulated and is not real medical data.
 
 ## Supabase database
 
@@ -105,3 +131,9 @@ It is generated, do not edit it by hand:
 ```bash
 npm run gen:sql   # regenerates supabase/setup_final.sql
 ```
+
+Upgrading an existing database without dropping it: run `supabase/upgrade_missions_alert_id.sql` in the SQL Editor (adds the missions columns, `messages.alert_id`, the Mars demo mission and astronauts Four and Five; safe to run more than once). The `alter table ... add column if not exists` lines in `scripts/schema.sql` are the same changes.
+
+### Sync
+
+The sync queue (`src/sync/queue.js`) runs every 30 s and when the browser comes back online. It needs a Supabase Auth user linked to the active profile (`users.auth_user_id`; link it from Comms > "Sync now"). It pushes the pending rows of the active profile (readings of every indicator, alerts, daily check-ins with symptoms, notes) and pulls the notes sent to or by the profile. Row Level Security (section 4 of the schema) limits what each profile may write.

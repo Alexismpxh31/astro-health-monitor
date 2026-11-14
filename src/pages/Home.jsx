@@ -1,363 +1,195 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useLiveQuery } from 'dexie-react-hooks'
-import {
-  Activity,
-  Heart,
-  Brain,
-  Dumbbell,
-  Radio,
-  ShieldCheck,
-  ShieldAlert,
-  Thermometer,
-  Wind,
-  ChevronRight,
-  AlertTriangle,
-} from 'lucide-react'
-
-import { useSession } from '../auth/session.js'
-import AstronautModel3D from '../components/AstronautModel3D.jsx'
+import { ROLE, useSession } from '../auth/session.js'
+import Icon from '../components/icons.jsx'
 import TrafficLight from '../components/TrafficLight.jsx'
-import { defaultUserId } from '../data/demoUser.js'
-import { db } from '../db/db.js'
-import { classifyValue, effectiveThreshold, LEVEL, severityOf } from './crew/crewStatus.js'
+import { ensureDemoCrew } from '../data/demoCrew.js'
+import { localName } from './crew/display.js'
+import { RingGauge, Sparkline } from './home/charts.jsx'
+import { loadHomeData } from './home/homeData.js'
+import ControlCenter from './home/ControlCenter.jsx'
+import ModelStage from './home/ModelStage.jsx'
 import './Home.css'
 
-const NASA_HRP_SYSTEMS = {
-  cardiovascular: {
-    id: 'cardiovascular',
-    zoneCode: 'cardio',
-    nameEs: 'Cardiovascular & Fluidos',
-    nameEn: 'Cardiovascular & Fluids',
-    icon: Heart,
-    hazardEs: 'Microgravedad / Campos Gravitatorios',
-    hazardEn: 'Gravity Fields / Microgravity',
-    riskEs: 'Riesgo de desadaptación cardiovascular e intolerancia ortostática post-aterrizaje.',
-    riskEn: 'Risk of Cardiovascular Adaptations & Orthostatic Intolerance.',
-    descEs: 'Monitoreo de presión arterial, gasto cardíaco y redistribución cefálica de fluidos corporales.',
-    descEn: 'Monitoring of arterial pressure, cardiac output, and headward fluid redistribution.',
-    primaryCodes: ['HR', 'SPO2', 'SBP', 'DBP', 'RR'],
-  },
-  behavioral: {
-    id: 'behavioral',
-    zoneCode: 'neuro',
-    nameEs: 'Neurocognitivo & Conductual',
-    nameEn: 'Neurocognitive & Behavioral',
-    icon: Brain,
-    hazardEs: 'Aislamiento, Confinamiento y Fatiga Circadiana',
-    hazardEn: 'Isolation, Confinement & Circadian Fatigue',
-    riskEs: 'Riesgo de condiciones cognitivas/conductuales adversas y trastornos del sueño.',
-    riskEn: 'Risk of Adverse Cognitive/Behavioral Conditions and Sleep Disorders.',
-    descEs: 'Evaluación de fatiga psicomotora (PVT), calidad del sueño y estabilidad neuroconductual.',
-    descEn: 'Evaluation of psychomotor fatigue (PVT), sleep quality, and behavioral stability.',
-    primaryCodes: ['SLEEP_H', 'MOOD', 'STRESS', 'PVT'],
-  },
-  musculoskeletal: {
-    id: 'musculoskeletal',
-    zoneCode: 'musculo',
-    nameEs: 'Óseo-Muscular & Carga',
-    nameEn: 'Musculoskeletal & Loading',
-    icon: Dumbbell,
-    hazardEs: 'Descarga Gravitacional Progresiva',
-    hazardEn: 'Progressive Gravitational Unloading',
-    riskEs: 'Riesgo de pérdida de densidad mineral ósea (osteopenia) y atrofia muscular funcional.',
-    riskEn: 'Risk of Bone Mineral Density Loss and Functional Muscle Atrophy.',
-    descEs: 'Seguimiento de densidad ósea, biomarcadores de resorción (CTX) y masa muscular magra.',
-    descEn: 'Tracking of bone density, resorption biomarkers (CTX), and functional lean muscle.',
-    primaryCodes: ['BMD', 'CTX', 'MUSCLE'],
-  },
-  radiation: {
-    id: 'radiation',
-    zoneCode: 'radiation',
-    nameEs: 'Dosimetría & Radiación',
-    nameEn: 'Dosimetry & Radiation',
-    icon: Radio,
-    hazardEs: 'Radiación Cósmica Galáctica (GCR) & SPE',
-    hazardEn: 'Galactic Cosmic Radiation (GCR) & SPE',
-    riskEs: 'Riesgo de efectos tisulares agudos, daño degenerativo y límites de dosis de misión.',
-    riskEn: 'Risk of Acute Radiation Syndromes and Cumulative Mission Exposure.',
-    descEs: 'Monitorización de tasa de dosis diaria absorbida (mSv/d) y blindaje biológico.',
-    descEn: 'Daily absorbed dose monitoring (mSv/d) and biological shielding integrity.',
-    primaryCodes: ['RAD_D', 'RAD_DOSE'],
-  },
-  immune: {
-    id: 'immune',
-    zoneCode: 'metabolic',
-    nameEs: 'Inmune & Fisiológico',
-    nameEn: 'Immune & Physiological',
-    icon: ShieldCheck,
-    hazardEs: 'Ambiente Cerrado Hostil y Microgravedad',
-    hazardEn: 'Hostile Closed Environment & Microgravity',
-    riskEs: 'Riesgo de desregulación inmune, reactivación viral y respuesta inflamatoria aumentada.',
-    riskEn: 'Risk of Adverse Health Events Due to Altered Immune Response.',
-    descEs: 'Medición de temperatura cutánea, reactivos inflamatorios (IL-6) y cortisol libre.',
-    descEn: 'Measurement of skin temperature, inflammatory markers (IL-6), and salivary cortisol.',
-    primaryCodes: ['TSKIN', 'WBC', 'IL6', 'CORTISOL'],
-  },
-}
+const LEVEL_RANK = { NO_DATA: -1, NORMAL: 0, WARNING: 1, CRITICAL: 2 }
+const worse = (a, b) => ((LEVEL_RANK[b] ?? -1) > (LEVEL_RANK[a] ?? -1) ? b : a)
 
+// Astronaut home: vital cards, body systems with their traffic light, the 3D model
+// stage (Walter) and the clinical card of the selected system.
 export default function Home() {
-  const { i18n } = useTranslation()
-  const lang = i18n.language?.startsWith('es') ? 'es' : 'en'
-  const isEs = lang === 'es'
   const session = useSession()
-  const [selectedSystemId, setSelectedSystemId] = useState('cardiovascular')
+  const { t, i18n } = useTranslation()
+  const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
+  const userId = session?.userId
+  const data = useLiveQuery(() => (userId ? loadHomeData(userId) : null), [userId])
+  const [selectedCode, setSelectedCode] = useState(null)
 
-  // Reactive Dexie query for current astronaut's readings, catalogs and thresholds
-  const dbData = useLiveQuery(async () => {
-    // Resolve target user: logged in user or default demo astronaut
-    const userId = defaultUserId()
-    if (!userId) return null
+  useEffect(() => {
+    ensureDemoCrew().catch((error) => console.error('[home] Could not prepare demo data', error))
+  }, [])
 
-    const [user, indicators, thresholds, readings] = await Promise.all([
-      db.users.get(userId),
-      db.indicators.toArray(),
-      db.thresholds.toArray(),
-      db.readings.where('userId').equals(userId).toArray(),
-    ])
+  // The flight surgeon has no health data of their own: their home is the control
+  // center with every mission they follow.
+  if (session?.roleCode === ROLE.FLIGHT_SURGEON) return <ControlCenter />
+  if (data === undefined) return <p className="muted">{t('crew.loading')}</p>
+  if (data === null) return <p className="muted">{t('crewDetail.notFound')}</p>
 
-    readings.sort((a, b) => a.measuredAt.localeCompare(b.measuredAt))
+  const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
+  const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' })
+  const format = (entry) => (entry ? numberFormat.format(entry.latest.value) : '—')
 
-    const readingsByCode = new Map()
-    for (const r of readings) {
-      if (!readingsByCode.has(r.indicatorCode)) readingsByCode.set(r.indicatorCode, [])
-      readingsByCode.get(r.indicatorCode).push(r)
-    }
+  const { byCode, systems } = data
+  const sbp = byCode.SBP
+  const dbp = byCode.DBP
+  const spo2 = byCode.SPO2
+  const hr = byCode.HR
+  const bpLevel = worse(sbp?.level ?? 'NO_DATA', dbp?.level ?? 'NO_DATA')
 
-    const latestByCode = {}
-    const levelByCode = {}
-
-    for (const ind of indicators) {
-      const series = readingsByCode.get(ind.code)
-      if (series && series.length > 0) {
-        const latest = series.at(-1)
-        latestByCode[ind.code] = latest
-        const { threshold } = effectiveThreshold(thresholds, userId, ind, series, latest)
-        levelByCode[ind.code] = classifyValue(latest.value, threshold) ?? LEVEL.NORMAL
-      }
-    }
-
-    // Evaluate roll-up level per body system
-    const systemLevels = {}
-    for (const [sysKey, sysDef] of Object.entries(NASA_HRP_SYSTEMS)) {
-      const relevantLevels = sysDef.primaryCodes
-        .map((code) => levelByCode[code])
-        .filter(Boolean)
-      if (relevantLevels.length === 0) {
-        systemLevels[sysKey] = LEVEL.NORMAL
-      } else {
-        relevantLevels.sort((a, b) => severityOf(b) - severityOf(a))
-        systemLevels[sysKey] = relevantLevels[0]
-      }
-    }
-
-    return { user, latestByCode, levelByCode, systemLevels }
-  }, [session?.userId])
-
-  const activeSystem = NASA_HRP_SYSTEMS[selectedSystemId] || NASA_HRP_SYSTEMS.cardiovascular
-  const activeLevel = dbData?.systemLevels?.[selectedSystemId] || LEVEL.NORMAL
-
-  const handleSelectSubsystem = (sysId) => {
-    setSelectedSystemId(sysId)
-  }
-
-  const handleSelectZoneFrom3D = (zoneData) => {
-    if (zoneData?.id && NASA_HRP_SYSTEMS[zoneData.id]) {
-      setSelectedSystemId(zoneData.id)
-    } else if (zoneData?.zoneCode) {
-      const found = Object.values(NASA_HRP_SYSTEMS).find((s) => s.zoneCode === zoneData.zoneCode)
-      if (found) setSelectedSystemId(found.id)
-    }
-  }
-
-  // Primary top vital cards data
-  const hrReading = dbData?.latestByCode?.HR?.value ?? 74
-  const sbpReading = dbData?.latestByCode?.SBP?.value ?? 118
-  const dbpReading = dbData?.latestByCode?.DBP?.value ?? 78
-  const spo2Reading = dbData?.latestByCode?.SPO2?.value ?? 98
-  const tskinReading = dbData?.latestByCode?.TSKIN?.value ?? 36.6
-  const radReading = dbData?.latestByCode?.RAD_D?.value ?? 0.35
-
-  const hrLevel = dbData?.levelByCode?.HR ?? LEVEL.NORMAL
-  const spo2Level = dbData?.levelByCode?.SPO2 ?? LEVEL.NORMAL
-  const bpLevel = dbData?.levelByCode?.SBP ?? LEVEL.NORMAL
+  const selected = systems.find((row) => row.system.code === (selectedCode ?? data.worstSystemCode)) ?? systems[0]
+  const levels = Object.fromEntries(systems.map((row) => [row.system.code, row.level]))
+  // One line per system for the 3D HUD: the indicator behind the system's level.
+  const details = Object.fromEntries(
+    systems.map((row) => {
+      const item =
+        row.items.find(({ entry }) => entry && entry.level === row.level) ?? row.items.find(({ entry }) => entry)
+      return [
+        row.system.code,
+        item
+          ? `${localName(item.indicator, lang)} · ${numberFormat.format(item.entry.latest.value)} ${item.entry.latest.unit}`
+          : null,
+      ]
+    }),
+  )
+  const firstName = data.user.name ?? data.user.firstName
 
   return (
-    <section className="astro-home">
-      {/* Top Banner Header */}
-      <header className="home-header">
-        <div className="home-header-titles">
-          <span className="home-header-subtitle">NASA Space Medical Systems · Flight Medical Telemetry</span>
-          <h1>{isEs ? 'Panel Principal de Monitoreo del Astronauta' : 'Astronaut Medical Overview'}</h1>
-        </div>
-        <div className="home-header-meta">
-          <div className="met-badge">
-            <Activity size={14} color="#22d3ee" />
-            <span>MET: 042d 14h 22m</span>
-          </div>
-        </div>
+    <section className="home">
+      <header className="home-head">
+        <h1>{t('home.title', { name: firstName })}</h1>
+        <p className="muted">
+          {data.lastMeasuredAt
+            ? t('home.lastReading', { time: timeFormat.format(new Date(data.lastMeasuredAt)) })
+            : t('home.noReadingsYet')}
+          {data.hasSimulatedData && <span className="home-sim-tag">{t('sensors.simulatedData')}</span>}
+        </p>
       </header>
 
-      {/* Top 3 Primary Vital Telemetry Cards */}
-      <div className="top-vitals-grid">
-        {/* Card 1: Blood Pressure & Heart Rate */}
-        <article className="vital-metric-card">
-          <div className="vital-metric-left">
-            <div className="vital-icon-box">
-              <Heart size={22} />
-            </div>
-            <div className="vital-metric-info">
-              <span className="vital-metric-name">{isEs ? 'Presión Arterial / Pulso' : 'Blood Pressure / Pulse'}</span>
-              <div className="vital-metric-reading">
-                <span className="vital-metric-value">{`${Math.round(sbpReading)}/${Math.round(dbpReading)}`}</span>
-                <span className="vital-metric-unit">mmHg · {Math.round(hrReading)} bpm</span>
-              </div>
-            </div>
+      <div className="vital-cards">
+        <article className="vital-card glass">
+          <span className="vital-icon"><Icon name="cardiovascular" size={28} /></span>
+          <div className="vital-text">
+            <span className="vital-label">{t('home.cards.bp')}</span>
+            <span className="vital-value">
+              {format(sbp)}/{format(dbp)} <small>mmHg</small>
+            </span>
+            <TrafficLight level={bpLevel} />
           </div>
-          <div className="vital-metric-status">
-            <TrafficLight level={bpLevel !== LEVEL.NORMAL ? bpLevel : hrLevel} />
-            <svg className="vital-ecg-svg" viewBox="0 0 60 24" preserveAspectRatio="none">
-              <path d="M0,12 L16,12 L20,4 L24,20 L28,8 L32,16 L36,12 L60,12" />
-            </svg>
-          </div>
+          <Sparkline values={sbp?.series} />
         </article>
 
-        {/* Card 2: Blood Oxygen SpO2 */}
-        <article className="vital-metric-card">
-          <div className="vital-metric-left">
-            <div className="vital-icon-box">
-              <Wind size={22} />
-            </div>
-            <div className="vital-metric-info">
-              <span className="vital-metric-name">{isEs ? 'Oxígeno en Sangre' : 'Blood Oxygen (SpO₂)'}</span>
-              <div className="vital-metric-reading">
-                <span className="vital-metric-value">{spo2Reading.toFixed(1)}</span>
-                <span className="vital-metric-unit">% Sat</span>
-              </div>
-            </div>
+        <article className="vital-card glass">
+          <span className="vital-icon"><Icon name="lungs" size={28} /></span>
+          <div className="vital-text">
+            <span className="vital-label">{t('home.cards.spo2')}</span>
+            <span className="vital-value">
+              {format(spo2)} <small>%</small>
+            </span>
+            <TrafficLight level={spo2?.level ?? 'NO_DATA'} />
           </div>
-          <div className="vital-metric-status">
-            <TrafficLight level={spo2Level} />
-          </div>
+          <RingGauge value={spo2?.latest.value} />
         </article>
 
-        {/* Card 3: Body Temperature & Radiation */}
-        <article className="vital-metric-card">
-          <div className="vital-metric-left">
-            <div className="vital-icon-box">
-              <Thermometer size={22} />
-            </div>
-            <div className="vital-metric-info">
-              <span className="vital-metric-name">{isEs ? 'Temperatura / Dosis' : 'Skin Temp / Radiation'}</span>
-              <div className="vital-metric-reading">
-                <span className="vital-metric-value">{tskinReading.toFixed(1)}</span>
-                <span className="vital-metric-unit">°C · {radReading.toFixed(2)} mSv/d</span>
-              </div>
-            </div>
+        <article className="vital-card glass">
+          <span className="vital-icon"><Icon name="vitals" size={28} /></span>
+          <div className="vital-text">
+            <span className="vital-label">{t('home.cards.hr')}</span>
+            <span className="vital-value">
+              {format(hr)} <small>bpm</small>
+            </span>
+            <TrafficLight level={hr?.level ?? 'NO_DATA'} />
           </div>
-          <div className="vital-metric-status">
-            <TrafficLight level={LEVEL.NORMAL} />
-          </div>
+          <Sparkline values={hr?.series} />
         </article>
       </div>
 
-      {/* 3-Column Aerospace Workspace */}
-      <div className="home-workspace">
-        {/* Left Column: Subsystems Navigation List */}
-        <aside className="subsystems-panel">
-          <h2 className="panel-header-title">{isEs ? 'Subsistemas de Monitoreo' : 'Body Subsystems'}</h2>
-          <div className="subsystem-list">
-            {Object.values(NASA_HRP_SYSTEMS).map((sys) => {
-              const IconComponent = sys.icon
-              const isActive = sys.id === selectedSystemId
-              const sysLevel = dbData?.systemLevels?.[sys.id] || LEVEL.NORMAL
+      {!data.hasData && (
+        <div className="home-empty glass">
+          <p>
+            <strong>{t('home.emptyTitle')}</strong> {t('home.emptyText')}
+          </p>
+          <Link to="/sensors" className="button-link is-primary">
+            {t('home.goSensors')}
+          </Link>
+        </div>
+      )}
 
+      <div className="home-grid">
+        <section className="systems-card glass" aria-labelledby="systems-title">
+          <h2 id="systems-title" className="card-title">{t('home.systemsTitle')}</h2>
+          <ul className="system-list">
+            {systems.map((row) => {
+              const isSelected = row.system.code === selected?.system.code
               return (
-                <button
-                  key={sys.id}
-                  type="button"
-                  onClick={() => handleSelectSubsystem(sys.id)}
-                  className={`subsystem-item-btn ${isActive ? 'is-active' : ''}`}
-                >
-                  <div className="subsystem-item-left">
-                    <div className="subsystem-item-icon">
-                      <IconComponent size={18} />
-                    </div>
-                    <span className="subsystem-item-name">{isEs ? sys.nameEs : sys.nameEn}</span>
-                  </div>
-                  <TrafficLight level={sysLevel} />
-                </button>
+                <li key={row.system.id}>
+                  <button
+                    type="button"
+                    className={`system-row${isSelected ? ' is-selected' : ''}`}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedCode(row.system.code)}
+                  >
+                    <span className="system-icon"><Icon name={row.system.code} /></span>
+                    <span className="system-name">{localName(row.system, lang)}</span>
+                    <TrafficLight level={row.level} />
+                  </button>
+                </li>
               )
             })}
-          </div>
-        </aside>
+          </ul>
+        </section>
 
-        {/* Center Column: 3D Holographic Astronaut Viewport */}
-        <div className="astronaut-viewport">
-          <div className="viewport-badge">
-            <Activity size={13} />
-            <span>{isEs ? 'Modelo EVA PBR 3D Interactivo' : 'Interactive 3D EVA Twin'}</span>
-          </div>
-          <AstronautModel3D
-            embedded={true}
-            theme="dark"
-            selectedZone={activeSystem.zoneCode}
-            onSelectZone={handleSelectZoneFrom3D}
-            height="530px"
-          />
-        </div>
+        <ModelStage
+          selectedSystem={selected?.system.code ?? null}
+          levels={levels}
+          details={details}
+          onSelectSystem={setSelectedCode}
+        />
 
-        {/* Right Column: NASA Clinical File Card */}
-        <aside className="clinical-file-panel">
-          <div>
-            <div className="clinical-header">
-              <span className="panel-header-title">{isEs ? 'Ficha Clínica NASA' : 'NASA Clinical File'}</span>
-              <TrafficLight level={activeLevel} />
+        {selected && (
+          <section className="clinical-card glass" aria-labelledby="clinical-title">
+            <div className="clinical-top">
+              <span className="card-title">{t('home.clinicalTitle')}</span>
+              <TrafficLight level={selected.level} />
             </div>
-
-            <h3 className="clinical-system-title">{isEs ? activeSystem.nameEs : activeSystem.nameEn}</h3>
-
-            <div className="clinical-risk-box">
-              <div className="risk-item">
-                <ShieldAlert className="risk-item-icon" size={18} />
-                <div className="risk-item-content">
-                  <strong>{isEs ? 'Peligro HRP' : 'HRP Hazard'}</strong>
-                  <span>{isEs ? activeSystem.hazardEs : activeSystem.hazardEn}</span>
-                </div>
+            <h2 id="clinical-title" className="clinical-name">{localName(selected.system, lang)}</h2>
+            <dl className="clinical-facts">
+              <div>
+                <dt>{t('home.hazard')}</dt>
+                <dd>{t(`home.systems.${selected.system.code}.hazard`)}</dd>
               </div>
-
-              <div className="risk-item">
-                <AlertTriangle className="risk-item-icon" size={18} />
-                <div className="risk-item-content">
-                  <strong>{isEs ? 'Riesgo Oficial' : 'Official Risk'}</strong>
-                  <span>{isEs ? activeSystem.riskEs : activeSystem.riskEn}</span>
-                </div>
+              <div>
+                <dt>{t('home.risk')}</dt>
+                <dd>{t(`home.systems.${selected.system.code}.risk`)}</dd>
               </div>
-            </div>
-
-            <p className="clinical-desc">{isEs ? activeSystem.descEs : activeSystem.descEn}</p>
-
-            <div className="clinical-metrics-table">
-              {activeSystem.primaryCodes.map((code) => {
-                const reading = dbData?.latestByCode?.[code]
-                return (
-                  <div key={code} className="clinical-metric-row">
-                    <span className="clinical-metric-label">{code}</span>
-                    <span className="clinical-metric-val">
-                      {reading ? `${reading.value} ${reading.unit}` : isEs ? 'En espera…' : 'Awaiting…'}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          <Link to={`/system/${selectedSystemId}`} className="clinical-action-btn">
-            <span>{isEs ? 'Ver Detalle del Sistema' : 'View System Details'}</span>
-            <ChevronRight size={18} />
-          </Link>
-        </aside>
+            </dl>
+            <ul className="clinical-indicators">
+              {selected.items.map(({ indicator, entry }) => (
+                <li key={indicator.id}>
+                  <span>{localName(indicator, lang)}</span>
+                  <span className="clinical-value">
+                    {entry ? `${numberFormat.format(entry.latest.value)} ${entry.latest.unit}` : '—'}
+                  </span>
+                  <TrafficLight level={entry?.level ?? 'NO_DATA'} />
+                </li>
+              ))}
+            </ul>
+            <Link to={`/system/${selected.system.code}`} className="button-link is-primary clinical-cta">
+              {t('home.viewHistory')}
+              <Icon name="chevronRight" size={20} />
+            </Link>
+          </section>
+        )}
       </div>
     </section>
   )

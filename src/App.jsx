@@ -9,6 +9,8 @@ import Crew from './pages/Crew.jsx'
 import CrewMember from './pages/CrewMember.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
+import MissionOverview from './pages/home/MissionOverview.jsx'
+import MissionList from './pages/missions/MissionList.jsx'
 import Sensors from './pages/Sensors.jsx'
 import SystemDetail from './pages/SystemDetail.jsx'
 import Vitals from './pages/Vitals.jsx'
@@ -21,9 +23,10 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           {/* Every other route needs a session; without one it redirects to /login. */}
           <Route element={<RequireSession />}>
-            {/* Astronaut screens: a flight surgeon is sent to /crew. */}
+            {/* Home: the astronaut dashboard, or the control center for the flight surgeon. */}
+            <Route path="/" element={<Home />} />
+            {/* Astronaut self-care screens: a flight surgeon is sent back home. */}
             <Route element={<RequireSession exceptRoleCode={ROLE.FLIGHT_SURGEON} />}>
-              <Route path="/" element={<Home />} />
               <Route path="/vitals" element={<Vitals />} />
               <Route path="/system/:id" element={<SystemDetail />} />
               <Route path="/alerts" element={<Alerts />} />
@@ -34,6 +37,8 @@ export default function App() {
             {/* Flight surgeon, plus the crew medical officer in read-only mode.
                 Other astronauts are sent back to the home page. */}
             <Route element={<RequireSession roleCode={ROLE.FLIGHT_SURGEON} allowMedicalOfficer />}>
+              <Route path="/missions" element={<MissionList />} />
+              <Route path="/missions/:missionId" element={<MissionOverview />} />
               <Route path="/crew" element={<Crew />} />
               <Route path="/crew/:userId" element={<CrewMember />} />
             </Route>

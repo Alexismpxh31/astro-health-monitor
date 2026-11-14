@@ -1,15 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
-import {
-  Heart,
-  Wind,
-  Thermometer,
-  Radio,
-  Gauge,
-  Play,
-  Square,
-} from 'lucide-react'
+import { Heart, Wind, Thermometer, Radio, Gauge, Play, Square } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -26,23 +18,26 @@ import TrafficLight from '../components/TrafficLight.jsx'
 import { defaultUserId } from '../data/demoUser.js'
 import { isRunning, start as startSimulator, stop as stopSimulator } from '../data/simulator.js'
 import { db } from '../db/db.js'
+import { useTheme } from '../theme/theme.js'
 import { classifyValue, effectiveThreshold, LEVEL } from './crew/crewStatus.js'
+import { CHART_THEMES, localName } from './crew/display.js'
 import './Vitals.css'
 
+// Live indicators shown on this screen, in display order.
 const LIVE_INDICATORS_CONFIG = [
-  { code: 'HR', icon: Heart, strokeColor: '#22d3ee', defaultMin: 45, defaultMax: 130 },
-  { code: 'SPO2', icon: Wind, strokeColor: '#38bdf8', defaultMin: 90, defaultMax: 100 },
-  { code: 'SBP', icon: Gauge, strokeColor: '#3b82f6', defaultMin: 80, defaultMax: 160 },
-  { code: 'DBP', icon: Gauge, strokeColor: '#818cf8', defaultMin: 50, defaultMax: 105 },
-  { code: 'RR', icon: Wind, strokeColor: '#a855f7', defaultMin: 8, defaultMax: 28 },
-  { code: 'TSKIN', icon: Thermometer, strokeColor: '#f97316', defaultMin: 34.5, defaultMax: 38.5 },
-  { code: 'RAD_D', icon: Radio, strokeColor: '#eab308', defaultMin: 0, defaultMax: 2.0 },
+  { code: 'HR', icon: Heart },
+  { code: 'SPO2', icon: Wind },
+  { code: 'SBP', icon: Gauge },
+  { code: 'DBP', icon: Gauge },
+  { code: 'RR', icon: Wind },
+  { code: 'TSKIN', icon: Thermometer },
+  { code: 'RAD_D', icon: Radio },
 ]
 
 export default function Vitals() {
-  const { i18n } = useTranslation()
-  const lang = i18n.language?.startsWith('es') ? 'es' : 'en'
-  const isEs = lang === 'es'
+  const { t, i18n } = useTranslation()
+  const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
+  const chart = CHART_THEMES[useTheme()]
   const session = useSession()
   const [isSimRunning, setIsSimRunning] = useState(isRunning())
 
@@ -112,65 +107,55 @@ export default function Vitals() {
     }
   }
 
+  const tooltipStyle = {
+    backgroundColor: chart.tooltipBg,
+    border: `1px solid ${chart.grid}`,
+    borderRadius: '8px',
+    fontSize: '12px',
+    color: chart.text,
+  }
+
   return (
     <section className="vitals-page">
-      {/* Header Banner */}
       <header className="vitals-header">
         <div className="vitals-header-titles">
-          <span className="vitals-header-sub">NASA Space Biomedical Telemetry · Live Feed</span>
-          <h1>{isEs ? 'Signos Vitales y Telemetría en Vivo' : 'Live Vital Signs & Telemetry'}</h1>
+          <span className="vitals-header-sub">{t('astronaut.vitalsEyebrow')}</span>
+          <h1>{t('astronaut.vitalsTitle')}</h1>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="vitals-header-actions">
           <button
             type="button"
+            className={`vitals-sim-toggle${isSimRunning ? ' is-running' : ''}`}
             onClick={handleToggleSimulation}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: isSimRunning ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 211, 238, 0.15)',
-              color: isSimRunning ? '#ef4444' : '#22d3ee',
-              border: isSimRunning ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(34, 211, 238, 0.3)',
-              borderRadius: '8px',
-              padding: '6px 12px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
           >
             {isSimRunning ? <Square size={13} /> : <Play size={13} />}
-            <span>{isSimRunning ? (isEs ? 'Pausar Flujo' : 'Pause Stream') : (isEs ? 'Reanudar Flujo' : 'Resume Stream')}</span>
+            <span>{isSimRunning ? t('astronaut.pauseStream') : t('astronaut.resumeStream')}</span>
           </button>
-          <div className="vitals-pulse-indicator">
-            <div className="pulse-dot" />
-            <span>{isEs ? 'Telemetría Activa (1 Hz)' : 'Active Telemetry (1 Hz)'}</span>
-          </div>
+          {isSimRunning && (
+            <div className="vitals-pulse-indicator">
+              <div className="pulse-dot" />
+              <span>{t('astronaut.livePulse')}</span>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* Simulator CTA notice if no data or stopped */}
+      {/* Simulator notice when there is no data yet */}
       {!vitalsData?.hasAnyReadings && (
         <aside className="vitals-sim-notice">
           <div className="sim-notice-text">
-            <strong>{isEs ? 'Sin datos de telemetría recientes' : 'No recent telemetry data'}: </strong>
-            <span>
-              {isEs
-                ? 'Activa el simulador integrado para generar flujo en tiempo real de signos vitales.'
-                : 'Start the built-in simulator to generate real-time astronaut vital signs.'}
-            </span>
+            <strong>{t('astronaut.noDataTitle')}</strong> <span>{t('astronaut.noDataText')}</span>
           </div>
           <button type="button" onClick={handleToggleSimulation} className="sim-start-btn">
             <Play size={16} />
-            <span>{isEs ? 'Iniciar Simulador' : 'Start Simulator'}</span>
+            <span>{t('astronaut.startSimulator')}</span>
           </button>
         </aside>
       )}
 
-      {/* Vitals Grid with Recharts */}
       <div className="vitals-grid">
         {vitalsData?.cards?.map((card) => {
           const IconComp = card.icon
-          const indName = isEs ? card.indicator.nameEs : card.indicator.nameEn
           const currentVal = card.latest ? card.latest.value.toFixed(1) : '--'
 
           return (
@@ -181,7 +166,7 @@ export default function Vitals() {
                     <IconComp size={20} />
                   </div>
                   <div>
-                    <h3 className="vital-chart-heading">{indName}</h3>
+                    <h3 className="vital-chart-heading">{localName(card.indicator, lang)}</h3>
                     <p className="vital-chart-sub">{card.code}</p>
                   </div>
                 </div>
@@ -196,39 +181,20 @@ export default function Vitals() {
               <div className="vital-chart-container">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={card.points.length > 0 ? card.points : [{ time: '0', value: 0 }]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.6} />
-                    <XAxis
-                      dataKey="time"
-                      stroke="#64748b"
-                      fontSize={10}
-                      tickLine={false}
-                      interval="preserveEnd"
-                    />
-                    <YAxis
-                      stroke="#64748b"
-                      fontSize={10}
-                      domain={['auto', 'auto']}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#111a2e',
-                        border: '1px solid #1e293b',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                        color: '#e2e8f0',
-                      }}
-                    />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chart.grid} />
+                    <XAxis dataKey="time" stroke={chart.axis} fontSize={10} tickLine={false} interval="preserveEnd" />
+                    <YAxis stroke={chart.axis} fontSize={10} domain={['auto', 'auto']} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
                     {card.threshold?.minNormal != null && (
-                      <ReferenceLine y={card.threshold.minNormal} stroke="#f59e0b" strokeDasharray="3 3" />
+                      <ReferenceLine y={card.threshold.minNormal} stroke={chart.warn} strokeDasharray="3 3" />
                     )}
                     {card.threshold?.maxNormal != null && (
-                      <ReferenceLine y={card.threshold.maxNormal} stroke="#f59e0b" strokeDasharray="3 3" />
+                      <ReferenceLine y={card.threshold.maxNormal} stroke={chart.warn} strokeDasharray="3 3" />
                     )}
                     <Line
                       type="monotone"
                       dataKey="value"
-                      stroke={card.strokeColor}
+                      stroke={chart.line}
                       strokeWidth={2}
                       dot={false}
                       isAnimationActive={false}
@@ -239,19 +205,19 @@ export default function Vitals() {
 
               <footer className="vital-thresholds-legend">
                 <div className="legend-item">
-                  <span className="legend-dot" style={{ backgroundColor: card.strokeColor }} />
-                  <span>{isEs ? 'Telemetría' : 'Telemetry'}</span>
+                  <span className="legend-dot" style={{ backgroundColor: chart.line }} />
+                  <span>{t('astronaut.telemetry')}</span>
                 </div>
                 {card.threshold?.minNormal != null && (
                   <div className="legend-item">
-                    <span className="legend-dot" style={{ backgroundColor: '#f59e0b' }} />
-                    <span>{`Min: ${card.threshold.minNormal}`}</span>
+                    <span className="legend-dot" style={{ backgroundColor: chart.warn }} />
+                    <span>{`${t('astronaut.min')}: ${card.threshold.minNormal}`}</span>
                   </div>
                 )}
                 {card.threshold?.maxNormal != null && (
                   <div className="legend-item">
-                    <span className="legend-dot" style={{ backgroundColor: '#f59e0b' }} />
-                    <span>{`Max: ${card.threshold.maxNormal}`}</span>
+                    <span className="legend-dot" style={{ backgroundColor: chart.warn }} />
+                    <span>{`${t('astronaut.max')}: ${card.threshold.maxNormal}`}</span>
                   </div>
                 )}
               </footer>

@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Astro Health Monitor"
+    "name": "Astro Health Monitor",
+    "tagline": "Crew medical monitoring",
+    "team": "Team Riobamba",
+    "event": "Space Apps 2026 · Riobamba"
   },
   "pages": {
     "login": "Log in",
@@ -12,7 +15,8 @@
     "sensors": "Sensors",
     "comms": "Comms",
     "crew": "Crew",
-    "crewMember": "Crew member"
+    "crewMember": "Crew member",
+    "missions": "Missions"
   },
   "connection": {
     "online": "Online",
@@ -91,7 +95,8 @@
       "synced": "Sent",
       "read": "Read",
       "noSender": "No flight surgeon is logged in.",
-      "sendError": "The note could not be saved. Try again."
+      "sendError": "The note could not be saved. Try again.",
+      "linkedToAlert": "This note answers an alert: when the astronaut reads it, the alert will be marked as attended."
     }
   },
   "comms": {
@@ -281,6 +286,132 @@
     "direction": {
       "high": "went up",
       "low": "went down"
+    },
+    "noteSent": "Note sent, unread"
+  },
+  "theme": {
+    "switchTo": {
+      "light": "Switch to light theme",
+      "dark": "Switch to dark theme"
+    }
+  },
+  "home": {
+    "title": "Hello, {{name}}",
+    "lastReading": "Last reading: {{time}}",
+    "noReadingsYet": "No readings yet.",
+    "cards": {
+      "bp": "Blood pressure",
+      "spo2": "Blood oxygen",
+      "hr": "Heart rate"
+    },
+    "emptyTitle": "No readings yet.",
+    "emptyText": "Start the simulator in Sensors to see your vital signs.",
+    "goSensors": "Go to Sensors",
+    "systemsTitle": "Body systems",
+    "clinicalTitle": "System card",
+    "hazard": "Hazard (NASA HRP)",
+    "risk": "Risk",
+    "viewHistory": "View system history",
+    "systems": {
+      "cardiovascular": {
+        "hazard": "Altered gravity (microgravity)",
+        "risk": "Cardiovascular adaptations and orthostatic intolerance when returning to gravity."
+      },
+      "musculoskeletal": {
+        "hazard": "Altered gravity (microgravity)",
+        "risk": "Bone density loss (1 to 1.5% per month) and loss of muscle mass and strength."
+      },
+      "immune": {
+        "hazard": "Hostile closed environment",
+        "risk": "Altered immune responses and reactivation of latent viruses."
+      },
+      "behavioral": {
+        "hazard": "Isolation and confinement",
+        "risk": "Insufficient sleep, fatigue and cognitive or mood changes."
+      },
+      "radiation": {
+        "hazard": "Space radiation",
+        "risk": "Higher cancer risk and central nervous system effects; 600 mSv career limit."
+      }
+    }
+  },
+  "model3d": {
+    "loading": "Loading 3D astronaut…",
+    "autoRotate": "Auto-rotate",
+    "stopRotation": "Stop rotation",
+    "recenter": "Recenter",
+    "activeZone": "Active zone",
+    "inspecting": "Inspecting: {{zone}}",
+    "status": {
+      "optimal": "Nominal",
+      "warning": "Caution",
+      "critical": "Critical"
+    }
+  },
+  "overview": {
+    "title": "Mission overview",
+    "subtitle_one": "{{mission}} · {{count}} astronaut",
+    "subtitle_other": "{{mission}} · {{count}} astronauts",
+    "openTable": "Open crew table",
+    "crewTitle": "Each crew member",
+    "noData": "No readings yet",
+    "kpi": {
+      "critical_one": "crew member critical",
+      "critical_other": "crew members critical",
+      "warning_one": "crew member in warning",
+      "warning_other": "crew members in warning",
+      "alerts_one": "unattended alert",
+      "alerts_other": "unattended alerts",
+      "pending_one": "item waiting to send",
+      "pending_other": "items waiting to send"
+    }
+  },
+  "bodyView": {
+    "title": "Body view",
+    "hint": "Tap a system to see only its indicators.",
+    "showAll": "Show all indicators",
+    "indicatorsOf": "Indicators: {{system}}"
+  },
+  "missions": {
+    "title": "My missions",
+    "subtitle": "Pick a mission to see its crew.",
+    "empty": "You are not assigned to any mission.",
+    "current": "Current mission",
+    "crew": "Crew",
+    "crewCount_one": "{{count}} astronaut",
+    "crewCount_other": "{{count}} astronauts",
+    "delay": "Signal delay",
+    "delayShort": "Signal to Earth: {{delay}}",
+    "status": "Crew status",
+    "open": "Open mission",
+    "change": "Change mission"
+  },
+  "control": {
+    "title": "Control center",
+    "greeting": "Hello, {{name}}",
+    "attentionTitle": "Needs your attention",
+    "allStable": "The whole crew is stable. No unattended alerts.",
+    "openAlerts_one": "{{count}} unattended alert",
+    "openAlerts_other": "{{count}} unattended alerts",
+    "unreadNotes_one": "{{count}} unread note",
+    "unreadNotes_other": "{{count}} unread notes",
+    "viewMember": "View crew member",
+    "missionsTitle": "Your missions",
+    "allMissions": "See all missions",
+    "notesTitle": "Recent notes",
+    "noNotes": "You have not sent notes yet.",
+    "unread": "Unread",
+    "kpi": {
+      "astronauts_one": "astronaut monitored",
+      "astronauts_other": "astronauts monitored",
+      "critical_one": "critical",
+      "critical_other": "critical",
+      "warning_one": "in warning",
+      "warning_other": "in warning",
+      "unattended_one": "unattended alert",
+      "unattended_other": "unattended alerts",
+      "unreadNotes_one": "unread note",
+      "unreadNotes_other": "unread notes"
     }
   },
   "astronaut": {
@@ -292,7 +423,29 @@
     "flightRisk": "Official Flight Risk",
     "livePulse": "Active Telemetry (1 Hz)",
     "noAlerts": "No pending medical alerts. All physiological indicators are currently in safe range.",
-    "markDone": "Mark as Done"
+    "markDone": "Mark as done",
+    "vitalsEyebrow": "Biomedical telemetry · live",
+    "vitalsTitle": "Live vital signs",
+    "pauseStream": "Pause stream",
+    "resumeStream": "Resume stream",
+    "noDataTitle": "No recent telemetry data.",
+    "noDataText": "Start the simulator to generate real-time vital signs.",
+    "startSimulator": "Start simulator",
+    "telemetry": "Telemetry",
+    "trend": "Trend",
+    "min": "Min",
+    "max": "Max",
+    "alertsEyebrow": "In-flight health protocols",
+    "alertsTitle": "Medical alerts and actions",
+    "pending": "Pending",
+    "all": "All",
+    "attended": "Attended",
+    "noneInCategory": "No alerts in this category.",
+    "anomalousValue": "Out-of-range value:",
+    "recommendedAction": "Recommended action",
+    "attendedAt": "Attended at {{time}}",
+    "backHome": "Back to home",
+    "systemNotFound": "That system was not found."
   },
   "security": {
     "insecureTitle": "Insecure connection (http://).",

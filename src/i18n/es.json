@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Astro Health Monitor"
+    "name": "Astro Health Monitor",
+    "tagline": "Monitoreo médico de la tripulación",
+    "team": "Equipo Riobamba",
+    "event": "Space Apps 2026 · Riobamba"
   },
   "pages": {
     "login": "Iniciar sesión",
@@ -12,7 +15,8 @@
     "sensors": "Sensores",
     "comms": "Comunicaciones",
     "crew": "Tripulación",
-    "crewMember": "Tripulante"
+    "crewMember": "Tripulante",
+    "missions": "Misiones"
   },
   "connection": {
     "online": "En línea",
@@ -91,7 +95,8 @@
       "synced": "Enviada",
       "read": "Leída",
       "noSender": "No hay un médico de vuelo con sesión iniciada.",
-      "sendError": "No se pudo guardar la nota. Inténtalo de nuevo."
+      "sendError": "No se pudo guardar la nota. Inténtalo de nuevo.",
+      "linkedToAlert": "Esta nota responde a una alerta: cuando el astronauta la lea, la alerta quedará atendida."
     }
   },
   "comms": {
@@ -281,6 +286,132 @@
     "direction": {
       "high": "subió",
       "low": "bajó"
+    },
+    "noteSent": "Nota enviada, sin leer"
+  },
+  "theme": {
+    "switchTo": {
+      "light": "Cambiar a tema claro",
+      "dark": "Cambiar a tema oscuro"
+    }
+  },
+  "home": {
+    "title": "Hola, {{name}}",
+    "lastReading": "Última lectura: {{time}}",
+    "noReadingsYet": "Todavía no hay lecturas.",
+    "cards": {
+      "bp": "Presión arterial",
+      "spo2": "Oxígeno en sangre",
+      "hr": "Frecuencia cardíaca"
+    },
+    "emptyTitle": "Sin lecturas todavía.",
+    "emptyText": "Inicia el simulador en Sensores para ver tus signos vitales.",
+    "goSensors": "Ir a Sensores",
+    "systemsTitle": "Sistemas del cuerpo",
+    "clinicalTitle": "Ficha del sistema",
+    "hazard": "Peligro (NASA HRP)",
+    "risk": "Riesgo",
+    "viewHistory": "Ver historial del sistema",
+    "systems": {
+      "cardiovascular": {
+        "hazard": "Gravedad alterada (microgravedad)",
+        "risk": "Adaptaciones cardiovasculares e intolerancia ortostática al volver a la gravedad."
+      },
+      "musculoskeletal": {
+        "hazard": "Gravedad alterada (microgravedad)",
+        "risk": "Pérdida de densidad ósea (1 a 1,5 % al mes) y de masa y fuerza muscular."
+      },
+      "immune": {
+        "hazard": "Ambiente cerrado y hostil",
+        "risk": "Respuestas alteradas del sistema inmune y reactivación de virus latentes."
+      },
+      "behavioral": {
+        "hazard": "Aislamiento y confinamiento",
+        "risk": "Sueño insuficiente, fatiga y cambios cognitivos o de ánimo."
+      },
+      "radiation": {
+        "hazard": "Radiación espacial",
+        "risk": "Mayor riesgo de cáncer y efectos en el sistema nervioso central; límite de carrera de 600 mSv."
+      }
+    }
+  },
+  "model3d": {
+    "loading": "Cargando astronauta 3D…",
+    "autoRotate": "Giro automático",
+    "stopRotation": "Detener giro",
+    "recenter": "Recentrar",
+    "activeZone": "Zona activa",
+    "inspecting": "Inspeccionando: {{zone}}",
+    "status": {
+      "optimal": "Nominal",
+      "warning": "Precaución",
+      "critical": "Crítico"
+    }
+  },
+  "overview": {
+    "title": "Resumen de la misión",
+    "subtitle_one": "{{mission}} · {{count}} astronauta",
+    "subtitle_other": "{{mission}} · {{count}} astronautas",
+    "openTable": "Abrir tabla de tripulación",
+    "crewTitle": "Estado de cada tripulante",
+    "noData": "Sin lecturas todavía",
+    "kpi": {
+      "critical_one": "tripulante en estado crítico",
+      "critical_other": "tripulantes en estado crítico",
+      "warning_one": "tripulante en precaución",
+      "warning_other": "tripulantes en precaución",
+      "alerts_one": "alerta sin atender",
+      "alerts_other": "alertas sin atender",
+      "pending_one": "dato pendiente de enviar",
+      "pending_other": "datos pendientes de enviar"
+    }
+  },
+  "bodyView": {
+    "title": "Vista del cuerpo",
+    "hint": "Toca un sistema para ver solo sus indicadores.",
+    "showAll": "Mostrar todos los indicadores",
+    "indicatorsOf": "Indicadores: {{system}}"
+  },
+  "missions": {
+    "title": "Mis misiones",
+    "subtitle": "Elige una misión para ver a su tripulación.",
+    "empty": "No estás asignado a ninguna misión.",
+    "current": "Misión actual",
+    "crew": "Tripulación",
+    "crewCount_one": "{{count}} astronauta",
+    "crewCount_other": "{{count}} astronautas",
+    "delay": "Retraso de señal",
+    "delayShort": "Señal con la Tierra: {{delay}}",
+    "status": "Estado de la tripulación",
+    "open": "Entrar a la misión",
+    "change": "Cambiar de misión"
+  },
+  "control": {
+    "title": "Centro de control",
+    "greeting": "Hola, {{name}}",
+    "attentionTitle": "Requiere tu atención",
+    "allStable": "Toda la tripulación está estable. No hay alertas sin atender.",
+    "openAlerts_one": "{{count}} alerta sin atender",
+    "openAlerts_other": "{{count}} alertas sin atender",
+    "unreadNotes_one": "{{count}} nota sin leer",
+    "unreadNotes_other": "{{count}} notas sin leer",
+    "viewMember": "Ver tripulante",
+    "missionsTitle": "Tus misiones",
+    "allMissions": "Ver todas las misiones",
+    "notesTitle": "Notas recientes",
+    "noNotes": "Todavía no has enviado notas.",
+    "unread": "Sin leer",
+    "kpi": {
+      "astronauts_one": "astronauta vigilado",
+      "astronauts_other": "astronautas vigilados",
+      "critical_one": "en estado crítico",
+      "critical_other": "en estado crítico",
+      "warning_one": "en precaución",
+      "warning_other": "en precaución",
+      "unattended_one": "alerta sin atender",
+      "unattended_other": "alertas sin atender",
+      "unreadNotes_one": "nota sin leer",
+      "unreadNotes_other": "notas sin leer"
     }
   },
   "astronaut": {
@@ -292,7 +423,29 @@
     "flightRisk": "Riesgo Oficial de Vuelo",
     "livePulse": "Telemetría Activa (1 Hz)",
     "noAlerts": "No hay alertas médicas pendientes. Todos los parámetros fisiológicos se encuentran en rango seguro.",
-    "markDone": "Hecho / Marcar Atendida"
+    "markDone": "Hecho / Marcar atendida",
+    "vitalsEyebrow": "Telemetría biomédica · en vivo",
+    "vitalsTitle": "Signos vitales en vivo",
+    "pauseStream": "Pausar flujo",
+    "resumeStream": "Reanudar flujo",
+    "noDataTitle": "Sin datos de telemetría recientes.",
+    "noDataText": "Activa el simulador para generar signos vitales en tiempo real.",
+    "startSimulator": "Iniciar simulador",
+    "telemetry": "Telemetría",
+    "trend": "Tendencia",
+    "min": "Mín",
+    "max": "Máx",
+    "alertsEyebrow": "Protocolos de salud en vuelo",
+    "alertsTitle": "Alertas médicas y acciones",
+    "pending": "Sin atender",
+    "all": "Todas",
+    "attended": "Atendidas",
+    "noneInCategory": "No hay alertas en esta categoría.",
+    "anomalousValue": "Valor fuera de rango:",
+    "recommendedAction": "Acción recomendada",
+    "attendedAt": "Atendida a las {{time}}",
+    "backHome": "Volver al inicio",
+    "systemNotFound": "No se encontró ese sistema."
   },
   "security": {
     "insecureTitle": "Conexión no segura (http://).",

@@ -151,3 +151,7 @@
   border: 1px solid var(--accent);
   border-radius: 999px;
 }
+
+.crew-alert-status.is-sent {
+  color: var(--accent);
+}

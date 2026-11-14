@@ -11,13 +11,14 @@ import {
 } from 'recharts'
 import TrafficLight from '../../components/TrafficLight.jsx'
 import { BASELINE_MIN_READINGS } from '../../rules/baseline.js'
-import { CHART_COLORS, DISPLAY_CODE, localName } from './display.js'
+import { useTheme } from '../../theme/theme.js'
+import { CHART_THEMES, DISPLAY_CODE, localName } from './display.js'
 
 const BOUND_STYLES = {
-  minCritical: { color: CHART_COLORS.danger, dash: '4 4' },
-  minNormal: { color: CHART_COLORS.warn, dash: '2 4' },
-  maxNormal: { color: CHART_COLORS.warn, dash: '2 4' },
-  maxCritical: { color: CHART_COLORS.danger, dash: '4 4' },
+  minCritical: { tone: 'danger', dash: '4 4' },
+  minNormal: { tone: 'warn', dash: '2 4' },
+  maxNormal: { tone: 'warn', dash: '2 4' },
+  maxCritical: { tone: 'danger', dash: '4 4' },
 }
 
 function yDomain(points, threshold) {
@@ -43,6 +44,7 @@ function yDomain(points, threshold) {
  */
 export default function IndicatorTrend({ item, lang, isEditing, onEdit, children }) {
   const { t } = useTranslation()
+  const colors = CHART_THEMES[useTheme()] ?? CHART_THEMES.dark
   const { indicator, system, unit, rule, threshold, baseline, isPersonal, latest, level, series } = item
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -80,33 +82,33 @@ export default function IndicatorTrend({ item, lang, isEditing, onEdit, children
       <div className="indicator-chart" role="img" aria-label={t('crewDetail.chartLabel', { name, count: points.length })}>
         <ResponsiveContainer width="100%" height={170}>
           <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-            <CartesianGrid stroke={CHART_COLORS.grid} vertical={false} />
+            <CartesianGrid stroke={colors.grid} vertical={false} />
             <XAxis
               dataKey="time"
               type="number"
               scale="time"
               domain={['dataMin', 'dataMax']}
               tickFormatter={(value) => timeFormat.format(value).slice(0, 5)}
-              stroke={CHART_COLORS.axis}
+              stroke={colors.axis}
               tick={{ fontSize: 11 }}
               minTickGap={40}
             />
             <YAxis
               domain={yDomain(points, threshold)}
-              stroke={CHART_COLORS.axis}
+              stroke={colors.axis}
               tick={{ fontSize: 11 }}
               width={44}
               allowDecimals={false}
             />
             {threshold?.baseline != null && (
-              <ReferenceLine y={threshold.baseline} stroke={CHART_COLORS.axis} strokeDasharray="1 3" />
+              <ReferenceLine y={threshold.baseline} stroke={colors.axis} strokeDasharray="1 3" />
             )}
             {Object.entries(BOUND_STYLES).map(([key, style]) =>
               threshold?.[key] != null ? (
                 <ReferenceLine
                   key={key}
                   y={threshold[key]}
-                  stroke={style.color}
+                  stroke={colors[style.tone]}
                   strokeDasharray={style.dash}
                   ifOverflow="extendDomain"
                 />
@@ -114,10 +116,10 @@ export default function IndicatorTrend({ item, lang, isEditing, onEdit, children
             )}
             <Tooltip
               contentStyle={{
-                background: CHART_COLORS.tooltipBg,
-                border: `1px solid ${CHART_COLORS.grid}`,
+                background: colors.tooltipBg,
+                border: `1px solid ${colors.grid}`,
                 borderRadius: 8,
-                color: CHART_COLORS.text,
+                color: colors.text,
               }}
               labelFormatter={(value) => timeFormat.format(value)}
               formatter={(value) => [`${numberFormat.format(value)} ${unit}`, name]}
@@ -125,7 +127,7 @@ export default function IndicatorTrend({ item, lang, isEditing, onEdit, children
             <Line
               type="monotone"
               dataKey="value"
-              stroke={CHART_COLORS.line}
+              stroke={colors.line}
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}

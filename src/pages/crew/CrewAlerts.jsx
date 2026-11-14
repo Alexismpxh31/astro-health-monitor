@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import TrafficLight from '../../components/TrafficLight.jsx'
 import { recommendationText } from '../../rules/engine.js'
+import { alertNoteState } from './alertNote.js'
 import { loadCrewAlerts } from './crewAlerts.js'
 import { localName } from './display.js'
 import './CrewAlerts.css'
@@ -30,15 +31,8 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' })
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
 
-  function sendNote(item, advice) {
-    const draft = t('crewAlerts.draft', {
-      indicator: item.indicator ? localName(item.indicator, lang) : item.reading.indicatorCode,
-      value: numberFormat.format(item.reading.value),
-      unit: item.reading.unit,
-      time: timeFormat.format(new Date(item.alert.generatedAt)),
-      advice,
-    }).trim()
-    navigate(`/crew/${item.user.id}`, { state: { noteDraft: draft } })
+  function sendNote(item) {
+    navigate(`/crew/${item.user.id}`, { state: alertNoteState(t, lang, item) })
   }
 
   const items = (data?.items ?? []).filter((item) => !onlyOpen || !item.alert.attendedAt)
@@ -98,13 +92,17 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
                   {advice && <p className="crew-alert-advice">{advice}</p>}
                 </div>
                 <div className="crew-alert-side">
-                  <span className={`crew-alert-status ${item.alert.attendedAt ? 'is-done' : 'is-open'}`}>
+                  <span
+                    className={`crew-alert-status ${item.alert.attendedAt ? 'is-done' : item.note ? 'is-sent' : 'is-open'}`}
+                  >
                     {item.alert.attendedAt
                       ? t('crewAlerts.attended', { time: timeFormat.format(new Date(item.alert.attendedAt)) })
-                      : t('crewAlerts.open')}
+                      : item.note
+                        ? t('crewAlerts.noteSent')
+                        : t('crewAlerts.open')}
                   </span>
                   {canSendNotes && (
-                    <button type="button" onClick={() => sendNote(item, advice)}>
+                    <button type="button" onClick={() => sendNote(item)}>
                       {t('crewAlerts.sendNote')}
                     </button>
                   )}

@@ -19,11 +19,13 @@ function noteStatusKey(note) {
  * @param {Object[]} props.notes - Messages sent to this crew member, newest first.
  * @param {string} props.lang
  * @param {string} [props.initialDraft] - Text to start with (e.g. written from an alert).
+ * @param {string|null} [props.alertId] - Alert the note answers: reading the note attends it.
  */
-export default function NotesPanel({ recipientId, senderId, notes, lang, initialDraft = '' }) {
+export default function NotesPanel({ recipientId, senderId, notes, lang, initialDraft = '', alertId = null }) {
   const { t } = useTranslation()
   const fieldId = useId()
   const [text, setText] = useState(initialDraft.slice(0, MAX_LENGTH))
+  const [linkedAlertId, setLinkedAlertId] = useState(alertId)
   const [errorKey, setErrorKey] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const dateFormat = new Intl.DateTimeFormat(lang, { dateStyle: 'short', timeStyle: 'short' })
@@ -46,9 +48,13 @@ export default function NotesPanel({ recipientId, senderId, notes, lang, initial
         content,
         sentAt: new Date().toISOString(),
         readAt: null,
+        // Link to the alert the note answers (Comms attends it when the note is read).
+        // Uploaded as messages.alert_id by src/sync/queue.js.
+        ...(linkedAlertId ? { alertId: linkedAlertId } : {}),
         syncStatus: 'pending',
       })
       setText('')
+      setLinkedAlertId(null)
       setErrorKey(null)
     } catch (error) {
       console.error('[crew] Could not save the note', error)
@@ -66,6 +72,7 @@ export default function NotesPanel({ recipientId, senderId, notes, lang, initial
         <label htmlFor={fieldId} className="notes-label">
           {t('crewDetail.notes.label')}
         </label>
+        {linkedAlertId && <p className="notes-linked">{t('crewDetail.notes.linkedToAlert')}</p>}
         <textarea
           id={fieldId}
           rows={4}

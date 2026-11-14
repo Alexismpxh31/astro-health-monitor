@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
 import { ensureDemoCrew } from '../data/demoCrew.js'
+import BodyView from './crew/BodyView.jsx'
+import { localName } from './crew/display.js'
 import { csvFileName, downloadCsv, readingsToCsv } from './crew/exportCsv.js'
 import IndicatorTrend from './crew/IndicatorTrend.jsx'
 import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
@@ -18,11 +20,12 @@ import './CrewMember.css'
 export default function CrewMember() {
   const { userId } = useParams()
   // "Send note" on a crew alert opens this page with a prefilled note.
-  const noteDraft = useLocation().state?.noteDraft ?? ''
+  const { noteDraft = '', alertId = null } = useLocation().state ?? {}
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const data = useLiveQuery(() => loadMemberData(userId), [userId])
   const [editingIndicatorId, setEditingIndicatorId] = useState(null)
+  const [systemCode, setSystemCode] = useState(null)
   const canManage = useCanManageCrew()
 
   useEffect(() => {
@@ -55,6 +58,8 @@ export default function CrewMember() {
   }
 
   const { user, surgeonId, overall, items, exportRows, notes, hasSimulatedData } = data
+  const visibleItems = systemCode ? items.filter((item) => item.system?.code === systemCode) : items
+  const selectedSystem = visibleItems[0]?.system ?? null
 
   function handleExport() {
     downloadCsv(csvFileName(user.name), readingsToCsv(exportRows))
@@ -79,14 +84,20 @@ export default function CrewMember() {
 
       {hasSimulatedData && <p className="crew-detail-note">{t('crew.simulatedNote')}</p>}
 
+      <BodyView items={items} lang={lang} selectedCode={systemCode} onSelect={setSystemCode} />
+
       <div className="crew-detail-layout">
         <div className="crew-detail-main">
-          <h2>{t('crewDetail.indicators')}</h2>
+          <h2>
+            {systemCode && selectedSystem
+              ? t('bodyView.indicatorsOf', { system: localName(selectedSystem, lang) })
+              : t('crewDetail.indicators')}
+          </h2>
           {items.length === 0 ? (
             <p className="crew-detail-empty muted">{t('crewDetail.noReadings')}</p>
           ) : (
             <div className="indicator-grid">
-              {items.map((item) => {
+              {visibleItems.map((item) => {
                 const isEditing = editingIndicatorId === item.indicator.id
                 return (
                   <IndicatorTrend
@@ -122,6 +133,7 @@ export default function CrewMember() {
               notes={notes}
               lang={lang}
               initialDraft={noteDraft}
+              alertId={alertId}
             />
           ) : (
             <p className="crew-readonly-note">{t('crew.officerView')}</p>

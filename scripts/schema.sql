@@ -66,13 +66,26 @@ create table sensor_types (
 -- 2. Mission
 -- =====================================================================
 create table missions (
-  id          uuid primary key default gen_random_uuid(),
-  name        varchar(100) not null,
-  destination varchar(100),
-  start_date  timestamptz,
-  end_date    timestamptz,
-  check (end_date is null or start_date is null or end_date >= start_date)
+  id                 uuid primary key default gen_random_uuid(),
+  name               varchar(100) not null,
+  destination        varchar(100),
+  start_date         timestamptz,
+  end_date           timestamptz,
+  name_es            varchar(100),          -- display names; `name` stays the internal label
+  name_en            varchar(100),
+  comm_delay_min_sec integer,               -- one-way Earth <-> crew signal delay (ISS ≈ 1 s, Mars 180–1320 s)
+  comm_delay_max_sec integer,
+  check (end_date is null or start_date is null or end_date >= start_date),
+  constraint chk_missions_comm_delay check (
+    comm_delay_min_sec is null or comm_delay_max_sec is null
+    or (comm_delay_min_sec >= 0 and comm_delay_max_sec >= comm_delay_min_sec)
+  )
 );
+-- Idempotent upgrade for a missions table created before these columns existed (no-op on a fresh install).
+alter table missions add column if not exists name_es varchar(100);
+alter table missions add column if not exists name_en varchar(100);
+alter table missions add column if not exists comm_delay_min_sec integer;
+alter table missions add column if not exists comm_delay_max_sec integer;
 
 create table users (
   id           uuid primary key default gen_random_uuid(),
@@ -190,10 +203,16 @@ create table messages (
   content      text not null check (length(content) > 0),
   sent_at      timestamptz not null default now(),
   read_at      timestamptz,
+  -- Note sent from an alert (flight surgeon -> astronaut). When the astronaut reads it,
+  -- the client marks that alert as attended (src/pages/Comms.jsx).
+  alert_id     uuid references alerts(id) on delete set null,
   updated_at   timestamptz not null default now(),
   check (sender_id <> recipient_id)
 );
 create index messages_recipient_idx on messages (recipient_id, sent_at desc);
+create index messages_alert_idx on messages (alert_id) where alert_id is not null;
+-- Idempotent upgrade for a messages table created before `alert_id` existed (no-op on a fresh install).
+alter table messages add column if not exists alert_id uuid references alerts(id) on delete set null;
 
 -- updated_at triggers (server-wins tables: client pulls rows with updated_at > lastSync)
 create function public.set_updated_at() returns trigger language plpgsql as $$

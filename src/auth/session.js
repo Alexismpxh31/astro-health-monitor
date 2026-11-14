@@ -23,9 +23,9 @@ import { verifyPin } from './pin.js'
  */
 
 export const ROLE = { ASTRONAUT: 'astronaut', FLIGHT_SURGEON: 'flight_surgeon' }
-/** Landing page of a role: the crew panel for the flight surgeon, the home page for everyone else. */
-export function homePathFor(roleCode) {
-  return roleCode === ROLE.FLIGHT_SURGEON ? '/crew' : '/'
+/** Landing page after login: "/" is the astronaut dashboard, or the control center for the flight surgeon. */
+export function homePathFor() {
+  return '/'
 }
 
 export const MAX_FAILED_ATTEMPTS = 5

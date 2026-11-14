@@ -301,3 +301,66 @@
   margin: 0;
   font-size: 0.75rem;
 }
+
+/* ---------- Body view (3D stage + body systems) ---------- */
+
+.body-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.body-view .model-stage {
+  min-height: 380px;
+}
+
+.body-view-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.crew-detail .body-view-side h2 {
+  margin: 0;
+}
+
+.body-view-hint {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.body-view-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.body-view-facts button {
+  align-self: flex-start;
+}
+
+@media (max-width: 860px) {
+  .body-view {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .body-view .model-stage {
+    min-height: 280px;
+  }
+}
+
+.notes-linked {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--accent);
+  background-color: var(--accent-soft);
+  border-radius: 10px;
+}

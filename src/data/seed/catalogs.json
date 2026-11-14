@@ -71,6 +71,7 @@
     { "id": "00000000-0000-4000-8000-000000000701", "code": "ble_heart_rate", "nameEs": "Bluetooth Heart Rate (0x180D)", "nameEn": "Bluetooth Heart Rate (0x180D)" }
   ],
   "missions": [
-    { "id": "b0000000-0000-4000-8000-000000000001", "name": "Demo Mission (simulated data)", "destination": "ISS (demo)", "startDate": null, "endDate": null }
+    { "id": "b0000000-0000-4000-8000-000000000001", "name": "Demo Mission (simulated data)", "destination": "ISS (demo)", "startDate": null, "endDate": null, "nameEs": "Expedición ISS (simulada)", "nameEn": "ISS Expedition (simulated)", "commDelayMinSec": 1, "commDelayMaxSec": 1 },
+    { "id": "b0000000-0000-4000-8000-000000000002", "name": "Mars Transit (simulated data)", "nameEs": "Tránsito a Marte (simulada)", "nameEn": "Mars Transit (simulated)", "destination": "Mars (demo)", "startDate": null, "endDate": null, "commDelayMinSec": 180, "commDelayMaxSec": 1320 }
   ]
 }

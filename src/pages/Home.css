@@ -1,406 +1,475 @@
-/* Astro Health Monitor - Home Astronaut Dashboard (Space-Dark Theme) */
-
-.astro-home {
+.home {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  gap: 20px;
 }
 
-/* Header summary */
-.home-header {
+.home-head h1 {
+  margin-bottom: 4px;
+}
+
+.home-head p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.home-sim-tag {
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--warn);
+  background-color: var(--warn-soft);
+  border-radius: 999px;
+}
+
+.card-title {
+  margin: 0;
+  padding-left: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-left: 4px solid var(--accent);
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 20px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 999px;
+}
+
+.button-link.is-primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--blue), #0b2a7a);
+  box-shadow: 0 10px 24px -12px var(--blue);
+}
+
+/* ---------- Vital cards ---------- */
+
+.vital-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+
+.vital-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.vital-icon,
+.system-icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  color: var(--accent);
+  background: radial-gradient(circle at 30% 30%, var(--surface-solid), var(--accent-soft));
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
+.vital-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.vital-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.vital-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.vital-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.vital-value small {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sparkline {
+  flex: none;
+}
+
+.sparkline polyline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sparkline circle {
+  fill: var(--accent);
+}
+
+.ring-gauge {
+  flex: none;
+}
+
+.ring-track {
+  fill: none;
+  stroke: var(--accent-soft);
+  stroke-width: 7;
+}
+
+.ring-value {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.home-empty {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1.25rem;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  gap: 12px 20px;
+  padding: 16px 20px;
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-lg);
 }
 
-.home-header-titles h1 {
+.home-empty p {
   margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--text);
 }
 
-.home-header-subtitle {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
+/* ---------- Main grid: systems | model | clinical card ---------- */
 
-.home-header-meta {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.met-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-weight: 600;
-  color: var(--text);
-  background-color: rgba(30, 41, 59, 0.7);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-}
-
-/* Top primary vital metric cards */
-.top-vitals-grid {
+.home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
 }
 
-.vital-metric-card {
+.systems-card,
+.clinical-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, rgba(17, 26, 46, 0.95), rgba(15, 23, 42, 0.85));
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  border-radius: var(--radius-lg);
 }
 
-.vital-metric-card:hover {
-  border-color: rgba(34, 211, 238, 0.4);
+.system-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.vital-metric-left {
+.system-list li + li {
+  border-top: 1px solid var(--border);
+}
+
+.system-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 6px 8px;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 14px;
 }
 
-.vital-icon-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.system-row:hover {
+  background-color: var(--accent-soft);
+  border-color: transparent;
+}
+
+.system-row.is-selected {
+  background-color: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.system-icon {
   width: 44px;
   height: 44px;
-  color: var(--accent);
-  background-color: rgba(34, 211, 238, 0.1);
-  border: 1px solid rgba(34, 211, 238, 0.25);
-  border-radius: 10px;
 }
 
-.vital-metric-info {
+.system-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 650;
+}
+
+.clinical-top {
   display: flex;
-  flex-direction: column;
-}
-
-.vital-metric-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-
-.vital-metric-reading {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  margin-top: 0.15rem;
-}
-
-.vital-metric-value {
-  font-size: 1.4rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-
-.vital-metric-unit {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-.vital-metric-status {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.4rem;
-}
-
-.vital-ecg-svg {
-  width: 52px;
-  height: 24px;
-  stroke: var(--accent);
-  stroke-width: 2;
-  fill: none;
-}
-
-/* 3-Column main aerospace workspace */
-.home-workspace {
-  display: grid;
-  grid-template-columns: 290px 1fr 330px;
-  gap: 1.25rem;
-  align-items: stretch;
-}
-
-@media (max-width: 1120px) {
-  .home-workspace {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Left: Subsystems Column */
-.subsystems-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.25rem;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-.panel-header-title {
-  margin: 0 0 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.panel-header-title::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 14px;
-  background-color: var(--accent);
-  border-radius: 2px;
-}
-
-.subsystem-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.subsystem-item-btn {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  min-height: 52px;
-  padding: 0.75rem 1rem;
-  text-align: left;
-  background-color: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  transition: all 0.15s ease;
-  cursor: pointer;
+  gap: 8px;
 }
 
-.subsystem-item-btn:hover {
-  background-color: rgba(30, 41, 59, 0.7);
-  border-color: rgba(34, 211, 238, 0.4);
+.clinical-name {
+  margin: 0;
+  padding-bottom: 12px;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.2;
+  background: linear-gradient(var(--accent), var(--accent)) left bottom / 72px 3px no-repeat;
 }
 
-.subsystem-item-btn.is-active {
-  background-color: rgba(34, 211, 238, 0.08);
-  border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
-}
-
-.subsystem-item-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.subsystem-item-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  color: var(--accent);
-  background-color: rgba(34, 211, 238, 0.1);
-  border-radius: 8px;
-}
-
-.subsystem-item-name {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-/* Center: 3D Astronaut Viewport */
-.astronaut-viewport {
-  position: relative;
+.clinical-facts {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.clinical-facts div {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.clinical-facts dt {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.clinical-facts dd {
+  margin: 2px 0 0;
+}
+
+.clinical-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clinical-indicators li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
   align-items: center;
-  justify-content: center;
-  min-height: 540px;
-  background: radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.08) 0%, rgba(11, 18, 32, 0.95) 75%);
+  font-size: 0.92rem;
+}
+
+.clinical-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.clinical-cta {
+  margin-top: 4px;
+}
+
+/* ---------- 3D model stage (Walter's astronaut, see components/AstronautModel3D.jsx) ---------- */
+
+.model-stage {
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
 }
 
-.viewport-badge {
-  position: absolute;
-  top: 14px;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent);
-  background-color: rgba(11, 18, 32, 0.8);
-  border: 1px solid rgba(34, 211, 238, 0.3);
-  border-radius: 999px;
-  backdrop-filter: blur(8px);
-  z-index: 5;
+@media (max-width: 1180px) {
+  .home-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .model-stage {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
 }
 
-/* Right: NASA Clinical File Column */
-.clinical-file-panel {
+/* Phones: data first, then the 3D stage, then the clinical card. */
+@media (max-width: 720px) {
+  .home-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .model-stage {
+    grid-row: auto;
+  }
+}
+
+/* ---------- Flight surgeon: mission overview ---------- */
+
+.mission-head {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: space-between;
-  padding: 1.25rem;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  gap: 12px 20px;
 }
 
-.clinical-header {
+.mission-head p {
+  margin: 0;
+}
+
+.mission-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.kpi-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 16px;
+}
+
+.kpi-card {
+  --tone: var(--accent);
+  --tone-soft: var(--accent-soft);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 14px;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-.clinical-system-title {
-  margin: 0 0 1rem;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.5rem;
-}
-
-.clinical-risk-box {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.risk-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
-  padding: 0.65rem 0.85rem;
-  font-size: 0.8rem;
-  background-color: rgba(15, 23, 42, 0.6);
+  padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 
-.risk-item-icon {
-  margin-top: 2px;
-  color: var(--accent);
-  flex-shrink: 0;
+.kpi-card.is-critical {
+  --tone: var(--danger);
+  --tone-soft: var(--danger-soft);
 }
 
-.risk-item-content strong {
-  display: block;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 0.15rem;
+.kpi-card.is-warning {
+  --tone: var(--warn);
+  --tone-soft: var(--warn-soft);
 }
 
-.risk-item-content span {
-  color: var(--text);
-  line-height: 1.35;
+.kpi-card.is-normal {
+  --tone: var(--ok);
+  --tone-soft: var(--ok-soft);
 }
 
-.clinical-desc {
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: var(--muted);
-  margin: 0 0 1.25rem;
+.kpi-icon {
+  display: inline-grid;
+  grid-row: 1 / 3;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  color: var(--tone);
+  background-color: var(--tone-soft);
+  border-radius: 50%;
 }
 
-.clinical-metrics-table {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1.25rem;
-  padding: 0.75rem;
-  background-color: rgba(11, 18, 32, 0.6);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.clinical-metric-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.75rem;
-}
-
-.clinical-metric-label {
-  color: var(--muted);
-}
-
-.clinical-metric-val {
-  font-weight: 600;
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tone);
   font-variant-numeric: tabular-nums;
-  color: var(--text);
 }
 
-.clinical-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  min-height: 48px;
+.kpi-label {
   font-size: 0.9rem;
-  font-weight: 700;
-  color: #0b1220;
-  background-color: var(--accent);
-  border: none;
-  border-radius: var(--radius);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  color: var(--muted);
 }
 
-.clinical-action-btn:hover {
-  background-color: #67e8f9;
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.4);
+.mission-crew {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crew-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.crew-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 84px;
+  padding: 14px 16px;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--muted);
+  border-radius: var(--radius-lg);
+}
+
+.crew-card:hover {
+  border-color: var(--accent);
+}
+
+.crew-card.is-critical {
+  border-left-color: var(--danger);
+}
+
+.crew-card.is-warning {
+  border-left-color: var(--warn);
+}
+
+.crew-card.is-normal {
+  border-left-color: var(--ok);
+}
+
+.crew-avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--blue), #0b1f4d);
+  border-radius: 50%;
+}
+
+.crew-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.crew-card-name {
+  font-weight: 750;
+}
+
+.crew-card-detail {
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
 }
