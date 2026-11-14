@@ -13,7 +13,8 @@ seedIfEmpty().catch((error) => {
 
 // Upload pending rows when online (on the 'online' event and every 30 s).
 // Does nothing without Supabase env vars: the app keeps working offline.
-startAutoSync()
+const stopAutoSync = startAutoSync()
+import.meta.hot?.dispose(stopAutoSync)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

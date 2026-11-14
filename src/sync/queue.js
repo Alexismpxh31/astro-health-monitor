@@ -3,6 +3,7 @@
 // TODO(sync): syncPending() only uploads HR readings so far; alerts, dailyCheckins
 // and messages are counted as pending but not uploaded yet.
 
+import { getSession, ROLE } from '../auth/session.js'
 import { db } from '../db/db.js'
 import { supabase } from './supabaseClient.js'
 
@@ -15,8 +16,7 @@ export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins', 'messages
  * @returns {Promise<number>}
  */
 export async function getPendingCount() {
-  // TODO: sum db[table].where('syncStatus').equals('pending').count() over SYNCABLE_TABLES.
-    const counts = await Promise.all(
+  const counts = await Promise.all(
     SYNCABLE_TABLES.map((tableName) =>
       db.table(tableName).where('syncStatus').equals('pending').count(),
     ),
@@ -30,16 +30,35 @@ export async function getPendingCount() {
  *
  * @returns {Promise<{ pushed: number, failed: number }>}
  */
-export async function syncPending() {
+let activeSync
+
+export async function getLinkedProfileId() {
+  const { data, error } = await supabase.rpc('app_user_id')
+  if (error) throw error
+  return data
+}
+
+export function syncPending() {
+  const session = getSession()
+  if (!activeSync || activeSync.session !== session) {
+    const operation = { session, promise: null }
+    operation.promise = uploadPendingReadings(session).finally(() => {
+      if (activeSync === operation) activeSync = null
+    })
+    activeSync = operation
+  }
+  return activeSync.promise
+}
+
+async function uploadPendingReadings(session) {
   if (!supabase) throw new Error('Falta configurar Supabase.')
   if (!navigator.onLine) throw new Error('El navegador está sin conexión.')
 
-  const { data: appUserId, error: profileError } =
-    await supabase.rpc('app_user_id')
+  if (session?.roleCode !== ROLE.ASTRONAUT) return { pushed: 0, failed: 0 }
 
-  if (profileError) throw profileError
-  if (!appUserId) {
-    throw new Error('Inicia sesión con un perfil de astronauta vinculado.')
+  const appUserId = await getLinkedProfileId()
+  if (appUserId !== session.userId || getSession() !== session) {
+    throw new Error('La cuenta de Supabase debe coincidir con el perfil activo.')
   }
 
   const readings = await db.readings
@@ -67,6 +86,8 @@ export async function syncPending() {
     measured_at: reading.measuredAt,
     source: reading.source,
   }))
+
+  if (getSession() !== session) return { pushed: 0, failed: 0 }
 
   const { error: uploadError } = await supabase
     .from('readings')
@@ -99,9 +120,13 @@ export function startAutoSync({ intervalMs = 30000 } = {}) {
   let lastErrorMessage = null
 
   const run = async () => {
-    if (isRunning || !navigator.onLine) return
+    if (isRunning || !navigator.onLine || getSession()?.roleCode !== ROLE.ASTRONAUT) return
     isRunning = true
     try {
+      const { data, error } = await supabase.auth.getSession()
+      if (error) throw error
+      if (!data.session) return
+
       const { pushed } = await syncPending()
       if (pushed > 0) console.info(`[sync] Uploaded ${pushed} readings`)
       lastErrorMessage = null
