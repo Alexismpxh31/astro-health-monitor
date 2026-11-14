@@ -167,17 +167,34 @@ async function pushAlerts(userId, stillActive) {
     readings.filter((reading) => reading.userId === userId && reading.syncStatus === 'synced').map((reading) => reading.id),
   )
 
-  const rows = pending
-    .filter((alert) => readyReadingIds.has(alert.readingId) && alert.alertLevelId)
-    .map((alert) => ({
+  const candidates = pending.filter(
+    (alert) => readyReadingIds.has(alert.readingId) && alert.alertLevelId,
+  )
+  if (candidates.length === 0 || !stillActive()) return 0
+
+  const localLevels = await db.alertLevels.toArray()
+  const { data: remoteLevels, error: levelError } = await supabase
+    .from('alert_levels')
+    .select('id, code')
+  if (levelError) throw levelError
+
+  const localCodeById = new Map(localLevels.map((level) => [level.id, level.code]))
+  const remoteIdByCode = new Map(remoteLevels.map((level) => [level.code, level.id]))
+  const rows = []
+  for (const alert of candidates) {
+    const levelId = remoteIdByCode.get(localCodeById.get(alert.alertLevelId))
+    if (!levelId) continue // Keep alerts pending until their level can be resolved.
+
+    rows.push({
       id: alert.id,
       reading_id: alert.readingId,
       recommendation_id: alert.recommendationId ?? null,
-      alert_level_id: alert.alertLevelId,
+      alert_level_id: levelId,
       direction: alert.direction ?? null,
       generated_at: alert.generatedAt,
       attended_at: alert.attendedAt ?? null,
-    }))
+    })
+  }
   if (rows.length === 0 || !stillActive()) return 0
 
   await upsertAll('alerts', rows, { onConflict: 'id' })
