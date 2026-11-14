@@ -262,6 +262,17 @@
       "low": "went down"
     }
   },
+  "astronaut": {
+    "title": "Astronaut Medical Overview",
+    "subsystems": "Body Subsystems",
+    "clinicalFile": "NASA Clinical File",
+    "viewDetails": "View System Details",
+    "hrpHazard": "Associated HRP Hazard",
+    "flightRisk": "Official Flight Risk",
+    "livePulse": "Active Telemetry (1 Hz)",
+    "noAlerts": "No pending medical alerts. All physiological indicators are currently in safe range.",
+    "markDone": "Mark as Done"
+  },
   "security": {
     "insecureTitle": "Insecure connection (http://).",
     "insecureBody": "This page must be opened over https://. Without HTTPS, installing the app, offline mode, notifications, Bluetooth and PIN login do not work.",
