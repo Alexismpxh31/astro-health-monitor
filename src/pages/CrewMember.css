@@ -1,0 +1,297 @@
+.crew-detail-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.crew-detail-back:hover {
+  text-decoration: underline;
+}
+
+.crew-detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.crew-detail-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.crew-detail-title h1 {
+  margin: 0;
+}
+
+.crew-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.crew-detail-note {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.crew-detail h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
+.crew-detail-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1000px) {
+  .crew-detail-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+}
+
+.crew-detail-empty {
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.crew-detail button.is-primary {
+  color: var(--bg);
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.crew-detail button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ---------- Indicator cards ---------- */
+
+.indicator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 1rem;
+}
+
+.indicator-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 1rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.indicator-card.is-critical {
+  border-color: var(--danger);
+}
+
+.indicator-card.is-warning {
+  border-color: var(--warn);
+}
+
+.indicator-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.indicator-card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.indicator-card-header p {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.indicator-latest {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin: 0;
+}
+
+.indicator-latest-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicator-latest-unit {
+  color: var(--muted);
+}
+
+.indicator-chart {
+  min-width: 0;
+}
+
+.indicator-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.indicator-threshold-tag {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.indicator-threshold-tag.is-personal {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ---------- Threshold editor ---------- */
+
+.threshold-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.threshold-editor-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.threshold-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.threshold-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.threshold-field.is-criticalMin span,
+.threshold-field.is-criticalMax span {
+  color: var(--danger);
+}
+
+.threshold-field.is-warnMin span,
+.threshold-field.is-warnMax span {
+  color: var(--warn);
+}
+
+.threshold-field input,
+.notes-form textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  font-weight: 400;
+  color: var(--text);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.threshold-field input:focus,
+.notes-form textarea:focus {
+  border-color: var(--accent);
+}
+
+.threshold-editor-error,
+.notes-error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--danger);
+}
+
+.threshold-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ---------- Notes ---------- */
+
+.notes-panel {
+  padding: 1rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.notes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.notes-label {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.notes-form textarea {
+  resize: vertical;
+}
+
+.notes-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notes-list li {
+  padding: 0.75rem;
+  background-color: var(--bg);
+  border-radius: var(--radius);
+}
+
+.notes-content {
+  margin: 0 0 0.25rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.notes-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  font-size: 0.75rem;
+}

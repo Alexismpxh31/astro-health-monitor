@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
-import { addDemoReadings, addLiveDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
+import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
 import { db } from '../db/db.js'
 import { buildCrewStatus, LEVEL } from './crew/crewStatus.js'
+import { DISPLAY_CODE } from './crew/display.js'
+import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
+import { useLiveDemo } from './crew/useLiveDemo.js'
 import './Crew.css'
 
 const ASTRONAUT_ROLE_CODE = 'ASTRONAUT'
 const SUMMARY_LEVELS = [LEVEL.CRITICAL, LEVEL.WARNING, LEVEL.NORMAL]
-const DISPLAY_CODE = { SPO2: 'SpO₂', TSKIN: 'T piel', RAD_DOSE: 'Dosis' }
-const LIVE_INTERVAL_MS = 2500
 
 // Reads everything from IndexedDB (offline-first); re-runs whenever those tables change.
 // TODO(perf): this scans every reading of the crew. If it gets slow, add a
@@ -41,35 +42,13 @@ async function loadCrewData() {
   }
 }
 
-// Adds live readings on a timer while `enabled` is true. Skips a tick if the previous one is still writing.
-function useLiveSimulation(enabled, onError) {
-  useEffect(() => {
-    if (!enabled) return undefined
-    let isWriting = false
-    const tick = async () => {
-      if (isWriting) return
-      isWriting = true
-      try {
-        await addLiveDemoReadings()
-      } catch (error) {
-        onError(error)
-      } finally {
-        isWriting = false
-      }
-    }
-    tick()
-    const intervalId = setInterval(tick, LIVE_INTERVAL_MS)
-    return () => clearInterval(intervalId)
-  }, [enabled, onError])
-}
-
 export default function Crew() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const data = useLiveQuery(loadCrewData)
+  const { isLive, hasError: liveFailed } = useLiveDemo()
   const [errorKey, setErrorKey] = useState(null)
   const [isSimulating, setIsSimulating] = useState(false)
-  const [isLive, setIsLive] = useState(false)
   const [levelFilter, setLevelFilter] = useState(null)
 
   useEffect(() => {
@@ -79,12 +58,7 @@ export default function Crew() {
     })
   }, [])
 
-  const handleLiveError = useCallback((error) => {
-    console.error('[crew] Live simulation failed', error)
-    setIsLive(false)
-    setErrorKey('crew.simulateError')
-  }, [])
-  useLiveSimulation(isLive, handleLiveError)
+  const shownErrorKey = errorKey ?? (liveFailed ? 'crew.simulateError' : null)
 
   const localName = (row) => (lang === 'en' ? row.nameEn : row.nameEs) ?? row.name ?? row.code
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
@@ -135,24 +109,16 @@ export default function Crew() {
           </p>
         </div>
         <div className="crew-actions">
-          <button
-            type="button"
-            className="crew-live-toggle"
-            aria-pressed={isLive}
-            onClick={() => setIsLive((value) => !value)}
-          >
-            <span className="crew-live-dot" aria-hidden="true" />
-            {isLive ? t('crew.liveOn') : t('crew.liveOff')}
-          </button>
+          <LiveDemoToggle />
           <button type="button" onClick={handleSimulateOnce} disabled={isSimulating || isLive}>
             {isSimulating ? t('crew.simulating') : t('crew.simulate')}
           </button>
         </div>
       </header>
 
-      {errorKey && (
+      {shownErrorKey && (
         <p className="crew-error" role="alert">
-          {t(errorKey)}
+          {t(shownErrorKey)}
         </p>
       )}
 

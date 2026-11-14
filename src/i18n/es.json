@@ -41,6 +41,45 @@
     "loadError": "No se pudo preparar la tripulación de demostración. Recarga la página.",
     "simulateError": "No se pudieron generar lecturas simuladas. Inténtalo de nuevo."
   },
+  "crewDetail": {
+    "back": "Volver a la tripulación",
+    "notFound": "No se encontró a este tripulante.",
+    "exportCsv": "Exportar CSV",
+    "indicators": "Indicadores",
+    "noReadings": "Todavía no hay lecturas de este tripulante.",
+    "chartLabel": "Tendencia de {{name}}, últimas {{count}} lecturas",
+    "generalThreshold": "Umbral general",
+    "personalThreshold": "Umbral personalizado",
+    "noThreshold": "Sin umbral definido",
+    "adjustThreshold": "Ajustar umbral",
+    "threshold": {
+      "hint": "Valores en {{unit}}. Deja un campo vacío si no hay límite de ese lado.",
+      "criticalMin": "Mínimo crítico",
+      "warnMin": "Mínimo normal",
+      "warnMax": "Máximo normal",
+      "criticalMax": "Máximo crítico",
+      "save": "Guardar umbral",
+      "cancel": "Cancelar",
+      "reset": "Volver al umbral general",
+      "errorNumber": "Escribe solo números.",
+      "errorEmpty": "Escribe al menos un límite.",
+      "errorOrder": "Los límites deben ir de menor a mayor: mínimo crítico ≤ mínimo normal ≤ máximo normal ≤ máximo crítico.",
+      "saveError": "No se pudo guardar el umbral. Inténtalo de nuevo."
+    },
+    "notes": {
+      "title": "Notas al astronauta",
+      "label": "Nueva nota",
+      "placeholder": "Ej.: Repite la medición de SpO₂ en 10 minutos.",
+      "send": "Enviar nota",
+      "sending": "Enviando…",
+      "empty": "Aún no has enviado notas a este tripulante.",
+      "pending": "Pendiente de envío",
+      "synced": "Enviada",
+      "read": "Leída",
+      "noSender": "No hay un médico de vuelo con sesión iniciada.",
+      "sendError": "No se pudo guardar la nota. Inténtalo de nuevo."
+    }
+  },
   "common": {
     "underConstruction": "En construcción",
     "language": "Idioma",

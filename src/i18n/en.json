@@ -41,6 +41,45 @@
     "loadError": "The demo crew could not be prepared. Reload the page.",
     "simulateError": "Simulated readings could not be generated. Try again."
   },
+  "crewDetail": {
+    "back": "Back to crew",
+    "notFound": "This crew member was not found.",
+    "exportCsv": "Export CSV",
+    "indicators": "Indicators",
+    "noReadings": "There are no readings for this crew member yet.",
+    "chartLabel": "{{name}} trend, last {{count}} readings",
+    "generalThreshold": "General threshold",
+    "personalThreshold": "Personal threshold",
+    "noThreshold": "No threshold set",
+    "adjustThreshold": "Adjust threshold",
+    "threshold": {
+      "hint": "Values in {{unit}}. Leave a field empty for no limit on that side.",
+      "criticalMin": "Critical minimum",
+      "warnMin": "Normal minimum",
+      "warnMax": "Normal maximum",
+      "criticalMax": "Critical maximum",
+      "save": "Save threshold",
+      "cancel": "Cancel",
+      "reset": "Use general threshold",
+      "errorNumber": "Use numbers only.",
+      "errorEmpty": "Enter at least one limit.",
+      "errorOrder": "Limits must go from low to high: critical minimum ≤ normal minimum ≤ normal maximum ≤ critical maximum.",
+      "saveError": "The threshold could not be saved. Try again."
+    },
+    "notes": {
+      "title": "Notes to the astronaut",
+      "label": "New note",
+      "placeholder": "E.g.: Measure SpO₂ again in 10 minutes.",
+      "send": "Send note",
+      "sending": "Sending…",
+      "empty": "You have not sent notes to this crew member yet.",
+      "pending": "Waiting to send",
+      "synced": "Sent",
+      "read": "Read",
+      "noSender": "No flight surgeon is logged in.",
+      "sendError": "The note could not be saved. Try again."
+    }
+  },
   "common": {
     "underConstruction": "Under construction",
     "language": "Language",

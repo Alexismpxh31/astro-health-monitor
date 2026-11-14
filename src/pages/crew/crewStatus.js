@@ -45,7 +45,12 @@ function latestReadingsByKey(readings) {
   return latest
 }
 
-function findThreshold(thresholds, userId, indicatorId) {
+/**
+ * Threshold that applies to a user: the personal one wins over the general one (userId null).
+ *
+ * @returns {Object|null}
+ */
+export function findThreshold(thresholds, userId, indicatorId) {
   return (
     thresholds.find((row) => row.indicatorId === indicatorId && row.userId === userId) ??
     thresholds.find((row) => row.indicatorId === indicatorId && row.userId == null) ??
