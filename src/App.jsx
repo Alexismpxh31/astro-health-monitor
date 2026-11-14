@@ -15,7 +15,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* TODO(auth): protect every route except /login once src/auth is implemented. */}
         <Route element={<Layout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Home />} />

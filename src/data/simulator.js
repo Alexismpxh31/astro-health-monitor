@@ -2,14 +2,14 @@
 // Generates plausible readings for demo purposes when no dataset or BLE sensor is used.
 // Every reading is built with createReading() (source: 'simulated'), stored in
 // db.readings and then passed to the rules engine.
+//
+// Merged version: the core engine comes from main (scenarios + rules engine), and the
+// bottom of the file adds the live API used by the 3D model UI (simulator.subscribe,
+// simulator.state, simulator.history, simulator.triggerAnomaly, startSimulator...).
 
 import { db } from '../db/db.js'
 import { createReading } from '../models/reading.js'
 import { evaluateReading } from '../rules/engine.js'
-
-/**
- * @typedef {import('../models/reading.js').Reading} Reading
- */
 
 const FAST_INTERVAL_MS = 2000 // vital signs
 const SLOW_INTERVAL_MS = 20000 // one accelerated "mission day"
@@ -47,6 +47,7 @@ const SCENARIO_TARGETS = {
   normal: {},
   solarStorm: { RAD_D: 2.5 },
   hypoxia: { SPO2: 88, HR: 110 },
+  tachycardia: { HR: 138 },
   boneLoss: { BMD: -1.8 },
   sleepDeprivation: { SLEEP: 4, PVT: 420, CORT: 35 },
   infection: { TSKIN: 38.6, WBC: 14, IL6: 10 },
@@ -101,6 +102,7 @@ function nextValue(code, now) {
 
 /** Stores one reading and runs the rules engine on it. Never throws. */
 async function emit(indicatorCode, value, unit) {
+  recordLive(indicatorCode, value)
   const reading = createReading({ userId, indicatorCode, value, unit, source: 'simulated' })
   try {
     await db.readings.add(reading)
@@ -120,6 +122,7 @@ function tick(codes) {
 
 function fastTick() {
   tick(FAST_CODES)
+  notify()
 }
 
 function slowTick() {
@@ -127,6 +130,7 @@ function slowTick() {
   // One simulated day has passed: add today's dose to the cumulative dose.
   radCumulative += centerOf('RAD_D', Date.now()) + state.RAD_D.offset
   emit('RAD_C', round(radCumulative, RAD_C.decimals), RAD_C.unit)
+  notify()
 }
 
 // ---------- Public API ----------
@@ -171,7 +175,7 @@ export function getScenario() {
  * Switches the demo scenario. Values drift gradually (~25 s) from where
  * they are now to the targets of the new scenario.
  *
- * @param {'normal'|'solarStorm'|'hypoxia'|'boneLoss'|'sleepDeprivation'|'infection'} name
+ * @param {'normal'|'solarStorm'|'hypoxia'|'tachycardia'|'boneLoss'|'sleepDeprivation'|'infection'} name
  */
 export function setScenario(name) {
   const targets = SCENARIO_TARGETS[name]
@@ -184,4 +188,176 @@ export function setScenario(name) {
     s.startedAt = now
   }
   scenario = name
+}
+
+// ---------- Live API for the UI (3D body model and live charts) ----------
+// Keeps the last value of every indicator and a short rolling history in memory,
+// and notifies subscribers after every tick. Key names match the 3D model UI.
+
+const DEFAULT_USER_ID = '00000000-0000-4000-8000-000000000901'
+const HISTORY_CODES = ['HR', 'SPO2', 'TSKIN', 'RR', 'RAD_D', 'SBP']
+const HISTORY_LENGTH = 25
+
+const latest = { RAD_C: RAD_C_START }
+const liveHistory = Object.fromEntries(HISTORY_CODES.map((code) => [code, []]))
+const subscribers = new Set()
+
+function timeLabel(date = new Date()) {
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
+// Pre-populate the history with baseline values so charts are not empty on first render.
+{
+  const now = Date.now()
+  for (let i = 20; i >= 0; i--) {
+    const time = timeLabel(new Date(now - i * FAST_INTERVAL_MS))
+    for (const code of HISTORY_CODES) {
+      liveHistory[code].push({ time, value: INDICATORS[code].base })
+    }
+  }
+}
+
+function recordLive(code, value) {
+  latest[code] = value
+  const series = liveHistory[code]
+  if (series) {
+    series.push({ time: timeLabel(), value })
+    if (series.length > HISTORY_LENGTH) series.shift()
+  }
+}
+
+function valueOf(code) {
+  return latest[code] ?? INDICATORS[code]?.base
+}
+
+/** Current values with the key names used by the 3D model UI. */
+function snapshot() {
+  return {
+    HR: valueOf('HR'),
+    SPO2: valueOf('SPO2'),
+    SBP: valueOf('SBP'),
+    DBP: valueOf('DBP'),
+    RR: valueOf('RR'),
+    TSKIN: valueOf('TSKIN'),
+    BMD: valueOf('BMD'),
+    MUSCLE_MASS: valueOf('MUSCLE'),
+    RAD_DAILY: valueOf('RAD_D'),
+    RAD_CUMULATIVE: latest.RAD_C,
+    PVT: valueOf('PVT'),
+    SLEEP_HOURS: valueOf('SLEEP'),
+    WBC: valueOf('WBC'),
+    IL6: valueOf('IL6'),
+    CORTISOL: valueOf('CORT'),
+  }
+}
+
+/** Rolling history with the key names used by the 3D model UI. */
+function historySnapshot() {
+  return {
+    HR: [...liveHistory.HR],
+    SPO2: [...liveHistory.SPO2],
+    TSKIN: [...liveHistory.TSKIN],
+    RR: [...liveHistory.RR],
+    RAD_DAILY: [...liveHistory.RAD_D],
+    SBP: [...liveHistory.SBP],
+  }
+}
+
+function notify() {
+  const current = snapshot()
+  const hist = historySnapshot()
+  for (const callback of subscribers) {
+    try {
+      callback(current, hist)
+    } catch (error) {
+      console.error('[simulator] Subscriber failed', error)
+    }
+  }
+}
+
+// Demo buttons in the UI -> gradual scenarios of the core engine.
+const ANOMALY_TO_SCENARIO = {
+  hypoxia: 'hypoxia',
+  tachycardia: 'tachycardia',
+  radiation: 'solarStorm',
+  solarStorm: 'solarStorm',
+  boneLoss: 'boneLoss',
+  sleepDeprivation: 'sleepDeprivation',
+  infection: 'infection',
+  reset: 'normal',
+  normal: 'normal',
+}
+
+/**
+ * Object API used by the 3D model UI.
+ * simulator.start() accepts a user id (string); any other argument (e.g. an interval in ms)
+ * is ignored and the demo astronaut is used.
+ */
+export const simulator = {
+  get state() {
+    return snapshot()
+  },
+  get history() {
+    return historySnapshot()
+  },
+  get isRunning() {
+    return isRunning()
+  },
+  subscribe(callback) {
+    subscribers.add(callback)
+    callback(snapshot(), historySnapshot())
+    return () => {
+      subscribers.delete(callback)
+    }
+  },
+  start(forUserId) {
+    if (isRunning()) return
+    start(typeof forUserId === 'string' && forUserId ? forUserId : DEFAULT_USER_ID)
+  },
+  stop() {
+    stop()
+  },
+  triggerAnomaly(type) {
+    const name = ANOMALY_TO_SCENARIO[type]
+    if (!name) {
+      console.warn('[simulator] Unknown anomaly type:', type)
+      return
+    }
+    setScenario(name)
+    notify()
+  },
+}
+
+// ---------- Team stub compatibility ----------
+
+/** Builds (without storing) a reading with the latest simulated value of an indicator. */
+export function generateReading(forUserId, indicatorCode) {
+  const unit = INDICATORS[indicatorCode]?.unit ?? (indicatorCode === 'RAD_C' ? RAD_C.unit : '')
+  return createReading({
+    userId: forUserId,
+    indicatorCode,
+    value: valueOf(indicatorCode) ?? 0,
+    unit,
+    source: 'simulated',
+  })
+}
+
+/**
+ * Starts the simulator and calls options.onReading with a reading of
+ * options.indicatorCodes[0] (default 'HR') after every tick.
+ * @returns {() => void} cleanup function that unsubscribes and stops the simulator.
+ */
+export function startSimulator(options = {}) {
+  const forUserId = options.userId || DEFAULT_USER_ID
+  if (!isRunning()) start(forUserId)
+  const unsubscribe = simulator.subscribe(() => {
+    if (options.onReading) {
+      const code = options.indicatorCodes?.[0] || 'HR'
+      options.onReading(generateReading(forUserId, code))
+    }
+  })
+  return () => {
+    unsubscribe()
+    stop()
+  }
 }

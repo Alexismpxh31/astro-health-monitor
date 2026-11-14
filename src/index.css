@@ -1,22 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  --bg: #0b1220;
-  --surface: #111a2e;
-  --accent: #22d3ee;
-  --blue: #3b82f6;
-  --text: #e2e8f0;
-  --ok: #22c55e;
-  --warn: #f59e0b;
-  --danger: #ef4444;
+  /* NASA Clean Aerospace Mockup Palette */
+  --bg-app: #F0F5FA;
+  --bg-sidebar: linear-gradient(180deg, #050E24 0%, #08163B 50%, #0A1C44 100%);
+  --sidebar-active: #0B57D0;
+  
+  --card-bg: #FFFFFF;
+  --card-border: rgba(226, 232, 240, 0.9);
+  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  
+  --navy-title: #0E1B3E;
+  --text-muted: #64748B;
+  --text-subtle: #94A3B8;
+  
+  --accent-blue: #0284C7;
+  --cta-royal-blue: #0B4CD6;
+  --cta-royal-hover: #093BB0;
 
-  --muted: #94a3b8;
-  --border: #1e293b;
-  --radius: 12px;
+  --badge-green-bg: rgba(16, 185, 129, 0.12);
+  --badge-green-text: #059669;
+  
+  --badge-blue-bg: rgba(59, 130, 246, 0.12);
+  --badge-blue-text: #2563EB;
 
-  color-scheme: dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --radius-card: 20px;
+  --radius-item: 14px;
+
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
-  color: var(--text);
-  background-color: var(--bg);
+  color: #0E1B3E;
+  background-color: var(--bg-app);
 }
 
 *,
@@ -29,164 +46,77 @@ body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: var(--bg);
+  background-color: var(--bg-app);
+  background: linear-gradient(135deg, #F0F5FA 0%, #E8F0F8 45%, #DCE7F3 100%);
+  color: var(--navy-title);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1 {
-  margin: 0 0 0.5rem;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  line-height: 1.2;
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-a {
-  color: var(--accent);
+::-webkit-scrollbar-track {
+  background: #E2E8F0;
 }
 
-/* Touch targets: at least 48x48 px. */
-button,
-.nav-link {
-  min-width: 48px;
-  min-height: 48px;
+::-webkit-scrollbar-thumb {
+  background: #94A3B8;
+  border-radius: 9999px;
 }
 
-button {
-  padding: 0 1rem;
-  font: inherit;
-  font-weight: 600;
-  color: var(--text);
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
+::-webkit-scrollbar-thumb:hover {
+  background: #0B57D0;
 }
 
-button:hover {
-  border-color: var(--accent);
+/* Tabular figures for numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
+/* Micro-physics & Button Feedback */
+button, .interactive-row {
+  transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 150ms ease,
+              border-color 150ms ease,
+              box-shadow 150ms ease;
+  user-select: none;
+}
+
+button:active, .interactive-row:active {
+  transform: scale(0.98);
+}
+
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent-blue);
   outline-offset: 2px;
 }
 
-.muted {
-  color: var(--muted);
+/* Sonar pulse for telemetry */
+@keyframes sonar-wave {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  70% { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0; }
 }
 
-/* ---------- App shell ---------- */
-
-.app-shell {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh;
+.sonar-ring {
+  animation: sonar-wave 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  transform-origin: center;
 }
 
-.top-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-
-.app-name {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.top-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.connection-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.connection-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: currentColor;
-}
-
-.connection-status.is-online {
-  color: var(--ok);
-}
-
-.connection-status.is-offline {
-  color: var(--warn);
-}
-
-.lang-switch {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.lang-button[aria-pressed='true'] {
-  color: var(--bg);
-  background-color: var(--accent);
-  border-color: var(--accent);
-}
-
-.main-nav {
-  display: flex;
-  gap: 0.25rem;
-  padding: 0.5rem 1rem;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-link {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0.875rem;
-  font-weight: 600;
-  color: var(--text);
-  text-decoration: none;
-  white-space: nowrap;
-  border-radius: var(--radius);
-}
-
-.nav-link:hover {
-  background-color: var(--surface);
-}
-
-.nav-link.active {
-  color: var(--accent);
-  background-color: var(--surface);
-}
-
-.content {
-  flex: 1;
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .top-bar,
-  .main-nav {
-    padding-inline: 1.5rem;
+/* ECG Wave Dash Animation */
+@keyframes ecg-dash {
+  to {
+    stroke-dashoffset: -200;
   }
+}
 
-  .content {
-    padding: 1.5rem;
-  }
+.ecg-line {
+  stroke-dasharray: 200;
+  animation: ecg-dash 3s linear infinite;
 }
 
 /* ---------- Sensors page: simulator controls and live lists ---------- */
