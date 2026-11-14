@@ -16,8 +16,15 @@ import i18n from '../i18n/index.js'
  * @property {number|null} maxNormal - Above this -> warning. null = no limit.
  * @property {number|null} maxCritical - Above this -> critical. null = no limit.
  *
+ * @typedef {'low'|'high'|null} Direction - Side of the normal range the value is on.
+ *
+ * @typedef {Object} Classification
+ * @property {Level} level
+ * @property {Direction} direction - null when the value is normal.
+ *
  * @typedef {Object} Evaluation
  * @property {Level|null} level - null when no threshold exists for the indicator.
+ * @property {Direction} direction
  * @property {Object|null} alert - Row added to db.alerts, if a new alert was raised.
  */
 
@@ -62,15 +69,16 @@ function warnOnce(warned, indicatorCode, message) {
 }
 
 /**
- * Classifies a value against a threshold. A null/undefined bound means
- * "no limit on that side".
+ * Classifies a value against a threshold and tells on which side of the
+ * normal range it is ('low' = below the lower bound, 'high' = above the
+ * upper bound). A null/undefined bound means "no limit on that side".
  *
  * Also accepts the legacy field names used by early seed rows
  * (criticalMin / warnMin / warnMax / criticalMax).
  *
  * @param {number} value
  * @param {Threshold} threshold
- * @returns {Level}
+ * @returns {Classification}
  */
 export function classify(value, threshold) {
   const minCritical = threshold.minCritical ?? threshold.criticalMin ?? null
@@ -78,13 +86,27 @@ export function classify(value, threshold) {
   const maxNormal = threshold.maxNormal ?? threshold.warnMax ?? null
   const maxCritical = threshold.maxCritical ?? threshold.criticalMax ?? null
 
-  if ((minCritical !== null && value < minCritical) || (maxCritical !== null && value > maxCritical)) {
-    return 'critical'
-  }
-  if ((minNormal !== null && value < minNormal) || (maxNormal !== null && value > maxNormal)) {
-    return 'warning'
-  }
-  return 'normal'
+  if (minCritical !== null && value < minCritical) return { level: 'critical', direction: 'low' }
+  if (maxCritical !== null && value > maxCritical) return { level: 'critical', direction: 'high' }
+  if (minNormal !== null && value < minNormal) return { level: 'warning', direction: 'low' }
+  if (maxNormal !== null && value > maxNormal) return { level: 'warning', direction: 'high' }
+  return { level: 'normal', direction: null }
+}
+
+/**
+ * Finds the recommendation for an indicator + level: the one written for the
+ * exact direction first, then the generic one (direction null/undefined).
+ *
+ * Filtered in memory on purpose: IndexedDB does not index null values, so a
+ * [indicatorId+alertLevelId+direction] index would skip the generic rows.
+ */
+async function findRecommendation(indicator, alertLevel, direction) {
+  if (!indicator || !alertLevel) return undefined
+  const rows = await db.recommendations
+    .where('[indicatorId+alertLevelId]')
+    .equals([indicator.id, alertLevel.id])
+    .toArray()
+  return rows.find((row) => row.direction === direction) ?? rows.find((row) => row.direction == null)
 }
 
 /**
@@ -158,22 +180,16 @@ export async function evaluateReading(reading) {
   const threshold = await findThreshold(reading, indicator)
   if (!threshold) {
     warnOnce(warnedNoThreshold, code, 'No threshold for indicator')
-    return { level: null, alert: null }
+    return { level: null, direction: null, alert: null }
   }
 
-  const level = classify(reading.value, threshold)
-  if (level === 'normal') return { level, alert: null }
+  const { level, direction } = classify(reading.value, threshold)
+  if (level === 'normal') return { level, direction, alert: null }
 
   const alertLevel = (await db.alertLevels.toArray()).find(
     (row) => row.code === level.toUpperCase(),
   )
-  const recommendation =
-    indicator && alertLevel
-      ? await db.recommendations
-          .where('[indicatorId+alertLevelId]')
-          .equals([indicator.id, alertLevel.id])
-          .first()
-      : undefined
+  const recommendation = await findRecommendation(indicator, alertLevel, direction)
   if (!recommendation) {
     // The alert is still raised (without advice) so an out-of-range value is never hidden.
     warnOnce(warnedNoRecommendation, code, 'No recommendation for indicator')
@@ -186,6 +202,7 @@ export async function evaluateReading(reading) {
     // Denormalized so the alert can be shown and de-duplicated without joins.
     indicatorCode: code,
     alertLevelId: alertLevel?.id ?? null,
+    direction, // 'low' | 'high'
     generatedAt: new Date().toISOString(),
     attendedAt: null,
     syncStatus: 'pending',
@@ -201,7 +218,9 @@ export async function evaluateReading(reading) {
         (row) =>
           row.attendedAt == null &&
           row.indicatorCode === code &&
-          row.alertLevelId === alert.alertLevelId,
+          row.alertLevelId === alert.alertLevelId &&
+          // Alerts stored before `direction` existed count as the same direction.
+          (row.direction ?? direction) === direction,
       )
       .first()
     if (duplicate) return false
@@ -209,7 +228,7 @@ export async function evaluateReading(reading) {
     return true
   })
 
-  if (!created) return { level, alert: null }
+  if (!created) return { level, direction, alert: null }
   if (level === 'critical') notifyCritical(reading, indicator, recommendation)
-  return { level, alert }
+  return { level, direction, alert }
 }

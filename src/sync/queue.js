@@ -1,8 +1,6 @@
 import { db } from '../db/db.js'
 import { supabase } from './supabaseClient.js'
 
-import { db } from '../db/db.js'
-
 /** Tables that carry a syncStatus field and take part in the sync queue. */
 export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins']
 
@@ -12,71 +10,87 @@ export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins']
  * @returns {Promise<number>}
  */
 export async function getPendingCount() {
- cambios_Walter_IU_Model_3D
-  let count = 0
-  for (const table of SYNCABLE_TABLES) {
-    if (db[table]) {
-      const pending = await db[table].where('syncStatus').equals('pending').count()
-      count += pending
-    }
-  }
-  return count
-=======
-  // TODO: sum db[table].where('syncStatus').equals('pending').count() over SYNCABLE_TABLES.
-    const counts = await Promise.all(
-    SYNCABLE_TABLES.map((tableName) =>
-      db.table(tableName).where('syncStatus').equals('pending').count(),
+  const counts = await Promise.all(
+    SYNCABLE_TABLES.filter((tableName) => db.tables.some((table) => table.name === tableName)).map(
+      (tableName) => db.table(tableName).where('syncStatus').equals('pending').count(),
     ),
   )
-
   return counts.reduce((total, count) => total + count, 0)
- main
 }
 
 /**
- * Pushes every pending row to Supabase and marks it as 'synced'.
+ * Pushes the logged-in user's pending readings to Supabase and marks them as 'synced'.
+ * Client fields (camelCase, indicatorCode) are mapped to the server schema
+ * (snake_case, indicator_id).
  *
  * @returns {Promise<{ pushed: number, failed: number }>}
  */
 export async function syncPending() {
-  if (!supabase || typeof navigator === 'undefined' || !navigator.onLine) {
-    return { pushed: 0, failed: 0 }
+  if (!supabase) throw new Error('Falta configurar Supabase.')
+  if (!navigator.onLine) throw new Error('El navegador está sin conexión.')
+
+  // Supabase user linked to the app profile (RLS only allows writing your own data).
+  const { data: appUserId, error: profileError } = await supabase.rpc('app_user_id')
+  if (profileError) throw profileError
+  if (!appUserId) {
+    throw new Error('Inicia sesión con un perfil de astronauta vinculado.')
   }
 
-  let pushed = 0
-  let failed = 0
+  const readings = await db.readings
+    .where('userId')
+    .equals(appUserId)
+    .filter((reading) => reading.syncStatus === 'pending')
+    .toArray()
 
-  for (const table of SYNCABLE_TABLES) {
-    if (!db[table]) continue
+  if (readings.length === 0) return { pushed: 0, failed: 0 }
 
-    try {
-      const pendingRows = await db[table].where('syncStatus').equals('pending').toArray()
-      if (pendingRows.length === 0) continue
+  // indicator code -> server indicator id
+  const { data: indicators, error: indicatorError } = await supabase
+    .from('indicators')
+    .select('id, code')
+  if (indicatorError) throw indicatorError
+  const indicatorIdByCode = Object.fromEntries(indicators.map((row) => [row.code, row.id]))
 
-      for (const row of pendingRows) {
-        // Strip out local-only fields before sending to Supabase
-        const { syncStatus, ...payload } = row
-        const { error } = await supabase.from(table).upsert(payload, { onConflict: 'id' })
-
-        if (error) {
-          // If RLS blocks anon write or server error, record as failed
-          if (failed === 0) {
-            console.warn(`[sync] Sincronización en espera: ${table} requiere permisos RLS o mapeo de esquema en Supabase (${error.message}).`)
-          }
-          failed++
-        } else {
-          // Mark as synced locally
-          await db[table].update(row.id, { syncStatus: 'synced' })
-          pushed++
-        }
-      }
-    } catch (err) {
-      console.error(`[sync] Error during sync of ${table}:`, err)
-      failed++
-    }
+  const known = readings.filter((reading) => indicatorIdByCode[reading.indicatorCode])
+  const failed = readings.length - known.length
+  if (failed > 0) {
+    console.warn(`[sync] ${failed} lecturas con códigos que no existen en Supabase; se quedan pendientes.`)
   }
+  if (known.length === 0) return { pushed: 0, failed }
+
+  const rows = known.map((reading) => ({
+    id: reading.id,
+    user_id: reading.userId,
+    indicator_id: indicatorIdByCode[reading.indicatorCode],
+    sensor_id: null,
+    value: reading.value,
+    measured_at: reading.measuredAt,
+    source: reading.source,
+  }))
+
+  const { error: uploadError } = await supabase
+    .from('readings')
+    .upsert(rows, { onConflict: 'id', ignoreDuplicates: true })
+  if (uploadError) throw uploadError
+
+  const pushed = await db.readings
+    .where('id')
+    .anyOf(known.map((reading) => reading.id))
+    .modify({ syncStatus: 'synced' })
 
   return { pushed, failed }
+}
+
+/** Runs syncPending without throwing (for automatic/background syncs). */
+async function trySync() {
+  try {
+    const result = await syncPending()
+    if (result.pushed > 0) console.log(`[sync] ${result.pushed} lecturas enviadas a Supabase.`)
+    return result
+  } catch (error) {
+    console.warn('[sync] Sincronización en espera:', error.message)
+    return { pushed: 0, failed: 0 }
+  }
 }
 
 /**
@@ -90,9 +104,7 @@ export function startAutoSync(options = {}) {
   const intervalMs = options.intervalMs || 30000
 
   const handleOnline = () => {
-    syncPending().then(({ pushed, failed }) => {
-      if (pushed > 0) console.log(`[sync] Online sync: pushed ${pushed} records to Supabase.`)
-    })
+    trySync()
   }
 
   if (typeof window !== 'undefined') {
@@ -100,7 +112,7 @@ export function startAutoSync(options = {}) {
   }
 
   const timer = setInterval(() => {
-    syncPending()
+    if (typeof navigator !== 'undefined' && navigator.onLine) trySync()
   }, intervalMs)
 
   return () => {

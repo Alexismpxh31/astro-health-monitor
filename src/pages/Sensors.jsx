@@ -260,7 +260,18 @@ export default function Sensors() {
                   className="sim-row sim-alert"
                   style={{ '--level-color': LEVEL_COLORS[levelCode] ?? 'var(--warn)' }}
                 >
-                  <span className="sim-level">{t(`levels.${levelCode}`, levelCode)}</span>
+                  <span className="sim-level">
+                    {t(`levels.${levelCode}`, levelCode)}
+                    {alert.direction && (
+                      <span title={t(`directions.${alert.direction}`, alert.direction)}>
+                        {' '}
+                        <span aria-hidden="true">{alert.direction === 'high' ? '↑' : '↓'}</span>
+                        <span className="visually-hidden">
+                          {t(`directions.${alert.direction}`, alert.direction)}
+                        </span>
+                      </span>
+                    )}
+                  </span>
                   <span className="sim-row-name">{indicatorName(alert.indicatorCode)}</span>
                   {alert.reading && (
                     <span className="sim-row-value">
