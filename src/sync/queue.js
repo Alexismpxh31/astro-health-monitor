@@ -1,5 +1,7 @@
-// Sync queue (STUB).
+// Sync queue.
 // Pushes locally stored rows with syncStatus 'pending' to Supabase when online.
+// TODO(sync): syncPending() only uploads HR readings so far; alerts, dailyCheckins
+// and messages are counted as pending but not uploaded yet.
 
 import { db } from '../db/db.js'
 import { supabase } from './supabaseClient.js'
@@ -87,8 +89,38 @@ export async function syncPending() {
  * @param {number} [options.intervalMs=30000]
  * @returns {() => void} stop function.
  */
-export function startAutoSync(options = {}) {
-  // TODO: window.addEventListener('online', syncPending) + setInterval(syncPending, intervalMs).
-  console.warn('[sync] startAutoSync is not implemented yet', options)
-  return () => {}
+export function startAutoSync({ intervalMs = 30000 } = {}) {
+  if (!supabase) {
+    console.info('[sync] Supabase is not configured: auto-sync is off (offline-only mode).')
+    return () => {}
+  }
+
+  let isRunning = false
+  let lastErrorMessage = null
+
+  const run = async () => {
+    if (isRunning || !navigator.onLine) return
+    isRunning = true
+    try {
+      const { pushed } = await syncPending()
+      if (pushed > 0) console.info(`[sync] Uploaded ${pushed} readings`)
+      lastErrorMessage = null
+    } catch (error) {
+      // Expected while nobody is linked to Supabase (offline PIN login): report once, retry later.
+      const message = error?.message ?? String(error)
+      if (message !== lastErrorMessage) console.warn('[sync] Auto-sync skipped:', message)
+      lastErrorMessage = message
+    } finally {
+      isRunning = false
+    }
+  }
+
+  window.addEventListener('online', run)
+  const intervalId = setInterval(run, intervalMs)
+  run()
+
+  return () => {
+    window.removeEventListener('online', run)
+    clearInterval(intervalId)
+  }
 }

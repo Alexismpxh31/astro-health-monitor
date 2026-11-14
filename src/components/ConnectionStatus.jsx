@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
+import { getPendingCount } from '../sync/queue.js'
 
 function subscribe(callback) {
   window.addEventListener('online', callback)
@@ -14,10 +16,12 @@ function getSnapshot() {
   return navigator.onLine
 }
 
-// Shows "En línea" / "Sin señal" based on navigator.onLine and online/offline events.
+// Shows "En línea" / "Sin señal" (navigator.onLine + online/offline events) and how
+// many local rows are still waiting to be synced: "Sin señal · 3 pendientes".
 export default function ConnectionStatus() {
   const { t } = useTranslation()
   const isOnline = useSyncExternalStore(subscribe, getSnapshot)
+  const pendingCount = useLiveQuery(getPendingCount, [], 0)
 
   return (
     <span
@@ -27,6 +31,9 @@ export default function ConnectionStatus() {
     >
       <span className="connection-dot" aria-hidden="true" />
       {isOnline ? t('connection.online') : t('connection.offline')}
+      {pendingCount > 0 && (
+        <span className="connection-pending"> · {t('connection.pending', { count: pendingCount })}</span>
+      )}
     </span>
   )
 }
