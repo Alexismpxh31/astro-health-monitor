@@ -326,15 +326,30 @@ export default function AstronautModel3D({
       applyZoneHighlights(zone, hovered);
     };
 
-    // 7. Carga de GLTFLoader con fallback automático
+    // 7. Carga de GLTFLoader con tiempo de espera configurable de 60 segundos y fallback
     const baseUrl = (import.meta.env?.BASE_URL || '/').replace(/\/$/, '');
     const modelUrl = `${baseUrl}/models/astronauta.glb`;
+
+    let isGlbResolved = false;
+    const GLB_TIMEOUT_MS = 60000; // 60 segundos de espera máxima
+
+    const glbTimeoutId = setTimeout(() => {
+      if (!isGlbResolved && !isDisposed) {
+        console.warn(`[AstronautModel3D] Tiempo límite de ${GLB_TIMEOUT_MS / 1000}s alcanzado para astronauta.glb. Activando fallback procedural...`);
+        isGlbResolved = true;
+        createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings);
+        setLoading(false);
+        applyZoneHighlights(activeZoneRef.current, null);
+      }
+    }, GLB_TIMEOUT_MS);
 
     const loader = new GLTFLoader();
     loader.load(
       modelUrl,
       (gltf) => {
-        if (isDisposed) return;
+        if (isDisposed || isGlbResolved) return;
+        isGlbResolved = true;
+        clearTimeout(glbTimeoutId);
 
         try {
           const root = gltf.scene;
@@ -433,6 +448,9 @@ export default function AstronautModel3D({
         }
       },
       (loadErr) => {
+        if (isDisposed || isGlbResolved) return;
+        isGlbResolved = true;
+        clearTimeout(glbTimeoutId);
         console.warn('[AstronautModel3D] Activando astronauta procedural PBR tras error de carga:', loadErr);
         createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings);
         setLoading(false);
@@ -533,6 +551,7 @@ export default function AstronautModel3D({
 
     return () => {
       isDisposed = true;
+      clearTimeout(glbTimeoutId);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
       dom.removeEventListener('pointermove', onPointerMove);
