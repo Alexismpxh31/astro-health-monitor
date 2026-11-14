@@ -95,6 +95,22 @@
     }
   },
   "comms": {
+    "cloud": {
+      "syncNow": "Sync now",
+      "email": "Email",
+      "password": "Password",
+      "link": "Link cloud account",
+      "working": "Connecting to Mission Control…",
+      "notConfigured": "Supabase is not configured.",
+      "offline": "You are offline. Pending readings stay on this device.",
+      "error": "Could not complete the operation. Try again.",
+      "wrongProfile": "This account belongs to a different crew profile.",
+      "linked": "Account linked. Pending heart rate readings can now sync.",
+      "linkRequired": "Link the Supabase account for your active crew profile.",
+      "sent_one": "{{count}} heart rate reading synced.",
+      "sent_other": "{{count}} heart rate readings synced.",
+      "empty": "No pending heart rate readings for this profile."
+    },
     "loading": "Checking pending records…",
     "pendingCount_one": "{{count}} record pending sync",
     "pendingCount_other": "{{count}} records pending sync",

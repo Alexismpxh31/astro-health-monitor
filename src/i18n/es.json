@@ -95,6 +95,22 @@
     }
   },
   "comms": {
+    "cloud": {
+      "syncNow": "Sincronizar ahora",
+      "email": "Correo",
+      "password": "Contraseña",
+      "link": "Vincular cuenta de Supabase",
+      "working": "Conectando con Control de Misión…",
+      "notConfigured": "Falta configurar Supabase.",
+      "offline": "Sin conexión. Las lecturas pendientes se conservan en este dispositivo.",
+      "error": "No se pudo completar la operación. Inténtalo de nuevo.",
+      "wrongProfile": "Esta cuenta pertenece a otro perfil de tripulación.",
+      "linked": "Cuenta vinculada. Ya puedes sincronizar las lecturas de pulso pendientes.",
+      "linkRequired": "Vincula la cuenta de Supabase de tu perfil activo.",
+      "sent_one": "{{count}} lectura de pulso sincronizada.",
+      "sent_other": "{{count}} lecturas de pulso sincronizadas.",
+      "empty": "No hay lecturas de pulso pendientes para este perfil."
+    },
     "loading": "Consultando registros pendientes…",
     "pendingCount_one": "{{count}} registro pendiente de sincronizar",
     "pendingCount_other": "{{count}} registros pendientes de sincronizar",

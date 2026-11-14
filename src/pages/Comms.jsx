@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { getSession } from '../auth/session.js'
+import { getSession, ROLE, useSession } from '../auth/session.js'
 import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import { db } from '../db/db.js'
-import { getPendingCount } from '../sync/queue.js'
+import { getLinkedProfileId, getPendingCount, syncPending } from '../sync/queue.js'
+import { supabase } from '../sync/supabaseClient.js'
 
 export default function Comms() {
   const { t, i18n } = useTranslation()
-  const userId = getSession()?.userId ?? DEMO_ASTRONAUT_ID
+  const session = useSession()
+  const userId = session?.userId ?? DEMO_ASTRONAUT_ID
   const pendingCount = useLiveQuery(getPendingCount, [])
   const [readError, setReadError] = useState(false)
 
@@ -49,6 +51,8 @@ export default function Comms() {
           : t('comms.pendingCount', { count: pendingCount })}
       </p>
 
+      {session?.roleCode === ROLE.ASTRONAUT && <CloudSync key={session.userId} session={session} />}
+
       <section className="notes-panel" aria-labelledby="medical-notes-title">
         <h2 id="medical-notes-title">{t('comms.notes.title')}</h2>
         {readError && <p role="alert">{t('comms.notes.readError')}</p>}
@@ -78,6 +82,89 @@ export default function Comms() {
           </ol>
         )}
       </section>
+    </section>
+  )
+}
+function CloudSync({ session }) {
+  const { t } = useTranslation()
+  const [busy, setBusy] = useState(false)
+  const [feedback, setFeedback] = useState(null)
+  const [showLogin, setShowLogin] = useState(false)
+
+  async function run(action) {
+    setBusy(true)
+    setFeedback(null)
+    try {
+      if (!supabase) {
+        setFeedback({ key: 'notConfigured' })
+      } else if (!navigator.onLine) {
+        setFeedback({ key: 'offline' })
+      } else {
+        await action()
+      }
+    } catch {
+      setFeedback({ key: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function linkAccount(event) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const credentials = new FormData(form)
+    await run(async () => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: credentials.get('email'),
+        password: credentials.get('password'),
+      })
+      if (error) throw error
+      if ((await getLinkedProfileId()) !== session.userId || getSession() !== session) {
+        await supabase.auth.signOut({ scope: 'local' })
+        setFeedback({ key: 'wrongProfile' })
+        return
+      }
+      setShowLogin(false)
+      setFeedback({ key: 'linked' })
+    })
+    form.reset()
+  }
+
+  async function handleSync() {
+    await run(async () => {
+      const { data, error } = await supabase.auth.getSession()
+      if (error) throw error
+      if (!data.session || (await getLinkedProfileId()) !== session.userId) {
+        setShowLogin(true)
+        setFeedback({ key: 'linkRequired' })
+        return
+      }
+      const { pushed } = await syncPending()
+      setFeedback({ key: pushed ? 'sent' : 'empty', count: pushed })
+    })
+  }
+
+  return (
+    <section aria-label={t('comms.cloud.syncNow')}>
+      <button type="button" disabled={busy} onClick={handleSync}>
+        {t('comms.cloud.syncNow')}
+      </button>
+      {showLogin && (
+        <form onSubmit={linkAccount}>
+          <label>
+            {t('comms.cloud.email')}
+            <input type="email" name="email" autoComplete="username" required />
+          </label>
+          <label>
+            {t('comms.cloud.password')}
+            <input type="password" name="password" autoComplete="current-password" required />
+          </label>
+          <button type="submit" disabled={busy}>{t('comms.cloud.link')}</button>
+        </form>
+      )}
+      <p role="status">
+        {busy ? t('comms.cloud.working') : feedback && t('comms.cloud.' + feedback.key, { count: feedback.count })}
+      </p>
     </section>
   )
 }
