@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
+import * as heartRate from '../bluetooth/heartRate.js'
 import * as simulator from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { recommendationText, requestNotificationPermission } from '../rules/engine.js'
+import { isSecureContext } from '../utils/secureContext.js'
 
 // alertLevels.code -> CSS color variable. The level name is always shown as text too.
 const LEVEL_COLORS = {
@@ -35,6 +37,15 @@ export default function Sensors() {
   // The simulator lives outside React and keeps running across page changes,
   // so the initial state is read from it.
   const [running, setRunning] = useState(() => simulator.isRunning())
+
+  // BLE heart rate sensor (state lives in src/bluetooth/heartRate.js).
+  const ble = heartRate.useHeartRate()
+  const [bleErrorCode, setBleErrorCode] = useState(null)
+  const bleBusy = ble.status === 'connecting' || ble.status === 'reconnecting'
+  const bleActive = ble.status !== 'disconnected'
+  // Why the sensor cannot be used here, if so: not https, or a browser without Web Bluetooth.
+  const bleBlockedCode = !isSecureContext() ? 'insecure' : !heartRate.isSupported() ? 'unsupported' : null
+  const bleMessageCode = bleBlockedCode ?? bleErrorCode ?? ble.error
   const [scenario, setScenario] = useState(() => simulator.getScenario())
 
   const readings = useLiveQuery(
@@ -55,12 +66,32 @@ export default function Sensors() {
     if (running) {
       simulator.stop()
     } else {
+      // Simulated and real readings never run at the same time.
+      heartRate.disconnect()
       // Ask for notification permission here because it needs a user gesture.
       requestNotificationPermission()
       // No user id: the simulator feeds the logged-in user or the demo astronaut.
       simulator.start()
     }
     setRunning(simulator.isRunning())
+  }
+
+  async function toggleHeartRate() {
+    setBleErrorCode(null)
+    if (bleActive) {
+      heartRate.disconnect()
+      return
+    }
+    // Ask for notification permission here because it needs a user gesture.
+    requestNotificationPermission()
+    try {
+      const connecting = heartRate.connect() // stops the simulator
+      setRunning(simulator.isRunning())
+      await connecting
+    } catch (error) {
+      // Closing the device picker is not an error worth showing.
+      if (error?.code !== 'cancelled') setBleErrorCode(error?.code ?? 'failed')
+    }
   }
 
   function changeScenario(event) {
@@ -98,6 +129,38 @@ export default function Sensors() {
         <p className="muted" role="status">
           {running ? t('sensors.statusRunning') : t('sensors.statusStopped')}
         </p>
+      </div>
+
+      <div className="sim-panel ble-panel">
+        <p className="ble-badge">{t('sensors.ble.title')}</p>
+
+        <button
+          type="button"
+          className={`sim-toggle${bleActive ? ' is-running' : ''}`}
+          aria-pressed={bleActive}
+          disabled={Boolean(bleBlockedCode) || bleBusy}
+          onClick={toggleHeartRate}
+        >
+          {bleActive ? t('sensors.ble.disconnect') : t('sensors.ble.connect')}
+        </button>
+
+        <p className={`ble-status is-${ble.status}`} role="status">
+          <span aria-hidden="true">{ble.status === 'connected' ? '●' : '○'}</span>{' '}
+          {t(`sensors.ble.status.${ble.status}`, { name: ble.deviceName || t('sensors.ble.unnamedDevice') })}
+          {ble.status === 'connected' && ble.lastBpm != null && (
+            <span className="sim-row-value">
+              {' · '}
+              {ble.lastBpm} bpm
+            </span>
+          )}
+        </p>
+
+        {bleMessageCode && (
+          <p className="ble-error" role="alert">
+            <span aria-hidden="true">⚠</span> {t(`sensors.ble.errors.${bleMessageCode}`)}
+          </p>
+        )}
+        <p className="muted">{t('sensors.ble.exclusiveNote')}</p>
       </div>
 
       <h2>{t('sensors.latestReadings')}</h2>

@@ -8,10 +8,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icon.svg'],
+      includeAssets: ['favicon.svg', 'icon.svg', 'models/astronauta.glb'],
       workbox: {
         // Precache every build asset so the app works fully offline.
-        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,glb}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {
         name: 'Astro Health Monitor',
@@ -20,7 +21,10 @@ export default defineConfig({
         theme_color: '#0B1220',
         background_color: '#0B1220',
         display: 'standalone',
+        id: '/',
         start_url: '/',
+        scope: '/',
+        lang: 'es',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },

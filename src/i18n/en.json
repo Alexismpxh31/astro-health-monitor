@@ -150,7 +150,26 @@
     "latestReadings": "Latest readings",
     "latestAlerts": "Latest alerts",
     "noReadings": "No readings yet.",
-    "noAlerts": "No alerts yet."
+    "noAlerts": "No alerts yet.",
+    "ble": {
+      "title": "Real sensor (Bluetooth)",
+      "connect": "Connect heart rate monitor",
+      "disconnect": "Disconnect heart rate monitor",
+      "unnamedDevice": "heart rate monitor",
+      "status": {
+        "disconnected": "Disconnected",
+        "connecting": "Connecting… choose your heart rate monitor in the browser window.",
+        "connected": "Connected to {{name}}",
+        "reconnecting": "Connection lost. Retrying…"
+      },
+      "errors": {
+        "insecure": "Bluetooth only works when the app is opened over https://.",
+        "unsupported": "This browser does not support Web Bluetooth (Safari and Firefox do not allow it). Use Chrome or Edge on a computer or Android.",
+        "failed": "Could not connect to the heart rate monitor. Check that it is on and nearby, then try again.",
+        "lost": "The connection to the heart rate monitor was lost and the retry failed. Connect it again."
+      },
+      "exclusiveNote": "The heart rate monitor and the simulator never run together: connecting one stops the other."
+    }
   },
   "levels": {
     "normal": "Normal",
@@ -218,7 +237,9 @@
     "historyTitle": "Local Dexie Records (Sync Queue)",
     "historyEmpty": "No check-ins saved on this device yet.",
     "syncPending": "Pending sync",
-    "syncSynced": "Synced"
+    "syncSynced": "Synced",
+    "notAllowed": "The flight surgeon cannot record daily check-ins. Only astronauts save their own check-in.",
+    "saveError": "The check-in could not be saved. Try again."
   },
   "directions": {
     "high": "high",
@@ -291,8 +312,6 @@
     "hazard": "Hazard (NASA HRP)",
     "risk": "Risk",
     "viewHistory": "View system history",
-    "modelSoon": "3D model in progress",
-    "modelHint": "The 3D astronaut will appear here with the selected system highlighted.",
     "systems": {
       "cardiovascular": {
         "hazard": "Altered gravity (microgravity)",
@@ -314,6 +333,19 @@
         "hazard": "Space radiation",
         "risk": "Higher cancer risk and central nervous system effects; 600 mSv career limit."
       }
+    }
+  },
+  "model3d": {
+    "loading": "Loading 3D astronaut…",
+    "autoRotate": "Auto-rotate",
+    "stopRotation": "Stop rotation",
+    "recenter": "Recenter",
+    "activeZone": "Active zone",
+    "inspecting": "Inspecting: {{zone}}",
+    "status": {
+      "optimal": "Nominal",
+      "warning": "Caution",
+      "critical": "Critical"
     }
   },
   "overview": {
@@ -381,5 +413,43 @@
       "unreadNotes_one": "unread note",
       "unreadNotes_other": "unread notes"
     }
+  },
+  "astronaut": {
+    "title": "Astronaut Medical Overview",
+    "subsystems": "Body Subsystems",
+    "clinicalFile": "NASA Clinical File",
+    "viewDetails": "View System Details",
+    "hrpHazard": "Associated HRP Hazard",
+    "flightRisk": "Official Flight Risk",
+    "livePulse": "Active Telemetry (1 Hz)",
+    "noAlerts": "No pending medical alerts. All physiological indicators are currently in safe range.",
+    "markDone": "Mark as done",
+    "vitalsEyebrow": "Biomedical telemetry · live",
+    "vitalsTitle": "Live vital signs",
+    "pauseStream": "Pause stream",
+    "resumeStream": "Resume stream",
+    "noDataTitle": "No recent telemetry data.",
+    "noDataText": "Start the simulator to generate real-time vital signs.",
+    "startSimulator": "Start simulator",
+    "telemetry": "Telemetry",
+    "trend": "Trend",
+    "min": "Min",
+    "max": "Max",
+    "alertsEyebrow": "In-flight health protocols",
+    "alertsTitle": "Medical alerts and actions",
+    "pending": "Pending",
+    "all": "All",
+    "attended": "Attended",
+    "noneInCategory": "No alerts in this category.",
+    "anomalousValue": "Out-of-range value:",
+    "recommendedAction": "Recommended action",
+    "attendedAt": "Attended at {{time}}",
+    "backHome": "Back to home",
+    "systemNotFound": "That system was not found."
+  },
+  "security": {
+    "insecureTitle": "Insecure connection (http://).",
+    "insecureBody": "This page must be opened over https://. Without HTTPS, installing the app, offline mode, notifications, Bluetooth and PIN login do not work.",
+    "openHttps": "Open over https://"
   }
 }

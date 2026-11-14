@@ -1,442 +1,77 @@
 {
   "roles": [
-    {
-      "id": "00000000-0000-4000-8000-000000000101",
-      "code": "astronaut",
-      "nameEs": "Astronauta",
-      "nameEn": "Astronaut"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000102",
-      "code": "flight_surgeon",
-      "nameEs": "Médico de vuelo",
-      "nameEn": "Flight surgeon"
-    }
+    { "id": "00000000-0000-4000-8000-000000000101", "code": "astronaut", "nameEs": "Astronauta", "nameEn": "Astronaut" },
+    { "id": "00000000-0000-4000-8000-000000000102", "code": "flight_surgeon", "nameEs": "Médico de vuelo", "nameEn": "Flight surgeon" }
   ],
   "bodySystems": [
-    {
-      "id": "00000000-0000-4000-8000-000000000201",
-      "code": "cardiovascular",
-      "nameEs": "Cardiovascular",
-      "nameEn": "Cardiovascular"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000203",
-      "code": "musculoskeletal",
-      "nameEs": "Óseo-muscular",
-      "nameEn": "Musculoskeletal"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000206",
-      "code": "immune",
-      "nameEs": "Inmune",
-      "nameEn": "Immune"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000207",
-      "code": "behavioral",
-      "nameEs": "Conductual / sueño",
-      "nameEn": "Behavioral / sleep"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000204",
-      "code": "radiation",
-      "nameEs": "Radiación",
-      "nameEn": "Radiation"
-    }
+    { "id": "00000000-0000-4000-8000-000000000201", "code": "cardiovascular", "nameEs": "Cardiovascular", "nameEn": "Cardiovascular" },
+    { "id": "00000000-0000-4000-8000-000000000203", "code": "musculoskeletal", "nameEs": "Óseo-muscular", "nameEn": "Musculoskeletal" },
+    { "id": "00000000-0000-4000-8000-000000000206", "code": "immune", "nameEs": "Inmune", "nameEn": "Immune" },
+    { "id": "00000000-0000-4000-8000-000000000207", "code": "behavioral", "nameEs": "Conductual / sueño", "nameEn": "Behavioral / sleep" },
+    { "id": "00000000-0000-4000-8000-000000000204", "code": "radiation", "nameEs": "Radiación", "nameEn": "Radiation" }
   ],
   "units": [
-    {
-      "id": "00000000-0000-4000-8000-000000000301",
-      "symbol": "bpm",
-      "nameEs": "Latidos por minuto",
-      "nameEn": "Beats per minute"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000302",
-      "symbol": "%",
-      "nameEs": "Porcentaje",
-      "nameEn": "Percent"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000303",
-      "symbol": "mmHg",
-      "nameEs": "Milímetros de mercurio",
-      "nameEn": "Millimeters of mercury"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000304",
-      "symbol": "rpm",
-      "nameEs": "Respiraciones por minuto",
-      "nameEn": "Breaths per minute"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000305",
-      "symbol": "°C",
-      "nameEs": "Grados Celsius",
-      "nameEn": "Degrees Celsius"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000308",
-      "symbol": "%/mes",
-      "nameEs": "Porcentaje por mes",
-      "nameEn": "Percent per month"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000316",
-      "symbol": "ng/mL",
-      "nameEs": "Nanogramos por mililitro",
-      "nameEn": "Nanograms per milliliter"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000314",
-      "symbol": "pg/mL",
-      "nameEs": "Picogramos por mililitro",
-      "nameEn": "Picograms per milliliter"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000315",
-      "symbol": "nmol/L",
-      "nameEs": "Nanomoles por litro",
-      "nameEn": "Nanomoles per liter"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000312",
-      "symbol": "h",
-      "nameEs": "Horas",
-      "nameEn": "Hours"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000317",
-      "symbol": "score",
-      "nameEs": "Puntaje (1-5)",
-      "nameEn": "Score (1-5)"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000307",
-      "symbol": "mSv",
-      "nameEs": "Milisievert",
-      "nameEn": "Millisievert"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000309",
-      "symbol": "% basal",
-      "nameEs": "Porcentaje del valor basal",
-      "nameEn": "Percent of baseline"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000313",
-      "symbol": "k/µL",
-      "nameEs": "Miles por microlitro",
-      "nameEn": "Thousands per microliter"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000311",
-      "symbol": "ms",
-      "nameEs": "Milisegundos",
-      "nameEn": "Milliseconds"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000310",
-      "symbol": "mSv/d",
-      "nameEs": "Milisievert por día",
-      "nameEn": "Millisievert per day"
-    }
+    { "id": "00000000-0000-4000-8000-000000000301", "symbol": "bpm", "nameEs": "Latidos por minuto", "nameEn": "Beats per minute" },
+    { "id": "00000000-0000-4000-8000-000000000302", "symbol": "%", "nameEs": "Porcentaje", "nameEn": "Percent" },
+    { "id": "00000000-0000-4000-8000-000000000303", "symbol": "mmHg", "nameEs": "Milímetros de mercurio", "nameEn": "Millimeters of mercury" },
+    { "id": "00000000-0000-4000-8000-000000000304", "symbol": "rpm", "nameEs": "Respiraciones por minuto", "nameEn": "Breaths per minute" },
+    { "id": "00000000-0000-4000-8000-000000000305", "symbol": "°C", "nameEs": "Grados Celsius", "nameEn": "Degrees Celsius" },
+    { "id": "00000000-0000-4000-8000-000000000308", "symbol": "%/mes", "nameEs": "Porcentaje por mes", "nameEn": "Percent per month" },
+    { "id": "00000000-0000-4000-8000-000000000316", "symbol": "ng/mL", "nameEs": "Nanogramos por mililitro", "nameEn": "Nanograms per milliliter" },
+    { "id": "00000000-0000-4000-8000-000000000314", "symbol": "pg/mL", "nameEs": "Picogramos por mililitro", "nameEn": "Picograms per milliliter" },
+    { "id": "00000000-0000-4000-8000-000000000315", "symbol": "nmol/L", "nameEs": "Nanomoles por litro", "nameEn": "Nanomoles per liter" },
+    { "id": "00000000-0000-4000-8000-000000000312", "symbol": "h", "nameEs": "Horas", "nameEn": "Hours" },
+    { "id": "00000000-0000-4000-8000-000000000317", "symbol": "score", "nameEs": "Puntaje (1-5)", "nameEn": "Score (1-5)" },
+    { "id": "00000000-0000-4000-8000-000000000307", "symbol": "mSv", "nameEs": "Milisievert", "nameEn": "Millisievert" },
+    { "id": "00000000-0000-4000-8000-000000000309", "symbol": "% basal", "nameEs": "Porcentaje del valor basal", "nameEn": "Percent of baseline" },
+    { "id": "00000000-0000-4000-8000-000000000313", "symbol": "k/µL", "nameEs": "Miles por microlitro", "nameEn": "Thousands per microliter" },
+    { "id": "00000000-0000-4000-8000-000000000311", "symbol": "ms", "nameEs": "Milisegundos", "nameEn": "Milliseconds" },
+    { "id": "00000000-0000-4000-8000-000000000310", "symbol": "mSv/d", "nameEs": "Milisievert por día", "nameEn": "Millisievert per day" }
   ],
   "indicators": [
-    {
-      "id": "00000000-0000-4000-8000-000000000401",
-      "code": "HR",
-      "bodySystemId": "00000000-0000-4000-8000-000000000201",
-      "unitId": "00000000-0000-4000-8000-000000000301",
-      "nameEs": "Frecuencia cardíaca",
-      "nameEn": "Heart rate",
-      "isLive": true
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000402",
-      "code": "SPO2",
-      "bodySystemId": "00000000-0000-4000-8000-000000000201",
-      "unitId": "00000000-0000-4000-8000-000000000302",
-      "nameEs": "Saturación de oxígeno",
-      "nameEn": "Oxygen saturation",
-      "isLive": true
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000403",
-      "code": "SBP",
-      "bodySystemId": "00000000-0000-4000-8000-000000000201",
-      "unitId": "00000000-0000-4000-8000-000000000303",
-      "nameEs": "Presión sistólica",
-      "nameEn": "Systolic blood pressure",
-      "isLive": true
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000404",
-      "code": "DBP",
-      "bodySystemId": "00000000-0000-4000-8000-000000000201",
-      "unitId": "00000000-0000-4000-8000-000000000303",
-      "nameEs": "Presión diastólica",
-      "nameEn": "Diastolic blood pressure",
-      "isLive": true
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000405",
-      "code": "RR",
-      "bodySystemId": "00000000-0000-4000-8000-000000000201",
-      "unitId": "00000000-0000-4000-8000-000000000304",
-      "nameEs": "Frecuencia respiratoria",
-      "nameEn": "Respiratory rate",
-      "isLive": true
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000406",
-      "code": "TSKIN",
-      "bodySystemId": "00000000-0000-4000-8000-000000000206",
-      "unitId": "00000000-0000-4000-8000-000000000305",
-      "nameEs": "Temperatura de piel",
-      "nameEn": "Skin temperature",
-      "isLive": true
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000407",
-      "code": "BMD",
-      "bodySystemId": "00000000-0000-4000-8000-000000000203",
-      "unitId": "00000000-0000-4000-8000-000000000308",
-      "nameEs": "Cambio mensual de densidad ósea",
-      "nameEn": "Monthly bone density change",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000416",
-      "code": "CTX",
-      "bodySystemId": "00000000-0000-4000-8000-000000000203",
-      "unitId": "00000000-0000-4000-8000-000000000316",
-      "nameEs": "CTX (resorción ósea)",
-      "nameEn": "CTX (bone resorption)",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000414",
-      "code": "IL6",
-      "bodySystemId": "00000000-0000-4000-8000-000000000206",
-      "unitId": "00000000-0000-4000-8000-000000000314",
-      "nameEs": "Interleucina-6 salival",
-      "nameEn": "Salivary interleukin-6",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000415",
-      "code": "CORTISOL",
-      "bodySystemId": "00000000-0000-4000-8000-000000000206",
-      "unitId": "00000000-0000-4000-8000-000000000315",
-      "nameEs": "Cortisol salival libre",
-      "nameEn": "Free salivary cortisol",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000412",
-      "code": "SLEEP_H",
-      "bodySystemId": "00000000-0000-4000-8000-000000000207",
-      "unitId": "00000000-0000-4000-8000-000000000312",
-      "nameEs": "Horas de sueño",
-      "nameEn": "Sleep hours",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000417",
-      "code": "MOOD",
-      "bodySystemId": "00000000-0000-4000-8000-000000000207",
-      "unitId": "00000000-0000-4000-8000-000000000317",
-      "nameEs": "Ánimo (1-5)",
-      "nameEn": "Mood (1-5)",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000418",
-      "code": "STRESS",
-      "bodySystemId": "00000000-0000-4000-8000-000000000207",
-      "unitId": "00000000-0000-4000-8000-000000000317",
-      "nameEs": "Estrés (1-5)",
-      "nameEn": "Stress (1-5)",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000410",
-      "code": "RAD_DOSE",
-      "bodySystemId": "00000000-0000-4000-8000-000000000204",
-      "unitId": "00000000-0000-4000-8000-000000000307",
-      "nameEs": "Dosis de radiación acumulada (misión)",
-      "nameEn": "Cumulative radiation dose (mission)",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000409",
-      "code": "MUSCLE",
-      "bodySystemId": "00000000-0000-4000-8000-000000000203",
-      "unitId": "00000000-0000-4000-8000-000000000309",
-      "nameEs": "Masa magra funcional",
-      "nameEn": "Functional lean mass",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000413",
-      "code": "WBC",
-      "bodySystemId": "00000000-0000-4000-8000-000000000206",
-      "unitId": "00000000-0000-4000-8000-000000000313",
-      "nameEs": "Recuento leucocitario",
-      "nameEn": "White blood cell count",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000411",
-      "code": "PVT",
-      "bodySystemId": "00000000-0000-4000-8000-000000000207",
-      "unitId": "00000000-0000-4000-8000-000000000311",
-      "nameEs": "Latencia psicomotora (PVT)",
-      "nameEn": "Psychomotor vigilance latency (PVT)",
-      "isLive": false
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000408",
-      "code": "RAD_D",
-      "bodySystemId": "00000000-0000-4000-8000-000000000204",
-      "unitId": "00000000-0000-4000-8000-000000000310",
-      "nameEs": "Dosis diaria de radiación",
-      "nameEn": "Daily radiation dose",
-      "isLive": true
-    }
+    { "id": "00000000-0000-4000-8000-000000000401", "code": "HR", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000301", "nameEs": "Frecuencia cardíaca", "nameEn": "Heart rate", "isLive": true },
+    { "id": "00000000-0000-4000-8000-000000000402", "code": "SPO2", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000302", "nameEs": "Saturación de oxígeno", "nameEn": "Oxygen saturation", "isLive": true },
+    { "id": "00000000-0000-4000-8000-000000000403", "code": "SBP", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000303", "nameEs": "Presión sistólica", "nameEn": "Systolic blood pressure", "isLive": true },
+    { "id": "00000000-0000-4000-8000-000000000404", "code": "DBP", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000303", "nameEs": "Presión diastólica", "nameEn": "Diastolic blood pressure", "isLive": true },
+    { "id": "00000000-0000-4000-8000-000000000405", "code": "RR", "bodySystemId": "00000000-0000-4000-8000-000000000201", "unitId": "00000000-0000-4000-8000-000000000304", "nameEs": "Frecuencia respiratoria", "nameEn": "Respiratory rate", "isLive": true },
+    { "id": "00000000-0000-4000-8000-000000000406", "code": "TSKIN", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000305", "nameEs": "Temperatura de piel", "nameEn": "Skin temperature", "isLive": true },
+    { "id": "00000000-0000-4000-8000-000000000407", "code": "BMD", "bodySystemId": "00000000-0000-4000-8000-000000000203", "unitId": "00000000-0000-4000-8000-000000000308", "nameEs": "Cambio mensual de densidad ósea", "nameEn": "Monthly bone density change", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000416", "code": "CTX", "bodySystemId": "00000000-0000-4000-8000-000000000203", "unitId": "00000000-0000-4000-8000-000000000316", "nameEs": "CTX (resorción ósea)", "nameEn": "CTX (bone resorption)", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000414", "code": "IL6", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000314", "nameEs": "Interleucina-6 salival", "nameEn": "Salivary interleukin-6", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000415", "code": "CORTISOL", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000315", "nameEs": "Cortisol salival libre", "nameEn": "Free salivary cortisol", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000412", "code": "SLEEP_H", "bodySystemId": "00000000-0000-4000-8000-000000000207", "unitId": "00000000-0000-4000-8000-000000000312", "nameEs": "Horas de sueño", "nameEn": "Sleep hours", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000417", "code": "MOOD", "bodySystemId": "00000000-0000-4000-8000-000000000207", "unitId": "00000000-0000-4000-8000-000000000317", "nameEs": "Ánimo (1-5)", "nameEn": "Mood (1-5)", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000418", "code": "STRESS", "bodySystemId": "00000000-0000-4000-8000-000000000207", "unitId": "00000000-0000-4000-8000-000000000317", "nameEs": "Estrés (1-5)", "nameEn": "Stress (1-5)", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000410", "code": "RAD_DOSE", "bodySystemId": "00000000-0000-4000-8000-000000000204", "unitId": "00000000-0000-4000-8000-000000000307", "nameEs": "Dosis de radiación acumulada (misión)", "nameEn": "Cumulative radiation dose (mission)", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000409", "code": "MUSCLE", "bodySystemId": "00000000-0000-4000-8000-000000000203", "unitId": "00000000-0000-4000-8000-000000000309", "nameEs": "Masa magra funcional", "nameEn": "Functional lean mass", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000413", "code": "WBC", "bodySystemId": "00000000-0000-4000-8000-000000000206", "unitId": "00000000-0000-4000-8000-000000000313", "nameEs": "Recuento leucocitario", "nameEn": "White blood cell count", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000411", "code": "PVT", "bodySystemId": "00000000-0000-4000-8000-000000000207", "unitId": "00000000-0000-4000-8000-000000000311", "nameEs": "Latencia psicomotora (PVT)", "nameEn": "Psychomotor vigilance latency (PVT)", "isLive": false },
+    { "id": "00000000-0000-4000-8000-000000000408", "code": "RAD_D", "bodySystemId": "00000000-0000-4000-8000-000000000204", "unitId": "00000000-0000-4000-8000-000000000310", "nameEs": "Dosis diaria de radiación", "nameEn": "Daily radiation dose", "isLive": true }
   ],
   "alertLevels": [
-    {
-      "id": "00000000-0000-4000-8000-000000000501",
-      "code": "normal",
-      "severity": 0,
-      "color": "#22C55E",
-      "nameEs": "Normal",
-      "nameEn": "Normal"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000502",
-      "code": "caution",
-      "severity": 1,
-      "color": "#F59E0B",
-      "nameEs": "Precaución",
-      "nameEn": "Caution"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000503",
-      "code": "critical",
-      "severity": 2,
-      "color": "#EF4444",
-      "nameEs": "Crítico",
-      "nameEn": "Critical"
-    }
+    { "id": "00000000-0000-4000-8000-000000000501", "code": "normal", "severity": 0, "color": "#22C55E", "nameEs": "Normal", "nameEn": "Normal" },
+    { "id": "00000000-0000-4000-8000-000000000502", "code": "caution", "severity": 1, "color": "#F59E0B", "nameEs": "Precaución", "nameEn": "Caution" },
+    { "id": "00000000-0000-4000-8000-000000000503", "code": "critical", "severity": 2, "color": "#EF4444", "nameEs": "Crítico", "nameEn": "Critical" }
   ],
   "symptoms": [
-    {
-      "id": "00000000-0000-4000-8000-000000000601",
-      "code": "headache",
-      "nameEs": "Dolor de cabeza",
-      "nameEn": "Headache"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000602",
-      "code": "nausea",
-      "nameEs": "Náuseas",
-      "nameEn": "Nausea"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000604",
-      "code": "dizziness",
-      "nameEs": "Mareo",
-      "nameEn": "Dizziness"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000603",
-      "code": "fatigue",
-      "nameEs": "Fatiga",
-      "nameEn": "Fatigue"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000605",
-      "code": "insomnia",
-      "nameEs": "Insomnio",
-      "nameEn": "Insomnia"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000606",
-      "code": "back_pain",
-      "nameEs": "Dolor de espalda",
-      "nameEn": "Back pain"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000607",
-      "code": "vision_changes",
-      "nameEs": "Cambios en la visión",
-      "nameEn": "Vision changes"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000608",
-      "code": "congestion",
-      "nameEs": "Congestión nasal",
-      "nameEn": "Nasal congestion"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000609",
-      "code": "skin_irritation",
-      "nameEs": "Irritación de la piel",
-      "nameEn": "Skin irritation"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000610",
-      "code": "anxiety",
-      "nameEs": "Ansiedad",
-      "nameEn": "Anxiety"
-    }
+    { "id": "00000000-0000-4000-8000-000000000601", "code": "headache", "nameEs": "Dolor de cabeza", "nameEn": "Headache" },
+    { "id": "00000000-0000-4000-8000-000000000602", "code": "nausea", "nameEs": "Náuseas", "nameEn": "Nausea" },
+    { "id": "00000000-0000-4000-8000-000000000604", "code": "dizziness", "nameEs": "Mareo", "nameEn": "Dizziness" },
+    { "id": "00000000-0000-4000-8000-000000000603", "code": "fatigue", "nameEs": "Fatiga", "nameEn": "Fatigue" },
+    { "id": "00000000-0000-4000-8000-000000000605", "code": "insomnia", "nameEs": "Insomnio", "nameEn": "Insomnia" },
+    { "id": "00000000-0000-4000-8000-000000000606", "code": "back_pain", "nameEs": "Dolor de espalda", "nameEn": "Back pain" },
+    { "id": "00000000-0000-4000-8000-000000000607", "code": "vision_changes", "nameEs": "Cambios en la visión", "nameEn": "Vision changes" },
+    { "id": "00000000-0000-4000-8000-000000000608", "code": "congestion", "nameEs": "Congestión nasal", "nameEn": "Nasal congestion" },
+    { "id": "00000000-0000-4000-8000-000000000609", "code": "skin_irritation", "nameEs": "Irritación de la piel", "nameEn": "Skin irritation" },
+    { "id": "00000000-0000-4000-8000-000000000610", "code": "anxiety", "nameEs": "Ansiedad", "nameEn": "Anxiety" }
   ],
   "sensorTypes": [
-    {
-      "id": "00000000-0000-4000-8000-000000000702",
-      "code": "simulator",
-      "nameEs": "Simulador",
-      "nameEn": "Simulator"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000703",
-      "code": "dataset",
-      "nameEs": "Dataset (replay)",
-      "nameEn": "Dataset (replay)"
-    },
-    {
-      "id": "00000000-0000-4000-8000-000000000701",
-      "code": "ble_heart_rate",
-      "nameEs": "Bluetooth Heart Rate (0x180D)",
-      "nameEn": "Bluetooth Heart Rate (0x180D)"
-    }
+    { "id": "00000000-0000-4000-8000-000000000702", "code": "simulator", "nameEs": "Simulador", "nameEn": "Simulator" },
+    { "id": "00000000-0000-4000-8000-000000000703", "code": "dataset", "nameEs": "Dataset (replay)", "nameEn": "Dataset (replay)" },
+    { "id": "00000000-0000-4000-8000-000000000701", "code": "ble_heart_rate", "nameEs": "Bluetooth Heart Rate (0x180D)", "nameEn": "Bluetooth Heart Rate (0x180D)" }
   ],
   "missions": [
-    {
-      "id": "b0000000-0000-4000-8000-000000000001",
-      "name": "Demo Mission (simulated data)",
-      "destination": "ISS (demo)",
-      "startDate": null,
-      "endDate": null,
-      "nameEs": "Expedición ISS (simulada)",
-      "nameEn": "ISS Expedition (simulated)",
-      "commDelayMinSec": 1,
-      "commDelayMaxSec": 1
-    },
-    {
-      "id": "b0000000-0000-4000-8000-000000000002",
-      "name": "Mars Transit (simulated data)",
-      "nameEs": "Tránsito a Marte (simulada)",
-      "nameEn": "Mars Transit (simulated)",
-      "destination": "Mars (demo)",
-      "startDate": null,
-      "endDate": null,
-      "commDelayMinSec": 180,
-      "commDelayMaxSec": 1320
-    }
+    { "id": "b0000000-0000-4000-8000-000000000001", "name": "Demo Mission (simulated data)", "destination": "ISS (demo)", "startDate": null, "endDate": null, "nameEs": "Expedición ISS (simulada)", "nameEn": "ISS Expedition (simulated)", "commDelayMinSec": 1, "commDelayMaxSec": 1 },
+    { "id": "b0000000-0000-4000-8000-000000000002", "name": "Mars Transit (simulated data)", "nameEs": "Tránsito a Marte (simulada)", "nameEn": "Mars Transit (simulated)", "destination": "Mars (demo)", "startDate": null, "endDate": null, "commDelayMinSec": 180, "commDelayMaxSec": 1320 }
   ]
 }

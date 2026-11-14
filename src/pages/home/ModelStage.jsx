@@ -1,42 +1,48 @@
-import { useTranslation } from 'react-i18next'
+import AstronautModel3D from '../../components/AstronautModel3D.jsx'
+import { useTheme } from '../../theme/theme.js'
+
+/** Body system code (catalog) -> zone of the 3D suit model. */
+const SYSTEM_TO_ZONE = {
+  cardiovascular: 'cardio',
+  behavioral: 'neuro',
+  immune: 'metabolic',
+  musculoskeletal: 'musculo',
+  radiation: 'radiation',
+}
+
+const LEVEL_TO_STATUS = { NORMAL: 'optimal', WARNING: 'warning', CRITICAL: 'critical' }
 
 /**
- * Center stage of the home dashboard.
+ * Center stage of the home dashboard and of the crew member body view: the 3D astronaut
+ * driven by the catalog's body systems.
  *
- * TODO(Walter): replace the placeholder figure with the 3D astronaut model.
- * Props you can use:
- *   - selectedSystem: body system code shown in the clinical card
- *     ('cardiovascular' | 'musculoskeletal' | 'immune' | 'behavioral' | 'radiation')
- *   - levels: { [systemCode]: 'NORMAL' | 'WARNING' | 'CRITICAL' | 'NO_DATA' } to color body zones
- *   - onSelectSystem(code): call it when a body zone is clicked
- *
- * @param {{ selectedSystem: string|null, levels: Record<string, string>, onSelectSystem: (code: string) => void }} props
+ * @param {Object} props
+ * @param {string|null} props.selectedSystem - Body system code highlighted on the model.
+ * @param {Record<string, string>} [props.levels] - { [systemCode]: 'NORMAL' | 'WARNING' | 'CRITICAL' | 'NO_DATA' }.
+ * @param {Record<string, string|null>} [props.details] - One line per system for the HUD (e.g. the reading behind its level).
+ * @param {(code: string) => void} [props.onSelectSystem] - Called with the system code when a body zone is clicked.
+ * @param {string} [props.height] - CSS height of the stage.
  */
-// eslint-disable-next-line no-unused-vars -- props are the contract for the 3D model
-export default function ModelStage({ selectedSystem, levels, onSelectSystem }) {
-  const { t } = useTranslation()
+export default function ModelStage({ selectedSystem, levels = {}, details = {}, onSelectSystem, height = '540px' }) {
+  const theme = useTheme()
+
+  const zoneStatus = {}
+  const zoneDetail = {}
+  for (const [code, zone] of Object.entries(SYSTEM_TO_ZONE)) {
+    if (LEVEL_TO_STATUS[levels[code]]) zoneStatus[zone] = LEVEL_TO_STATUS[levels[code]]
+    if (details[code]) zoneDetail[zone] = details[code]
+  }
 
   return (
     <div className="model-stage">
-      <div className="model-halo" aria-hidden="true" />
-      <svg className="model-figure" viewBox="0 0 120 220" aria-hidden="true">
-        <circle cx="60" cy="34" r="24" />
-        <rect x="40" y="26" width="40" height="18" rx="9" className="model-visor" />
-        <path d="M30 70q30-14 60 0l6 70q-36 10-72 0z" />
-        <path d="M30 74 12 128l10 4 18-44z" />
-        <path d="M90 74l18 54-10 4-18-44z" />
-        <path d="M38 146h18l-2 62H40z" />
-        <path d="M64 146h18l-2 62H66z" />
-      </svg>
-      <div className="model-rings" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-      <p className="model-caption">
-        <strong>{t('home.modelSoon')}</strong>
-        <span>{t('home.modelHint')}</span>
-      </p>
+      <AstronautModel3D
+        theme={theme}
+        selectedZone={selectedSystem ? SYSTEM_TO_ZONE[selectedSystem] ?? null : null}
+        zoneStatus={zoneStatus}
+        zoneDetail={zoneDetail}
+        onSelectZone={(zone) => onSelectSystem?.(zone.id)}
+        height={height}
+      />
     </div>
   )
 }

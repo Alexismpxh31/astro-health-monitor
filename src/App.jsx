@@ -23,13 +23,17 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           {/* Every other route needs a session; without one it redirects to /login. */}
           <Route element={<RequireSession />}>
+            {/* Home: the astronaut dashboard, or the control center for the flight surgeon. */}
             <Route path="/" element={<Home />} />
-            <Route path="/vitals" element={<Vitals />} />
-            <Route path="/system/:id" element={<SystemDetail />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/checkin" element={<Checkin />} />
+            {/* Astronaut self-care screens: a flight surgeon is sent back home. */}
+            <Route element={<RequireSession exceptRoleCode={ROLE.FLIGHT_SURGEON} />}>
+              <Route path="/vitals" element={<Vitals />} />
+              <Route path="/system/:id" element={<SystemDetail />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/checkin" element={<Checkin />} />
+              <Route path="/comms" element={<Comms />} />
+            </Route>
             <Route path="/sensors" element={<Sensors />} />
-            <Route path="/comms" element={<Comms />} />
             {/* Flight surgeon, plus the crew medical officer in read-only mode.
                 Other astronauts are sent back to the home page. */}
             <Route element={<RequireSession roleCode={ROLE.FLIGHT_SURGEON} allowMedicalOfficer />}>

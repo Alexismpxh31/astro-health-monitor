@@ -292,89 +292,13 @@
   margin-top: 4px;
 }
 
-/* ---------- 3D model stage (placeholder until Walter's model) ---------- */
+/* ---------- 3D model stage (Walter's astronaut, see components/AstronautModel3D.jsx) ---------- */
 
 .model-stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  min-height: 460px;
-  padding-bottom: 16px;
-}
-
-.model-halo {
-  position: absolute;
-  top: 6%;
-  width: 82%;
-  aspect-ratio: 1;
-  max-width: 100%;
-  border: 1px solid var(--planet-rim);
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent-soft), transparent 70%);
-}
-
-.model-figure {
-  position: relative;
-  z-index: 1;
-  width: 46%;
-  max-width: 180px;
-  margin-bottom: -18px;
-  fill: var(--surface-solid);
-  stroke: var(--muted);
-  stroke-width: 1.5;
-  opacity: 0.85;
-}
-
-.model-visor {
-  fill: var(--text);
-}
-
-.model-rings {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 86%;
-  max-width: 300px;
-  aspect-ratio: 4 / 1;
-}
-
-.model-rings span {
-  grid-area: 1 / 1;
-  width: 100%;
-  height: 100%;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  opacity: 0.35;
-}
-
-.model-rings span:nth-child(2) {
-  width: 72%;
-  height: 72%;
-  opacity: 0.55;
-}
-
-.model-rings span:nth-child(3) {
-  width: 44%;
-  height: 44%;
-  background-color: var(--accent-soft);
-  opacity: 0.8;
-}
-
-.model-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-width: 30ch;
-  margin: 12px 0 0;
-  font-size: 0.85rem;
-  text-align: center;
-  color: var(--muted);
-}
-
-.model-caption strong {
-  color: var(--text);
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 @media (max-width: 1180px) {
@@ -385,25 +309,17 @@
   .model-stage {
     grid-column: 1 / -1;
     grid-row: 1;
-    min-height: 340px;
   }
 }
 
+/* Phones: data first, then the 3D stage, then the clinical card. */
 @media (max-width: 720px) {
   .home-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .model-stage {
-    min-height: 300px;
-  }
-}
-
-/* Phones: data first, then the 3D stage, then the clinical card. */
-@media (max-width: 720px) {
-  .model-stage {
     grid-row: auto;
-    min-height: 280px;
   }
 }
 

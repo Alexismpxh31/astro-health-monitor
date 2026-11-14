@@ -35,11 +35,23 @@ export default function BodyView({ items, lang, selectedCode, onSelect }) {
   const levels = Object.fromEntries(systems.map((row) => [row.system.code, row.level]))
   const selected = systems.find((row) => row.system.code === selectedCode) ?? null
 
+  // One line per system for the 3D HUD: the indicator behind the system's level.
+  const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
+  const details = Object.fromEntries(
+    systems.map((row) => {
+      const item = items.find((entry) => entry.system?.id === row.system.id && entry.level === row.level)
+      return [
+        row.system.code,
+        item ? `${localName(item.indicator, lang)} · ${numberFormat.format(item.latest.value)} ${item.unit}` : null,
+      ]
+    }),
+  )
+
   if (systems.length === 0) return null
 
   return (
     <section className="body-view glass" aria-labelledby="body-view-title">
-      <ModelStage selectedSystem={selectedCode} levels={levels} onSelectSystem={onSelect} />
+      <ModelStage selectedSystem={selectedCode} levels={levels} details={details} onSelectSystem={onSelect} height="480px" />
 
       <div className="body-view-side">
         <h2 id="body-view-title" className="card-title">{t('bodyView.title')}</h2>

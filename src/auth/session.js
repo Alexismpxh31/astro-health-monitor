@@ -23,6 +23,11 @@ import { verifyPin } from './pin.js'
  */
 
 export const ROLE = { ASTRONAUT: 'astronaut', FLIGHT_SURGEON: 'flight_surgeon' }
+/** Landing page after login: "/" is the astronaut dashboard, or the control center for the flight surgeon. */
+export function homePathFor() {
+  return '/'
+}
+
 export const MAX_FAILED_ATTEMPTS = 5
 export const LOCK_MS = 30000
 

@@ -1,0 +1,102 @@
+/* System Detail Screen */
+
+.system-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.system-detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.system-detail-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.system-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  background-color: rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.system-back-btn:hover {
+  background-color: rgba(34, 211, 238, 0.18);
+}
+
+.system-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.system-title-row h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.system-clinical-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .system-clinical-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.system-hrp-card {
+  padding: 0.85rem 1rem;
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.system-hrp-card strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.system-hrp-card p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* Indicators grid inside system detail */
+.system-indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.25rem;
+}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router-dom'
-import { getLockedUntil, login, useSession } from '../auth/session.js'
+import { getLockedUntil, homePathFor, login, useSession } from '../auth/session.js'
 import { db } from '../db/db.js'
 import { clearCurrentMission } from './missions/missionStore.js'
 
@@ -22,9 +22,6 @@ async function loadLoginUsers() {
     }))
 }
 
-// Everyone lands on "/": the astronaut dashboard, or the control center for the flight surgeon.
-const HOME_PATH = '/'
-
 export default function Login() {
   const { t } = useTranslation()
   const session = useSession()
@@ -37,7 +34,7 @@ export default function Login() {
   }, [session])
 
   // Also covers the moment right after a successful login.
-  if (session) return <Navigate to={HOME_PATH} replace />
+  if (session) return <Navigate to={homePathFor(session.roleCode)} replace />
 
   const selected = users?.find((user) => user.id === selectedId)
   const roleLabel = (user) => (user.roleCode ? t(`auth.roles.${user.roleCode}`, user.roleCode) : '')

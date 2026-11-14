@@ -49,6 +49,19 @@ export default function Home() {
 
   const selected = systems.find((row) => row.system.code === (selectedCode ?? data.worstSystemCode)) ?? systems[0]
   const levels = Object.fromEntries(systems.map((row) => [row.system.code, row.level]))
+  // One line per system for the 3D HUD: the indicator behind the system's level.
+  const details = Object.fromEntries(
+    systems.map((row) => {
+      const item =
+        row.items.find(({ entry }) => entry && entry.level === row.level) ?? row.items.find(({ entry }) => entry)
+      return [
+        row.system.code,
+        item
+          ? `${localName(item.indicator, lang)} · ${numberFormat.format(item.entry.latest.value)} ${item.entry.latest.unit}`
+          : null,
+      ]
+    }),
+  )
   const firstName = data.user.name ?? data.user.firstName
 
   return (
@@ -136,7 +149,12 @@ export default function Home() {
           </ul>
         </section>
 
-        <ModelStage selectedSystem={selected?.system.code ?? null} levels={levels} onSelectSystem={setSelectedCode} />
+        <ModelStage
+          selectedSystem={selected?.system.code ?? null}
+          levels={levels}
+          details={details}
+          onSelectSystem={setSelectedCode}
+        />
 
         {selected && (
           <section className="clinical-card glass" aria-labelledby="clinical-title">

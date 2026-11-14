@@ -815,3 +815,64 @@ h2 {
     text-overflow: ellipsis;
   }
 }
+
+/* ---------- HTTPS warning (page opened over http://) ---------- */
+
+.insecure-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  background-color: var(--surface-solid);
+  border-bottom: 2px solid var(--danger);
+}
+
+.insecure-warning p {
+  margin: 0;
+}
+
+.insecure-warning-icon {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  color: var(--danger);
+}
+
+/* ---------- Sensors page: BLE heart rate sensor ---------- */
+
+.ble-panel {
+  margin-top: 1rem;
+}
+
+.ble-badge {
+  align-self: flex-start;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+}
+
+.ble-panel .sim-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ble-status {
+  font-weight: 600;
+}
+
+.ble-status.is-connected {
+  color: var(--ok);
+}
+
+.ble-status.is-connecting,
+.ble-status.is-reconnecting {
+  color: var(--warn);
+}
+
+.ble-error {
+  font-weight: 700;
+  color: var(--danger);
+}

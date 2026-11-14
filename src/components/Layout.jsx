@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { logout, ROLE, useSession } from '../auth/session.js'
+import { disconnect as disconnectHeartRate } from '../bluetooth/heartRate.js'
 import { stop as stopSimulator } from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { SUPPORTED_LANGUAGES } from '../i18n/index.js'
@@ -9,22 +10,26 @@ import { clearCurrentMission } from '../pages/missions/missionStore.js'
 import BrandMark from './BrandMark.jsx'
 import ConnectionStatus from './ConnectionStatus.jsx'
 import Icon from './icons.jsx'
+import InsecureContextWarning from './InsecureContextWarning.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 
-// Menu per role. `roles`: only shown to those roles (all roles when missing);
-// `allowMedicalOfficer`: also shown to the crew medical officer.
-// The flight surgeon only sees what is useful to them: mission overview, crew and the
-// sensors page (to launch demo scenarios). Astronaut pages would store data as if the
-// surgeon were an astronaut.
+// `show(session)`: who sees the link (default: everyone with a session).
+const isAstronautView = (session) => session.roleCode !== ROLE.FLIGHT_SURGEON
+const isFlightSurgeon = (session) => session.roleCode === ROLE.FLIGHT_SURGEON
+const canViewCrew = (session) => isFlightSurgeon(session) || Boolean(session.isMedicalOfficer)
+
+// Menu per role. Everyone has a home ("/": the astronaut dashboard, or the control
+// center for the flight surgeon). The astronaut self-care screens are hidden from the
+// surgeon because they would store data as if the surgeon were an astronaut.
 const NAV_ITEMS = [
   { to: '/', labelKey: 'pages.home', icon: 'home', end: true },
-  { to: '/vitals', labelKey: 'pages.vitals', icon: 'vitals', roles: [ROLE.ASTRONAUT] },
-  { to: '/alerts', labelKey: 'pages.alerts', icon: 'bell', roles: [ROLE.ASTRONAUT] },
-  { to: '/checkin', labelKey: 'pages.checkin', icon: 'checkin', roles: [ROLE.ASTRONAUT] },
-  { to: '/missions', labelKey: 'pages.missions', icon: 'missions', roles: [ROLE.FLIGHT_SURGEON] },
-  { to: '/crew', labelKey: 'pages.crew', icon: 'crew', roles: [ROLE.FLIGHT_SURGEON], allowMedicalOfficer: true },
+  { to: '/vitals', labelKey: 'pages.vitals', icon: 'vitals', show: isAstronautView },
+  { to: '/alerts', labelKey: 'pages.alerts', icon: 'bell', show: isAstronautView },
+  { to: '/checkin', labelKey: 'pages.checkin', icon: 'checkin', show: isAstronautView },
+  { to: '/missions', labelKey: 'pages.missions', icon: 'missions', show: isFlightSurgeon },
+  { to: '/crew', labelKey: 'pages.crew', icon: 'crew', show: canViewCrew },
   { to: '/sensors', labelKey: 'pages.sensors', icon: 'sensors' },
-  { to: '/comms', labelKey: 'pages.comms', icon: 'comms', roles: [ROLE.ASTRONAUT] },
+  { to: '/comms', labelKey: 'pages.comms', icon: 'comms', show: isAstronautView },
 ]
 
 // App shell: side navigation (bottom bar on phones) + top bar (title, connection,
@@ -36,23 +41,20 @@ export default function Layout() {
   const user = useLiveQuery(() => (userId ? db.users.get(userId) : undefined), [userId])
 
   const userName = user ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name : ''
-  const navItems = NAV_ITEMS.filter(
-    (item) =>
-      !item.roles ||
-      item.roles.includes(session?.roleCode) ||
-      (item.allowMedicalOfficer && session?.isMedicalOfficer),
-  )
+  const navItems = session ? NAV_ITEMS.filter((item) => !item.show || item.show(session)) : []
 
   function handleLogout() {
-    // The simulator writes readings for the session user, so it must not outlive the session.
+    // The simulator and the BLE sensor write readings for the session user, so they must not outlive the session.
     stopSimulator()
-    // Each login starts at "My missions" instead of the mission picked last time.
+    disconnectHeartRate()
+    // Each login starts at the home screen instead of the mission picked last time.
     clearCurrentMission()
     logout()
   }
 
   return (
     <div className={`app-shell ${session ? 'has-nav' : 'no-nav'}`}>
+      <InsecureContextWarning />
       {session && (
         <aside className="sidebar">
           <div className="sidebar-brand">

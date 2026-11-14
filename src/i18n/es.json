@@ -150,7 +150,26 @@
     "latestReadings": "Últimas lecturas",
     "latestAlerts": "Últimas alertas",
     "noReadings": "Aún no hay lecturas.",
-    "noAlerts": "Aún no hay alertas."
+    "noAlerts": "Aún no hay alertas.",
+    "ble": {
+      "title": "Sensor real (Bluetooth)",
+      "connect": "Conectar pulsómetro",
+      "disconnect": "Desconectar pulsómetro",
+      "unnamedDevice": "pulsómetro",
+      "status": {
+        "disconnected": "Desconectado",
+        "connecting": "Conectando… elige tu pulsómetro en la ventana del navegador.",
+        "connected": "Conectado a {{name}}",
+        "reconnecting": "Se perdió la conexión. Reintentando…"
+      },
+      "errors": {
+        "insecure": "El Bluetooth solo funciona si la app se abre por https://.",
+        "unsupported": "Este navegador no es compatible con Web Bluetooth (Safari y Firefox no lo permiten). Usa Chrome o Edge en computadora o Android.",
+        "failed": "No se pudo conectar con el pulsómetro. Comprueba que esté encendido y cerca, e inténtalo de nuevo.",
+        "lost": "Se perdió la conexión con el pulsómetro y el reintento falló. Vuelve a conectarlo."
+      },
+      "exclusiveNote": "El pulsómetro y el simulador no funcionan a la vez: al conectar uno se detiene el otro."
+    }
   },
   "levels": {
     "normal": "Normal",
@@ -218,7 +237,9 @@
     "historyTitle": "Registros locales en Dexie (cola de sincronización)",
     "historyEmpty": "Aún no hay chequeos guardados en este dispositivo.",
     "syncPending": "Pendiente de envío",
-    "syncSynced": "Sincronizado"
+    "syncSynced": "Sincronizado",
+    "notAllowed": "El médico de vuelo no puede registrar chequeos diarios. Solo los astronautas guardan su propio chequeo.",
+    "saveError": "No se pudo guardar el chequeo. Inténtalo de nuevo."
   },
   "directions": {
     "high": "alto",
@@ -291,8 +312,6 @@
     "hazard": "Peligro (NASA HRP)",
     "risk": "Riesgo",
     "viewHistory": "Ver historial del sistema",
-    "modelSoon": "Modelo 3D en preparación",
-    "modelHint": "Aquí se verá el astronauta en 3D con el sistema seleccionado resaltado.",
     "systems": {
       "cardiovascular": {
         "hazard": "Gravedad alterada (microgravedad)",
@@ -314,6 +333,19 @@
         "hazard": "Radiación espacial",
         "risk": "Mayor riesgo de cáncer y efectos en el sistema nervioso central; límite de carrera de 600 mSv."
       }
+    }
+  },
+  "model3d": {
+    "loading": "Cargando astronauta 3D…",
+    "autoRotate": "Giro automático",
+    "stopRotation": "Detener giro",
+    "recenter": "Recentrar",
+    "activeZone": "Zona activa",
+    "inspecting": "Inspeccionando: {{zone}}",
+    "status": {
+      "optimal": "Nominal",
+      "warning": "Precaución",
+      "critical": "Crítico"
     }
   },
   "overview": {
@@ -381,5 +413,43 @@
       "unreadNotes_one": "nota sin leer",
       "unreadNotes_other": "notas sin leer"
     }
+  },
+  "astronaut": {
+    "title": "Panel Principal de Monitoreo del Astronauta",
+    "subsystems": "Subsistemas de Monitoreo",
+    "clinicalFile": "Ficha Clínica NASA",
+    "viewDetails": "Ver Detalle del Sistema",
+    "hrpHazard": "Peligro HRP Asociado",
+    "flightRisk": "Riesgo Oficial de Vuelo",
+    "livePulse": "Telemetría Activa (1 Hz)",
+    "noAlerts": "No hay alertas médicas pendientes. Todos los parámetros fisiológicos se encuentran en rango seguro.",
+    "markDone": "Hecho / Marcar atendida",
+    "vitalsEyebrow": "Telemetría biomédica · en vivo",
+    "vitalsTitle": "Signos vitales en vivo",
+    "pauseStream": "Pausar flujo",
+    "resumeStream": "Reanudar flujo",
+    "noDataTitle": "Sin datos de telemetría recientes.",
+    "noDataText": "Activa el simulador para generar signos vitales en tiempo real.",
+    "startSimulator": "Iniciar simulador",
+    "telemetry": "Telemetría",
+    "trend": "Tendencia",
+    "min": "Mín",
+    "max": "Máx",
+    "alertsEyebrow": "Protocolos de salud en vuelo",
+    "alertsTitle": "Alertas médicas y acciones",
+    "pending": "Sin atender",
+    "all": "Todas",
+    "attended": "Atendidas",
+    "noneInCategory": "No hay alertas en esta categoría.",
+    "anomalousValue": "Valor fuera de rango:",
+    "recommendedAction": "Acción recomendada",
+    "attendedAt": "Atendida a las {{time}}",
+    "backHome": "Volver al inicio",
+    "systemNotFound": "No se encontró ese sistema."
+  },
+  "security": {
+    "insecureTitle": "Conexión no segura (http://).",
+    "insecureBody": "Esta página debe abrirse por https://. Sin HTTPS no funcionan la instalación de la app, el modo sin conexión, las notificaciones, el Bluetooth ni el inicio de sesión con PIN.",
+    "openHttps": "Abrir por https://"
   }
 }
