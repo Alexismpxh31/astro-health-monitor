@@ -184,5 +184,9 @@
     "historyEmpty": "No check-ins saved on this device yet.",
     "syncPending": "Pending sync",
     "syncSynced": "Synced"
+  },
+  "directions": {
+    "high": "high",
+    "low": "low"
   }
 }

@@ -24,7 +24,7 @@ const SEVERITY = { NO_DATA: -1, NORMAL: 0, WARNING: 1, CRITICAL: 2 }
  */
 export function classifyValue(value, threshold) {
   if (!threshold) return null
-  return classify(value, threshold).toUpperCase()
+  return classify(value, threshold).level.toUpperCase()
 }
 
 /** @returns {number} sort weight, higher is worse. */
