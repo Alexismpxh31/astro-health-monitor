@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "gen:sql": "node scripts/gen-seed-sql.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

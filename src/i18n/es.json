@@ -58,9 +58,9 @@
     "noAlerts": "Aún no hay alertas."
   },
   "levels": {
-    "normal": "Normal",
-    "caution": "Precaución",
-    "critical": "Crítico"
+    "NORMAL": "Normal",
+    "WARNING": "Precaución",
+    "CRITICAL": "Crítico"
   },
   "rules": {
     "criticalTitle": "Alerta crítica"
@@ -117,7 +117,7 @@
       "REC_MOOD_LOW_CRITICAL": "Tu ánimo está muy bajo. Contacta al médico de vuelo o al oficial médico de la tripulación hoy.",
       "REC_STRESS_HIGH_CAUTION": "Tu estrés está elevado. Haz 5 minutos de respiración guiada y una pausa de las tareas.",
       "REC_STRESS_HIGH_CRITICAL": "Tu estrés es muy alto. Contacta al médico de vuelo y pide apoyo para reducir tu carga de trabajo.",
-      "REC_PVT_CAUTION": "Latencia PVT elevada ({value} ms): señal de fatiga. Descansa y evita tareas críticas hasta recuperarte.",
+      "REC_PVT_CAUTION": "Latencia PVT > 320 ms ({value} ms). Ejecutar protocolo NASA de siesta reparadora de 45 min antes de maniobras críticas.",
       "REC_PVT_CRITICAL": "Latencia PVT > 450 ms ({value} ms). Fatiga neurocognitiva alta: suspender tareas críticas y descansar de inmediato."
     },
     "historyTitle": "Registros locales en Dexie (cola de sincronización)",

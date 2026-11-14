@@ -4,8 +4,7 @@
  * @typedef {Object} Reading
  * @property {string} id - UUID.
  * @property {string} userId - UUID of the user the reading belongs to.
- * @property {string} indicatorCode - Indicator code: HR, SPO2, SBP, DBP, RR, TSKIN, BMD, RAD_D, RAD_DOSE...
- *   (official list: indicators in src/data/seed/catalogs.json)
+ * @property {string} indicatorCode - Indicator code: HR, SPO2, SBP, DBP, RR, TSKIN, BMD, RAD_D...
  * @property {number} value - Measured value.
  * @property {string} unit - Unit symbol (bpm, %, mmHg, ...).
  * @property {string} measuredAt - ISO 8601 UTC timestamp.

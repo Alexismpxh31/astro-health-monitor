@@ -47,19 +47,6 @@ export default function Comms() {
     }
   }
 
- alexis/fix-db
-  function addTestReading() {
-    return db.readings.add(createReading({
-      userId: 'a0000000-0000-4000-8000-000000000002',
-      indicatorCode: 'HR',
-      value: 72,
-      unit: 'bpm',
-      source: 'simulated',
-    }))
-  }
-
-
- main
   return (
     <section className="page">
       <h1>{t('pages.comms')}</h1>

@@ -58,9 +58,9 @@
     "noAlerts": "No alerts yet."
   },
   "levels": {
-    "normal": "Normal",
-    "caution": "Caution",
-    "critical": "Critical"
+    "NORMAL": "Normal",
+    "WARNING": "Warning",
+    "CRITICAL": "Critical"
   },
   "rules": {
     "criticalTitle": "Critical alert"
@@ -117,7 +117,7 @@
       "REC_MOOD_LOW_CRITICAL": "Your mood is very low. Contact the flight surgeon or the crew medical officer today.",
       "REC_STRESS_HIGH_CAUTION": "Your stress is elevated. Do 5 minutes of guided breathing and take a break from tasks.",
       "REC_STRESS_HIGH_CRITICAL": "Your stress is very high. Contact the flight surgeon and ask for support to reduce your workload.",
-      "REC_PVT_CAUTION": "PVT latency elevated ({value} ms): a sign of fatigue. Rest and avoid critical tasks until you recover.",
+      "REC_PVT_CAUTION": "PVT latency > 320 ms ({value} ms). Execute NASA 45-min restorative nap protocol prior to critical operations.",
       "REC_PVT_CRITICAL": "PVT latency > 450 ms ({value} ms). High neurocognitive fatigue: defer critical tasks and rest immediately."
     },
     "historyTitle": "Local Dexie Records (Sync Queue)",

@@ -7,7 +7,6 @@
 // bottom of the file adds the live API used by the 3D model UI (simulator.subscribe,
 // simulator.state, simulator.history, simulator.triggerAnomaly, startSimulator...).
 
-import catalogs from './seed/catalogs.json'
 import { db } from '../db/db.js'
 import { createReading } from '../models/reading.js'
 import { evaluateReading } from '../rules/engine.js'
@@ -16,35 +15,29 @@ const FAST_INTERVAL_MS = 2000 // vital signs
 const SLOW_INTERVAL_MS = 20000 // one accelerated "mission day"
 const TRANSITION_MS = 25000 // time a scenario takes to reach its target values
 
-const RAD_DOSE_START = 120 // mSv accumulated before the simulation starts
+const RAD_C_START = 120 // mSv accumulated before the simulation starts
 
-/** Unit symbol of an indicator, taken from the seed catalog (single source of truth). */
-function unitOf(code) {
-  const indicator = catalogs.indicators.find((row) => row.code === code)
-  return catalogs.units.find((unit) => unit.id === indicator.unitId).symbol
-}
-
-// Baseline ("normal") center and noise amplitude per indicator (codes as in catalogs.json).
+// Baseline ("normal") center and noise amplitude per indicator.
 // `decimals` is the rounding applied to the stored value.
 const INDICATORS = {
-  HR: { base: 70, noise: 8, decimals: 0, speed: 'fast' },
-  SPO2: { base: 97.5, noise: 1, decimals: 1, speed: 'fast', max: 100 },
-  SBP: { base: 115, noise: 8, decimals: 0, speed: 'fast' },
-  DBP: { base: 75, noise: 5, decimals: 0, speed: 'fast' },
-  RR: { base: 15, noise: 2, decimals: 0, speed: 'fast' },
-  TSKIN: { base: 36.5, noise: 0.3, decimals: 1, speed: 'fast' },
-  RAD_D: { base: 0.5, noise: 0.1, decimals: 1, speed: 'fast', min: 0 },
-  BMD: { base: -0.8, noise: 0.2, decimals: 1, speed: 'slow' },
-  MUSCLE: { base: 97, noise: 2, decimals: 1, speed: 'slow' },
-  PVT: { base: 240, noise: 30, decimals: 0, speed: 'slow' },
-  SLEEP_H: { base: 7.5, noise: 0.8, decimals: 1, speed: 'slow', min: 0 },
-  WBC: { base: 6.5, noise: 1, decimals: 1, speed: 'slow', min: 0 },
-  IL6: { base: 2.5, noise: 0.8, decimals: 1, speed: 'slow', min: 0 },
-  CORTISOL: { base: 14, noise: 4, decimals: 1, speed: 'slow', min: 0 },
+  HR: { unit: 'bpm', base: 70, noise: 8, decimals: 0, speed: 'fast' },
+  SPO2: { unit: '%', base: 97.5, noise: 1, decimals: 1, speed: 'fast', max: 100 },
+  SBP: { unit: 'mmHg', base: 115, noise: 8, decimals: 0, speed: 'fast' },
+  DBP: { unit: 'mmHg', base: 75, noise: 5, decimals: 0, speed: 'fast' },
+  RR: { unit: 'breaths/min', base: 15, noise: 2, decimals: 0, speed: 'fast' },
+  TSKIN: { unit: '°C', base: 36.5, noise: 0.3, decimals: 1, speed: 'fast' },
+  RAD_D: { unit: 'mSv/day', base: 0.5, noise: 0.1, decimals: 1, speed: 'fast', min: 0 },
+  BMD: { unit: '%/month', base: -0.8, noise: 0.2, decimals: 1, speed: 'slow' },
+  MUSCLE: { unit: '% baseline', base: 97, noise: 2, decimals: 1, speed: 'slow' },
+  PVT: { unit: 'ms', base: 240, noise: 30, decimals: 0, speed: 'slow' },
+  SLEEP: { unit: 'h/24h', base: 7.5, noise: 0.8, decimals: 1, speed: 'slow', min: 0 },
+  WBC: { unit: '10³/µL', base: 6.5, noise: 1, decimals: 1, speed: 'slow', min: 0 },
+  IL6: { unit: 'pg/mL', base: 2.5, noise: 0.8, decimals: 1, speed: 'slow', min: 0 },
+  CORT: { unit: 'nmol/L', base: 14, noise: 4, decimals: 1, speed: 'slow', min: 0 },
 }
 
-// RAD_DOSE (cumulative mission dose) is not a random walk: it accumulates RAD_D once per simulated day.
-const RAD_DOSE = { decimals: 1 }
+// RAD_C is not a random walk: it accumulates RAD_D once per simulated day.
+const RAD_C = { unit: 'mSv', decimals: 1 }
 
 const FAST_CODES = Object.keys(INDICATORS).filter((code) => INDICATORS[code].speed === 'fast')
 const SLOW_CODES = Object.keys(INDICATORS).filter((code) => INDICATORS[code].speed === 'slow')
@@ -56,7 +49,7 @@ const SCENARIO_TARGETS = {
   hypoxia: { SPO2: 88, HR: 110 },
   tachycardia: { HR: 138 },
   boneLoss: { BMD: -1.8 },
-  sleepDeprivation: { SLEEP_H: 4, PVT: 420, CORTISOL: 35 },
+  sleepDeprivation: { SLEEP: 4, PVT: 420, CORT: 35 },
   infection: { TSKIN: 38.6, WBC: 14, IL6: 10 },
 }
 
@@ -69,7 +62,7 @@ let userId = null
 let fastTimer = null
 let slowTimer = null
 let scenario = 'normal'
-let radCumulative = RAD_DOSE_START
+let radCumulative = RAD_C_START
 
 // Per indicator: the center moves linearly from `from` to `to` starting at
 // `startedAt`; `offset` is a small random walk around that center.
@@ -108,13 +101,8 @@ function nextValue(code, now) {
 }
 
 /** Stores one reading and runs the rules engine on it. Never throws. */
- alexis/fix-db
-async function emit(indicatorCode, value) {
-  const unit = unitOf(indicatorCode)
-
 async function emit(indicatorCode, value, unit) {
   recordLive(indicatorCode, value)
- main
   const reading = createReading({ userId, indicatorCode, value, unit, source: 'simulated' })
   try {
     await db.readings.add(reading)
@@ -127,8 +115,8 @@ async function emit(indicatorCode, value, unit) {
 function tick(codes) {
   const now = Date.now()
   for (const code of codes) {
-    const { decimals } = INDICATORS[code]
-    emit(code, round(nextValue(code, now), decimals))
+    const { unit, decimals } = INDICATORS[code]
+    emit(code, round(nextValue(code, now), decimals), unit)
   }
 }
 
@@ -141,12 +129,8 @@ function slowTick() {
   tick(SLOW_CODES)
   // One simulated day has passed: add today's dose to the cumulative dose.
   radCumulative += centerOf('RAD_D', Date.now()) + state.RAD_D.offset
- alexis/fix-db
-  emit('RAD_DOSE', round(radCumulative, RAD_DOSE.decimals))
-
   emit('RAD_C', round(radCumulative, RAD_C.decimals), RAD_C.unit)
   notify()
- main
 }
 
 // ---------- Public API ----------

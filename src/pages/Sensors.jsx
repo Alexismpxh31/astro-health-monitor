@@ -11,19 +11,9 @@ import * as simulator from '../data/simulator.js'
 import * as queue from '../sync/queue.js'
 import { supabase } from '../sync/supabaseClient.js'
 import { db } from '../db/db.js'
-import { recommendationText, requestNotificationPermission } from '../rules/engine.js'
+import { requestNotificationPermission } from '../rules/engine.js'
 
 // The simulator always feeds the demo astronaut from the seed.
- alexis/fix-db
-const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'astronaut').id
-const DEMO_ASTRONAUT_ID = usersSeed.users.find((user) => user.roleId === ASTRONAUT_ROLE_ID).id
-
-// alertLevels.code -> CSS color variable. The level name is always shown as text too.
-const LEVEL_COLORS = {
-  normal: 'var(--ok)',
-  caution: 'var(--warn)',
-  critical: 'var(--danger)',
-
 const ASTRONAUT_ROLE_ID = catalogs.roles.find((role) => role.code === 'ASTRONAUT')?.id
 const DEMO_ASTRONAUT_ID =
   usersSeed.users.find((user) => user.roleId === ASTRONAUT_ROLE_ID)?.id ??
@@ -35,7 +25,6 @@ const LEVEL_COLORS = {
   WARNING: 'var(--warn)',
   CAUTION: 'var(--warn)',
   CRITICAL: 'var(--danger)',
- main
 }
 
 // Reference devices (based on real ISS hardware). Values are simulated for the demo.
@@ -213,35 +202,6 @@ export default function Sensors() {
         <div className="sim-panel">
           <p className="sim-badge">{t('sensors.simulatedData')}</p>
 
- alexis/fix-db
-      <h2>{t('sensors.latestAlerts')}</h2>
-      {alerts.length === 0 ? (
-        <p className="muted">{t('sensors.noAlerts')}</p>
-      ) : (
-        <ul className="sim-list">
-          {alerts.map((alert) => {
-            const levelCode = alert.level?.code ?? 'caution'
-            const advice = recommendationText(
-              alert.recommendation,
-              alert.reading,
-              i18n.resolvedLanguage,
-            )
-            return (
-              <li
-                key={alert.id}
-                className="sim-row sim-alert"
-                style={{ '--level-color': LEVEL_COLORS[levelCode] }}
-              >
-                <span className="sim-level">
-                  {t(`levels.${levelCode}`)}
-                  {alert.direction && (
-                    <span title={t(`directions.${alert.direction}`)}>
-                      {' '}
-                      <span aria-hidden="true">{alert.direction === 'high' ? '↑' : '↓'}</span>
-                      <span className="visually-hidden">{t(`directions.${alert.direction}`)}</span>
-                    </span>
-                  )}
-
           <button
             type="button"
             className={`sim-toggle${running ? ' is-running' : ''}`}
@@ -277,7 +237,6 @@ export default function Sensors() {
                 <span className="sim-row-name">{indicatorName(reading.indicatorCode)}</span>
                 <span className="sim-row-value">
                   {reading.value} {reading.unit}
- main
                 </span>
                 <time className="muted" dateTime={reading.measuredAt}>
                   {formatTime(reading.measuredAt)}
