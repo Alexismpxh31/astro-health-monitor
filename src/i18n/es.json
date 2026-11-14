@@ -18,6 +18,11 @@
     "online": "En línea",
     "offline": "Sin señal"
   },
+  "comms": {
+    "loading": "Consultando registros pendientes…",
+    "pendingCount_one": "{{count}} registro pendiente de sincronizar",
+    "pendingCount_other": "{{count}} registros pendientes de sincronizar"
+  },
   "common": {
     "underConstruction": "En construcción",
     "language": "Idioma",
