@@ -73,6 +73,7 @@
   min-height: 36px;
   padding: 0 12px;
   font-size: 0.78rem;
+  white-space: nowrap;
   color: var(--muted);
   background: transparent;
   border: none;

@@ -205,8 +205,9 @@ export default function AstronautModel3D({
     const heightPx = container.clientHeight || 530;
 
     const camera = new THREE.PerspectiveCamera(40, width / heightPx, 0.1, 50);
-    const initialCamPos = new THREE.Vector3(0, 1.25, 2.85);
-    const cameraTarget = new THREE.Vector3(0, 1.04, 0);
+    // Far enough to keep the helmet below the HUD and the boots above the controls.
+    const initialCamPos = new THREE.Vector3(0, 1.2, 3.3);
+    const cameraTarget = new THREE.Vector3(0, 1.0, 0);
     camera.position.copy(initialCamPos);
 
     // 2. Renderer PBR con ToneMapping
