@@ -1,5 +1,17 @@
 [
-  { "id": "00000000-0000-4000-8000-000000000a01", "indicatorId": "00000000-0000-4000-8000-000000000401", "userId": null, "criticalMin": 40, "warnMin": 50, "warnMax": 100, "criticalMax": 130 },
-  { "id": "00000000-0000-4000-8000-000000000a02", "indicatorId": "00000000-0000-4000-8000-000000000402", "userId": null, "criticalMin": 90, "warnMin": 94, "warnMax": null, "criticalMax": null },
-  { "id": "00000000-0000-4000-8000-000000000a03", "indicatorId": "00000000-0000-4000-8000-000000000403", "userId": null, "criticalMin": 80, "warnMin": 90, "warnMax": 130, "criticalMax": 160 }
+  { "id": "00000000-0000-4000-8000-000000000a01", "indicatorId": "00000000-0000-4000-8000-000000000401", "userId": null, "criticalMin": 45, "warnMin": 55, "warnMax": 95, "criticalMax": 130 },
+  { "id": "00000000-0000-4000-8000-000000000a02", "indicatorId": "00000000-0000-4000-8000-000000000402", "userId": null, "criticalMin": 90, "warnMin": 95, "warnMax": null, "criticalMax": null },
+  { "id": "00000000-0000-4000-8000-000000000a03", "indicatorId": "00000000-0000-4000-8000-000000000403", "userId": null, "criticalMin": 80, "warnMin": 95, "warnMax": 130, "criticalMax": 155 },
+  { "id": "00000000-0000-4000-8000-000000000a04", "indicatorId": "00000000-0000-4000-8000-000000000404", "userId": null, "criticalMin": 50, "warnMin": 60, "warnMax": 85, "criticalMax": 100 },
+  { "id": "00000000-0000-4000-8000-000000000a05", "indicatorId": "00000000-0000-4000-8000-000000000405", "userId": null, "criticalMin": 8, "warnMin": 12, "warnMax": 18, "criticalMax": 28 },
+  { "id": "00000000-0000-4000-8000-000000000a06", "indicatorId": "00000000-0000-4000-8000-000000000406", "userId": null, "criticalMin": 34.5, "warnMin": 35.8, "warnMax": 37.3, "criticalMax": 38.5 },
+  { "id": "00000000-0000-4000-8000-000000000a07", "indicatorId": "00000000-0000-4000-8000-000000000407", "userId": null, "criticalMin": -1.5, "warnMin": -1.0, "warnMax": null, "criticalMax": null },
+  { "id": "00000000-0000-4000-8000-000000000a08", "indicatorId": "00000000-0000-4000-8000-000000000408", "userId": null, "criticalMin": null, "warnMin": null, "warnMax": 0.8, "criticalMax": 1.8 },
+  { "id": "00000000-0000-4000-8000-000000000a09", "indicatorId": "00000000-0000-4000-8000-000000000409", "userId": null, "criticalMin": 80, "warnMin": 90, "warnMax": null, "criticalMax": null },
+  { "id": "00000000-0000-4000-8000-000000000a0a", "indicatorId": "00000000-0000-4000-8000-000000000410", "userId": null, "criticalMin": null, "warnMin": null, "warnMax": 400, "criticalMax": 600 },
+  { "id": "00000000-0000-4000-8000-000000000a0b", "indicatorId": "00000000-0000-4000-8000-000000000411", "userId": null, "criticalMin": null, "warnMin": null, "warnMax": 300, "criticalMax": 450 },
+  { "id": "00000000-0000-4000-8000-000000000a0c", "indicatorId": "00000000-0000-4000-8000-000000000412", "userId": null, "criticalMin": 4, "warnMin": 6.5, "warnMax": 9, "criticalMax": 14 },
+  { "id": "00000000-0000-4000-8000-000000000a0d", "indicatorId": "00000000-0000-4000-8000-000000000413", "userId": null, "criticalMin": 2.5, "warnMin": 4.5, "warnMax": 10.5, "criticalMax": 15 },
+  { "id": "00000000-0000-4000-8000-000000000a0e", "indicatorId": "00000000-0000-4000-8000-000000000414", "userId": null, "criticalMin": null, "warnMin": null, "warnMax": 5, "criticalMax": 12 },
+  { "id": "00000000-0000-4000-8000-000000000a0f", "indicatorId": "00000000-0000-4000-8000-000000000415", "userId": null, "criticalMin": 2, "warnMin": 5, "warnMax": 25, "criticalMax": 45 }
 ]

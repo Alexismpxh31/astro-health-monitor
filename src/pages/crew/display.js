@@ -1,5 +1,14 @@
 // Short labels for indicator codes in tables and charts (codes without an entry are shown as-is).
-export const DISPLAY_CODE = { SPO2: 'SpO₂', TSKIN: 'T piel', RAD_DOSE: 'Dosis' }
+export const DISPLAY_CODE = {
+  SPO2: 'SpO₂',
+  TSKIN: 'T piel',
+  RAD_D: 'Rad/día',
+  RAD_C: 'Rad acum.',
+  IL6: 'IL-6',
+  CORT: 'Cortisol',
+  SLEEP: 'Sueño',
+  MUSCLE: 'Músculo',
+}
 
 // Recharts draws SVG attributes, which cannot read CSS variables: keep these in sync with index.css.
 export const CHART_COLORS = {

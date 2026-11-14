@@ -1,7 +1,9 @@
 // Crew status for the flight surgeon panel: latest reading per indicator,
 // classified against thresholds and rolled up per body system.
-// TODO: switch classifyValue() to evaluateReading() from src/rules/engine.js
-// once the rules engine is implemented, so both panels share one logic.
+// Classification uses classify() from the rules engine, so the astronaut and
+// flight surgeon panels always agree on the level.
+
+import { classify } from '../../rules/engine.js'
 
 export const LEVEL = {
   NO_DATA: 'NO_DATA',
@@ -21,13 +23,7 @@ const SEVERITY = { NO_DATA: -1, NORMAL: 0, WARNING: 1, CRITICAL: 2 }
  */
 export function classifyValue(value, threshold) {
   if (!threshold) return null
-  const { criticalMin, warnMin, warnMax, criticalMax } = threshold
-  const below = (limit) => limit != null && value < limit
-  const above = (limit) => limit != null && value > limit
-
-  if (below(criticalMin) || above(criticalMax)) return LEVEL.CRITICAL
-  if (below(warnMin) || above(warnMax)) return LEVEL.WARNING
-  return LEVEL.NORMAL
+  return classify(value, threshold).toUpperCase()
 }
 
 /** @returns {number} sort weight, higher is worse. */

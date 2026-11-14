@@ -35,10 +35,15 @@ async function loadCrewData() {
     ? await db.readings.where('userId').anyOf(astronauts.map((user) => user.id)).toArray()
     : []
 
+  // Only systems that have at least one indicator get a column.
+  const systemsWithIndicators = bodySystems.filter((system) =>
+    indicators.some((indicator) => indicator.bodySystemId === system.id),
+  )
+
   return {
     mission: missions[0] ?? null,
-    bodySystems,
-    rows: buildCrewStatus({ astronauts, bodySystems, indicators, thresholds, readings }),
+    bodySystems: systemsWithIndicators,
+    rows: buildCrewStatus({ astronauts, bodySystems: systemsWithIndicators, indicators, thresholds, readings }),
   }
 }
 

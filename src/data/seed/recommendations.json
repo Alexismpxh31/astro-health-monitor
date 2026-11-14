@@ -3,21 +3,210 @@
     "id": "00000000-0000-4000-8000-000000000b01",
     "indicatorId": "00000000-0000-4000-8000-000000000401",
     "alertLevelId": "00000000-0000-4000-8000-000000000502",
-    "textEs": "Detén la actividad, descansa 5 minutos y repite la medición.",
-    "textEn": "Stop the activity, rest for 5 minutes and measure again."
+    "textEs": "Tu pulso está fuera del rango normal. Detén la actividad, respira lento durante 5 minutos y vuelve a medir.",
+    "textEn": "Your heart rate is outside the normal range. Stop the activity, breathe slowly for 5 minutes and measure again."
   },
   {
     "id": "00000000-0000-4000-8000-000000000b02",
     "indicatorId": "00000000-0000-4000-8000-000000000401",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "textEs": "Avisa de inmediato al médico de vuelo y permanece en reposo.",
-    "textEn": "Notify the flight surgeon immediately and stay at rest."
+    "textEs": "Pulso en nivel crítico. Detén la actividad, quédate en reposo y contacta al médico de vuelo ahora.",
+    "textEn": "Heart rate at a critical level. Stop the activity, stay at rest and contact the flight surgeon now."
   },
   {
     "id": "00000000-0000-4000-8000-000000000b03",
     "indicatorId": "00000000-0000-4000-8000-000000000402",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Tu SpO₂ bajó. Haz respiración profunda durante 5 minutos y vuelve a medir.",
+    "textEn": "Your SpO₂ dropped. Do deep breathing for 5 minutes and measure again."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b04",
+    "indicatorId": "00000000-0000-4000-8000-000000000402",
     "alertLevelId": "00000000-0000-4000-8000-000000000503",
-    "textEs": "Revisa el suministro de oxígeno de la cabina y avisa al médico de vuelo.",
-    "textEn": "Check the cabin oxygen supply and notify the flight surgeon."
+    "textEs": "SpO₂ crítica. Revisa la ventilación y el nivel de CO₂ de la cabina, respira profundo y contacta al médico de vuelo ahora.",
+    "textEn": "Critical SpO₂. Check cabin ventilation and CO₂ level, breathe deeply and contact the flight surgeon now."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b05",
+    "indicatorId": "00000000-0000-4000-8000-000000000403",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Presión sistólica fuera del rango normal. Descansa 10 minutos, hidrátate y vuelve a medir.",
+    "textEn": "Systolic pressure outside the normal range. Rest for 10 minutes, hydrate and measure again."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b06",
+    "indicatorId": "00000000-0000-4000-8000-000000000403",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Presión sistólica en nivel crítico. Quédate en reposo, evita movimientos bruscos y contacta al médico de vuelo ahora.",
+    "textEn": "Systolic pressure at a critical level. Stay at rest, avoid sudden movements and contact the flight surgeon now."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b07",
+    "indicatorId": "00000000-0000-4000-8000-000000000404",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Presión diastólica fuera del rango normal. Descansa 10 minutos, hidrátate y vuelve a medir.",
+    "textEn": "Diastolic pressure outside the normal range. Rest for 10 minutes, hydrate and measure again."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b08",
+    "indicatorId": "00000000-0000-4000-8000-000000000404",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Presión diastólica en nivel crítico. Quédate en reposo y contacta al médico de vuelo ahora.",
+    "textEn": "Diastolic pressure at a critical level. Stay at rest and contact the flight surgeon now."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b09",
+    "indicatorId": "00000000-0000-4000-8000-000000000405",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Tu respiración está fuera del ritmo normal. Respira de forma lenta y controlada y vuelve a medir en 5 minutos.",
+    "textEn": "Your breathing is outside the normal rate. Breathe slowly and steadily and measure again in 5 minutes."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b0a",
+    "indicatorId": "00000000-0000-4000-8000-000000000405",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Frecuencia respiratoria en nivel crítico. Revisa el CO₂ de la cabina, descansa y contacta al médico de vuelo ahora.",
+    "textEn": "Respiratory rate at a critical level. Check cabin CO₂, rest and contact the flight surgeon now."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b0b",
+    "indicatorId": "00000000-0000-4000-8000-000000000406",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Temperatura de piel fuera del rango normal. Ajusta tu ropa, hidrátate y verifica la temperatura de la cabina.",
+    "textEn": "Skin temperature outside the normal range. Adjust your clothing, hydrate and check the cabin temperature."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b0c",
+    "indicatorId": "00000000-0000-4000-8000-000000000406",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Temperatura de piel en nivel crítico. Detén la actividad, abrígate o enfríate según corresponda y contacta al médico de vuelo ahora.",
+    "textEn": "Skin temperature at a critical level. Stop the activity, warm up or cool down as needed and contact the flight surgeon now."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b0d",
+    "indicatorId": "00000000-0000-4000-8000-000000000407",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Pérdida ósea mayor a la esperada. Cumple tu sesión de ejercicio de resistencia (ARED) y revisa con el médico de vuelo tu vitamina D y calcio.",
+    "textEn": "Bone loss higher than expected. Complete your resistance exercise session (ARED) and review vitamin D and calcium with the flight surgeon."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b0e",
+    "indicatorId": "00000000-0000-4000-8000-000000000407",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Pérdida ósea muy acelerada. Contacta al médico de vuelo para revisar tu plan de ejercicio, nutrición y suplementación.",
+    "textEn": "Very fast bone loss. Contact the flight surgeon to review your exercise, nutrition and supplementation plan."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b0f",
+    "indicatorId": "00000000-0000-4000-8000-000000000408",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Dosis diaria de radiación elevada. Permanece en las zonas con más blindaje (agua y polietileno) y revisa el plan de exposición.",
+    "textEn": "Daily radiation dose elevated. Stay in the best-shielded areas (water and polyethylene) and review the exposure plan."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b10",
+    "indicatorId": "00000000-0000-4000-8000-000000000408",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Dosis diaria muy alta: posible evento solar de protones. Refúgiate de inmediato en el compartimento de tormenta solar y contacta al médico de vuelo.",
+    "textEn": "Daily dose very high: possible solar particle event. Shelter immediately in the storm shelter and contact the flight surgeon."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b11",
+    "indicatorId": "00000000-0000-4000-8000-000000000409",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Tu masa muscular bajó. Completa tu protocolo de resistencia (ARED: sentadillas, peso muerto y press) y cuida tu ingesta de proteína.",
+    "textEn": "Your muscle mass dropped. Complete your resistance protocol (ARED: squats, deadlift and press) and watch your protein intake."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b12",
+    "indicatorId": "00000000-0000-4000-8000-000000000409",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Pérdida muscular importante. Contacta al médico de vuelo para ajustar tu ejercicio y nutrición.",
+    "textEn": "Significant muscle loss. Contact the flight surgeon to adjust your exercise and nutrition."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b13",
+    "indicatorId": "00000000-0000-4000-8000-000000000410",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Dosis acumulada de radiación alta. Limita el tiempo fuera de las zonas con más blindaje y revisa el plan de exposición con el médico de vuelo.",
+    "textEn": "Cumulative radiation dose high. Limit time outside the best-shielded areas and review the exposure plan with the flight surgeon."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b14",
+    "indicatorId": "00000000-0000-4000-8000-000000000410",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Dosis acumulada sobre el límite de carrera (600 mSv). Refúgiate en la zona más blindada y contacta al médico de vuelo ahora.",
+    "textEn": "Cumulative dose above the career limit (600 mSv). Shelter in the most shielded area and contact the flight surgeon now."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b15",
+    "indicatorId": "00000000-0000-4000-8000-000000000411",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Tu tiempo de reacción subió: señal de fatiga. Haz una siesta de 45 minutos y evita tareas críticas hasta recuperarte.",
+    "textEn": "Your reaction time went up: a sign of fatigue. Take a 45-minute nap and avoid critical tasks until you recover."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b16",
+    "indicatorId": "00000000-0000-4000-8000-000000000411",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Fatiga severa. Suspende las tareas críticas, descansa y contacta al médico de vuelo ahora.",
+    "textEn": "Severe fatigue. Stop critical tasks, rest and contact the flight surgeon now."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b17",
+    "indicatorId": "00000000-0000-4000-8000-000000000412",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Tus horas de sueño están fuera de lo recomendado. Mantén horarios regulares y reduce la luz y el ruido antes de dormir.",
+    "textEn": "Your sleep hours are outside the recommended range. Keep regular hours and reduce light and noise before bed."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b18",
+    "indicatorId": "00000000-0000-4000-8000-000000000412",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Sueño en nivel crítico. Evita tareas de alto riesgo hoy y avisa al médico de vuelo.",
+    "textEn": "Sleep at a critical level. Avoid high-risk tasks today and tell the flight surgeon."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b19",
+    "indicatorId": "00000000-0000-4000-8000-000000000413",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Leucocitos fuera del rango normal: posible infección o defensas bajas. Revisa si tienes fiebre o síntomas, refuerza la higiene y avisa al médico de vuelo.",
+    "textEn": "White blood cells outside the normal range: possible infection or low defenses. Check for fever or symptoms, reinforce hygiene and tell the flight surgeon."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b1a",
+    "indicatorId": "00000000-0000-4000-8000-000000000413",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Leucocitos en nivel crítico. Contacta al médico de vuelo ahora y evita el contacto cercano con otros tripulantes.",
+    "textEn": "White blood cells at a critical level. Contact the flight surgeon now and avoid close contact with crewmates."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b1b",
+    "indicatorId": "00000000-0000-4000-8000-000000000414",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Marcador de inflamación elevado (IL-6). Prioriza el descanso, hidrátate y revisa si tienes síntomas.",
+    "textEn": "Inflammation marker elevated (IL-6). Prioritize rest, hydrate and check for symptoms."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b1c",
+    "indicatorId": "00000000-0000-4000-8000-000000000414",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Inflamación muy elevada (IL-6). Contacta al médico de vuelo ahora y reporta tus síntomas.",
+    "textEn": "Inflammation very high (IL-6). Contact the flight surgeon now and report your symptoms."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b1d",
+    "indicatorId": "00000000-0000-4000-8000-000000000415",
+    "alertLevelId": "00000000-0000-4000-8000-000000000502",
+    "textEs": "Cortisol fuera del rango normal, posible señal de estrés. Haz una pausa de relajación, cuida tu descanso y avísale al médico de vuelo en tu próximo reporte.",
+    "textEn": "Cortisol outside the normal range, a possible sign of stress. Take a relaxation break, look after your rest and tell the flight surgeon in your next report."
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000b1e",
+    "indicatorId": "00000000-0000-4000-8000-000000000415",
+    "alertLevelId": "00000000-0000-4000-8000-000000000503",
+    "textEs": "Cortisol en nivel crítico. Contacta al médico de vuelo y reduce tu carga de trabajo hoy.",
+    "textEn": "Cortisol at a critical level. Contact the flight surgeon and reduce your workload today."
   }
 ]
