@@ -1,6 +1,6 @@
 import { getSession } from '../../auth/session.js'
 import { db } from '../../db/db.js'
-import { classifyValue, findThreshold, LEVEL, severityOf } from './crewStatus.js'
+import { classifyValue, effectiveThreshold, LEVEL, severityOf } from './crewStatus.js'
 
 // Data for /crew/:userId. Everything comes from IndexedDB, so the screen works offline.
 // Readings from any source (simulator, NASA dataset adapter, BLE) show up here as long
@@ -48,18 +48,22 @@ export async function loadMemberData(userId) {
   const systemById = new Map(bodySystems.map((system) => [system.id, system]))
   const levelFor = (reading, threshold) => classifyValue(reading.value, threshold) ?? LEVEL.NO_DATA
 
+  const thresholdByCode = new Map()
   const items = indicators
     .filter((indicator) => readingsByCode.has(indicator.code))
     .map((indicator) => {
       const series = readingsByCode.get(indicator.code)
       const latest = series.at(-1)
-      const threshold = findThreshold(thresholds, userId, indicator.id)
+      const { rule, threshold, baseline } = effectiveThreshold(thresholds, userId, indicator, series, latest)
+      thresholdByCode.set(indicator.code, threshold)
       return {
         indicator,
         system: systemById.get(indicator.bodySystemId) ?? null,
         unit: latest.unit,
-        threshold,
-        isPersonal: threshold?.userId === userId,
+        rule, // stored row: what the threshold editor changes
+        threshold, // absolute limits used for the level and the chart lines
+        baseline, // { value, count } for personal-baseline indicators, else null
+        isPersonal: rule?.userId === userId,
         latest,
         level: levelFor(latest, threshold),
         series: series.slice(-MAX_POINTS),
@@ -68,10 +72,9 @@ export async function loadMemberData(userId) {
     // Worst first, so the surgeon sees the problem without scrolling.
     .sort((a, b) => severityOf(b.level) - severityOf(a.level))
 
-  const indicatorByCode = new Map(indicators.map((indicator) => [indicator.code, indicator]))
+  // CSV levels use the current thresholds (and the current personal baseline).
   const exportRows = readings.map((reading) => {
-    const indicator = indicatorByCode.get(reading.indicatorCode)
-    const threshold = indicator ? findThreshold(thresholds, userId, indicator.id) : null
+    const threshold = thresholdByCode.get(reading.indicatorCode) ?? null
     return { ...reading, level: levelFor(reading, threshold) }
   })
 

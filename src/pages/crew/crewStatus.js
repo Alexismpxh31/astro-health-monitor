@@ -3,6 +3,7 @@
 // Classification uses classify() from the rules engine, so the astronaut and
 // flight surgeon panels always agree on the level.
 
+import { computeBaseline, isBaselineThreshold, resolveThreshold } from '../../rules/baseline.js'
 import { classify } from '../../rules/engine.js'
 
 export const LEVEL = {
@@ -31,14 +32,40 @@ export function severityOf(level) {
   return SEVERITY[level] ?? SEVERITY.NO_DATA
 }
 
-function latestReadingsByKey(readings) {
-  const latest = new Map()
+/** Groups readings by "userId|indicatorCode". */
+function readingsByKey(readings) {
+  const groups = new Map()
   for (const reading of readings) {
     const key = `${reading.userId}|${reading.indicatorCode}`
-    const previous = latest.get(key)
-    if (!previous || reading.measuredAt > previous.measuredAt) latest.set(key, reading)
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(reading)
   }
-  return latest
+  return groups
+}
+
+function latestOf(history) {
+  return history.reduce((latest, reading) => (reading.measuredAt > latest.measuredAt ? reading : latest))
+}
+
+/**
+ * Threshold to apply to the latest reading of one user + indicator.
+ * For personal-baseline thresholds (mode 'baseline') the deviations are turned into
+ * absolute limits around the user's usual value.
+ *
+ * @param {Object[]} thresholds - All threshold rows.
+ * @param {string} userId
+ * @param {Object} indicator
+ * @param {Object[]} history - Readings of this user + indicator.
+ * @param {Object} latest - Reading being evaluated.
+ * @returns {{ rule: Object|null, threshold: Object|null, baseline: { value: number|null, count: number }|null }}
+ *   rule = stored row (what the editor changes); threshold = limits to compare against
+ *   (null while the baseline is calibrating); baseline = null for absolute thresholds.
+ */
+export function effectiveThreshold(thresholds, userId, indicator, history, latest) {
+  const rule = findThreshold(thresholds, userId, indicator.id)
+  if (!isBaselineThreshold(rule)) return { rule, threshold: rule, baseline: null }
+  const baseline = computeBaseline(history, latest.measuredAt, latest.id)
+  return { rule, threshold: resolveThreshold(rule, baseline.value), baseline }
 }
 
 /**
@@ -79,7 +106,7 @@ export function findThreshold(thresholds, userId, indicatorId) {
  * @returns {CrewMemberStatus[]}
  */
 export function buildCrewStatus({ astronauts, bodySystems, indicators, thresholds, readings }) {
-  const latest = latestReadingsByKey(readings)
+  const groups = readingsByKey(readings)
 
   const rows = astronauts.map((user) => {
     let lastMeasuredAt = null
@@ -92,14 +119,16 @@ export function buildCrewStatus({ astronauts, bodySystems, indicators, threshold
 
       for (const indicator of indicators) {
         if (indicator.bodySystemId !== system.id) continue
-        const reading = latest.get(`${user.id}|${indicator.code}`)
-        if (!reading) continue
+        const history = groups.get(`${user.id}|${indicator.code}`)
+        if (!history) continue
+        const reading = latestOf(history)
 
         anyReading ??= reading
         if (!lastMeasuredAt || reading.measuredAt > lastMeasuredAt) lastMeasuredAt = reading.measuredAt
         if (reading.source === 'simulated') hasSimulatedData = true
 
-        const level = classifyValue(reading.value, findThreshold(thresholds, user.id, indicator.id))
+        const { threshold } = effectiveThreshold(thresholds, user.id, indicator, history, reading)
+        const level = classifyValue(reading.value, threshold)
         if (level && (!worst || severityOf(level) > severityOf(worst.level))) worst = { level, reading }
       }
 

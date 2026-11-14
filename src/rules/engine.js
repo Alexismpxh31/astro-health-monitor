@@ -4,6 +4,7 @@
 
 import { db } from '../db/db.js'
 import i18n from '../i18n/index.js'
+import { computeBaseline, isBaselineThreshold, resolveThreshold } from './baseline.js'
 
 /**
  * @typedef {import('../models/reading.js').Reading} Reading
@@ -98,11 +99,26 @@ async function findThreshold(reading, indicator) {
   }
   if (!indicator) return null
   const rows = await db.thresholds.where('indicatorId').equals(indicator.id).toArray()
-  return (
+  const threshold =
     rows.find((row) => row.userId === reading.userId) ??
     rows.find((row) => row.userId == null) ??
     null
-  )
+  return resolvePersonalBaseline(threshold, reading)
+}
+
+/**
+ * For `mode: 'baseline'` thresholds (see ./baseline.js), converts the stored
+ * deviations into absolute limits around the user's usual value.
+ * Returns null while the baseline is still calibrating.
+ */
+async function resolvePersonalBaseline(threshold, reading) {
+  if (!isBaselineThreshold(threshold)) return threshold
+  const history = await db.readings
+    .where('[userId+indicatorCode]')
+    .equals([reading.userId, reading.indicatorCode])
+    .toArray()
+  const { value } = computeBaseline(history, reading.measuredAt, reading.id)
+  return resolveThreshold(threshold, value)
 }
 
 // ---------- Notifications ----------

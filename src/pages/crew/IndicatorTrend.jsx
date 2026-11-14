@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 import TrafficLight from '../../components/TrafficLight.jsx'
+import { BASELINE_MIN_READINGS } from '../../rules/baseline.js'
 import { CHART_COLORS, DISPLAY_CODE, localName } from './display.js'
 
 const BOUND_STYLES = {
@@ -42,14 +43,21 @@ function yDomain(points, threshold) {
  */
 export default function IndicatorTrend({ item, lang, isEditing, onEdit, children }) {
   const { t } = useTranslation()
-  const { indicator, system, unit, threshold, isPersonal, latest, level, series } = item
+  const { indicator, system, unit, rule, threshold, baseline, isPersonal, latest, level, series } = item
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   const points = series.map((reading) => ({ time: Date.parse(reading.measuredAt), value: reading.value }))
   const name = localName(indicator, lang)
 
   let thresholdLabel = t('crewDetail.noThreshold')
-  if (threshold) thresholdLabel = isPersonal ? t('crewDetail.personalThreshold') : t('crewDetail.generalThreshold')
+  if (rule) thresholdLabel = isPersonal ? t('crewDetail.personalThreshold') : t('crewDetail.generalThreshold')
+
+  let baselineLabel = null
+  if (baseline?.value != null) {
+    baselineLabel = t('crewDetail.baseline.usual', { value: numberFormat.format(baseline.value), unit })
+  } else if (baseline) {
+    baselineLabel = t('crewDetail.baseline.calibrating', { count: baseline.count, total: BASELINE_MIN_READINGS })
+  }
 
   return (
     <article className={`indicator-card is-${level.toLowerCase().replace('_', '-')}`}>
@@ -67,6 +75,7 @@ export default function IndicatorTrend({ item, lang, isEditing, onEdit, children
         <span className="indicator-latest-value">{numberFormat.format(latest.value)}</span>
         <span className="indicator-latest-unit">{unit}</span>
       </p>
+      {baselineLabel && <p className="indicator-baseline">{baselineLabel}</p>}
 
       <div className="indicator-chart" role="img" aria-label={t('crewDetail.chartLabel', { name, count: points.length })}>
         <ResponsiveContainer width="100%" height={170}>
@@ -89,6 +98,9 @@ export default function IndicatorTrend({ item, lang, isEditing, onEdit, children
               width={44}
               allowDecimals={false}
             />
+            {threshold?.baseline != null && (
+              <ReferenceLine y={threshold.baseline} stroke={CHART_COLORS.axis} strokeDasharray="1 3" />
+            )}
             {Object.entries(BOUND_STYLES).map(([key, style]) =>
               threshold?.[key] != null ? (
                 <ReferenceLine

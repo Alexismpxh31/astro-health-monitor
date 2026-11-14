@@ -97,7 +97,7 @@ export default function CrewMember() {
                         indicator={item.indicator}
                         userId={user.id}
                         surgeonId={surgeonId}
-                        threshold={item.threshold}
+                        threshold={item.rule}
                         unit={item.unit}
                         onClose={() => setEditingIndicatorId(null)}
                       />

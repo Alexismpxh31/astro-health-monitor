@@ -54,8 +54,13 @@
     "personalThreshold": "Personal threshold",
     "noThreshold": "No threshold set",
     "adjustThreshold": "Adjust threshold",
+    "baseline": {
+      "usual": "Usual value (last 24 h): {{value}} {{unit}}",
+      "calibrating": "Calibrating usual value: {{count}} of {{total}} readings"
+    },
     "threshold": {
       "hint": "Values in {{unit}}. Leave a field empty for no limit on that side.",
+      "hintBaseline": "Deviation from the crew member's usual value, in {{unit}} (e.g. −0.7 and 0.8). Leave a field empty for no limit on that side.",
       "criticalMin": "Critical minimum",
       "warnMin": "Normal minimum",
       "warnMax": "Normal maximum",

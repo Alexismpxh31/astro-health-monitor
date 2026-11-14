@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { db } from '../../db/db.js'
+import { isBaselineThreshold } from '../../rules/baseline.js'
 import { parseThresholdForm, THRESHOLD_FIELDS as FIELDS } from './thresholdForm.js'
 
 function toInput(value) {
@@ -54,6 +55,8 @@ export default function ThresholdEditor({ indicator, userId, surgeonId, threshol
         indicatorId: indicator.id,
         userId,
         ...result.values,
+        // Keep personal-baseline thresholds relative: the values are deviations.
+        ...(isBaselineThreshold(threshold) ? { mode: threshold.mode } : {}),
         updatedBy: surgeonId,
         validFrom: new Date().toISOString(),
         // TODO(sync): thresholds are not in SYNCABLE_TABLES yet; the server should win on conflicts.
@@ -64,7 +67,9 @@ export default function ThresholdEditor({ indicator, userId, surgeonId, threshol
 
   return (
     <form className="threshold-editor" onSubmit={handleSubmit} noValidate>
-      <p className="threshold-editor-hint muted">{t('crewDetail.threshold.hint', { unit })}</p>
+      <p className="threshold-editor-hint muted">
+        {t(isBaselineThreshold(threshold) ? 'crewDetail.threshold.hintBaseline' : 'crewDetail.threshold.hint', { unit })}
+      </p>
       <div className="threshold-editor-grid">
         {FIELDS.map((field) => (
           <label key={field} htmlFor={`${formId}-${field}`} className={`threshold-field is-${field}`}>

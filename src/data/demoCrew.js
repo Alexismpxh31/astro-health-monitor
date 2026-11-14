@@ -10,13 +10,17 @@ import demoCrew from './seed/demoCrew.json'
 // medical data.
 // TODO: replace with src/data/simulator.js output once it is implemented.
 
-const HISTORY_POINTS = 6
+// 12 points cover the 10 readings the personal baseline needs (src/rules/baseline.js).
+const HISTORY_POINTS = 12
 const HISTORY_STEP_MS = 5 * 60 * 1000
 const RELATIVE_NOISE = 0.015
+// Skin temperature is judged against the person's own baseline (±0.7 °C), so its noise must stay small.
+const NOISE_OVERRIDES = { TSKIN: 0.004 }
 const DECIMALS = { TSKIN: 1 }
 
 function simulateValue(code, baseline) {
-  const noisy = baseline + (Math.random() * 2 - 1) * RELATIVE_NOISE * baseline
+  const relativeNoise = NOISE_OVERRIDES[code] ?? RELATIVE_NOISE
+  const noisy = baseline + (Math.random() * 2 - 1) * relativeNoise * baseline
   const factor = 10 ** (DECIMALS[code] ?? 0)
   return Math.round(noisy * factor) / factor
 }
@@ -108,9 +112,11 @@ const DEMO_EVENTS = [
   { indicatorCode: 'SPO2', target: 87 },
   { indicatorCode: 'SPO2', target: 97 },
   { indicatorCode: 'SBP', target: 140 },
+  // Relative event: skin temperature rises above that person's usual value (fever-like).
+  { indicatorCode: 'TSKIN', delta: 2.4 },
 ]
 
-/** userId -> { values: { [code]: number }, event: { indicatorCode, target, ticksLeft } | null } */
+/** userId -> { values: { [code]: number }, event: { indicatorCode, target?, delta?, ticksLeft } | null } */
 const liveState = new Map()
 
 function nextLiveValues(userId, baselines) {
@@ -127,7 +133,8 @@ function nextLiveValues(userId, baselines) {
   }
 
   for (const [code, baseline] of Object.entries(baselines)) {
-    const target = state.event?.indicatorCode === code ? state.event.target : baseline
+    const event = state.event?.indicatorCode === code ? state.event : null
+    const target = event ? (event.target ?? baseline + event.delta) : baseline
     const current = state.values[code]
     const drifted = current + (target - current) * DRIFT
     state.values[code] = simulateValue(code, drifted)

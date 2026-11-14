@@ -141,6 +141,12 @@
   color: var(--muted);
 }
 
+.indicator-baseline {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
 .indicator-chart {
   min-width: 0;
 }

@@ -54,8 +54,13 @@
     "personalThreshold": "Umbral personalizado",
     "noThreshold": "Sin umbral definido",
     "adjustThreshold": "Ajustar umbral",
+    "baseline": {
+      "usual": "Valor habitual (últimas 24 h): {{value}} {{unit}}",
+      "calibrating": "Calibrando valor habitual: {{count}} de {{total}} lecturas"
+    },
     "threshold": {
       "hint": "Valores en {{unit}}. Deja un campo vacío si no hay límite de ese lado.",
+      "hintBaseline": "Desviación respecto al valor habitual del tripulante, en {{unit}} (ej.: −0,7 y 0,8). Deja un campo vacío si no hay límite de ese lado.",
       "criticalMin": "Mínimo crítico",
       "warnMin": "Mínimo normal",
       "warnMax": "Máximo normal",
