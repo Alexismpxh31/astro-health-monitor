@@ -110,15 +110,13 @@
       "offline": "You are offline. Pending readings stay on this device.",
       "error": "Could not complete the operation. Try again.",
       "wrongProfile": "This account belongs to a different crew profile.",
-      "linked": "Account linked. Pending heart rate readings can now sync.",
+      "linked": "Account linked. You can now sync records for your profile.",
       "linkRequired": "Link the Supabase account for your active crew profile.",
-      "sent_one": "{{count}} heart rate reading synced.",
-      "sent_other": "{{count}} heart rate readings synced.",
-      "empty": "No pending heart rate readings for this profile."
+      "summary": "Sent: {{pushed}} · Notes updated: {{pulled}} · Still pending: {{remaining}}"
     },
     "loading": "Checking pending records…",
-    "pendingCount_one": "{{count}} record pending sync",
-    "pendingCount_other": "{{count}} records pending sync",
+    "pendingCount_one": "{{count}} pending record for your profile",
+    "pendingCount_other": "{{count}} pending records for your profile",
     "notes": {
       "title": "Flight surgeon notes",
       "loading": "Loading notes…",

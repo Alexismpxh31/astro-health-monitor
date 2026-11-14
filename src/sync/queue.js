@@ -38,6 +38,20 @@ export async function getPendingCount() {
   return counts.reduce((total, count) => total + count, 0)
 }
 
+/** Pending records associated with a single profile, including blocked dependencies. */
+export async function getProfilePendingCount(userId) {
+  const [readings, alerts, checkins, messages] = await Promise.all([
+    db.readings.where('userId').equals(userId).filter((row) => row.syncStatus === 'pending').count(),
+    db.alerts.where('syncStatus').equals('pending').toArray(),
+    db.dailyCheckins.where('syncStatus').equals('pending').filter((row) => row.userId === userId).count(),
+    db.messages.where('syncStatus').equals('pending').filter(
+      (row) => row.senderId === userId || (row.recipientId === userId && Boolean(row.readAt)),
+    ).count(),
+  ])
+  const alertReadings = await db.readings.bulkGet(alerts.map((alert) => alert.readingId))
+  return readings + checkins + messages + alertReadings.filter((row) => row?.userId === userId).length
+}
+
 /** Profile id (users.id) linked to the Supabase Auth session, or null. */
 export async function getLinkedProfileId() {
   const { data, error } = await supabase.rpc('app_user_id')

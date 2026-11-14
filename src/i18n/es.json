@@ -110,15 +110,13 @@
       "offline": "Sin conexión. Las lecturas pendientes se conservan en este dispositivo.",
       "error": "No se pudo completar la operación. Inténtalo de nuevo.",
       "wrongProfile": "Esta cuenta pertenece a otro perfil de tripulación.",
-      "linked": "Cuenta vinculada. Ya puedes sincronizar las lecturas de pulso pendientes.",
+      "linked": "Cuenta vinculada. Ya puedes sincronizar los registros de tu perfil.",
       "linkRequired": "Vincula la cuenta de Supabase de tu perfil activo.",
-      "sent_one": "{{count}} lectura de pulso sincronizada.",
-      "sent_other": "{{count}} lecturas de pulso sincronizadas.",
-      "empty": "No hay lecturas de pulso pendientes para este perfil."
+      "summary": "Enviados: {{pushed}} · Notas actualizadas: {{pulled}} · Aún pendientes: {{remaining}}"
     },
     "loading": "Consultando registros pendientes…",
-    "pendingCount_one": "{{count}} registro pendiente de sincronizar",
-    "pendingCount_other": "{{count}} registros pendientes de sincronizar",
+    "pendingCount_one": "{{count}} registro pendiente de tu perfil",
+    "pendingCount_other": "{{count}} registros pendientes de tu perfil",
     "notes": {
       "title": "Notas del médico de vuelo",
       "loading": "Cargando notas…",
