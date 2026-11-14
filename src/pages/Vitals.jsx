@@ -57,16 +57,16 @@ export default function Vitals() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Flight Deck Header with Stream Control & Hackathon Anomaly Injections */}
-      <div className="p-5 rounded-2xl bg-[#0E1726]/90 border border-[#1E2E48] shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-mono text-cyan-400 font-bold uppercase tracking-widest flex items-center gap-2">
-            <Radio className="w-4 h-4 animate-pulse" />
+          <span className="text-xs font-mono text-blue-600 font-bold uppercase tracking-widest flex items-center gap-2">
+            <Radio className="w-4 h-4 text-blue-600 animate-pulse" />
             TELEMETRÍA EN DIRECTO · CHALECO INTELIGENTE ASTROSKIN (ISS)
           </span>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white mt-1 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-[#0E1B3E] mt-1 tracking-tight">
             Monitoreo Fisiológico en Tiempo Real
           </h1>
-          <p className="text-xs text-slate-400 font-mono mt-0.5">
+          <p className="text-xs text-slate-500 font-mono mt-0.5">
             Frecuencia de muestreo: 1.8s · Enlace de telemetría PWA & Dexie local
           </p>
         </div>
@@ -75,48 +75,48 @@ export default function Vitals() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={toggleStream}
-            className={`min-h-[44px] px-4 py-2 rounded-xl border text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-sm ${
+            className={`min-h-[44px] px-5 py-2.5 rounded-xl border text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-sm ${
               isRunning
-                ? 'bg-[#14223A] border-[#1E2E48] text-slate-200 hover:border-cyan-400'
-                : 'bg-emerald-950/60 border-emerald-500/80 text-emerald-300'
+                ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-[0_4px_14px_rgba(37,99,235,0.25)]'
+                : 'bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700'
             }`}
           >
-            {isRunning ? <Pause className="w-4 h-4 text-cyan-400" /> : <Play className="w-4 h-4 text-emerald-400" />}
+            {isRunning ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white" />}
             {isRunning ? 'Pausar Telemetría' : 'Reanudar Stream'}
           </button>
 
           {/* Hackathon Anomaly Injector Panel */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#070C15] border border-[#1E2E48]">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200">
             <button
               onClick={() => simulator.triggerAnomaly('hypoxia')}
               title="Disparar Hipoxia crítica en demo"
-              className="px-2.5 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-500/60 text-red-300 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
+              className="px-2.5 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 border border-red-200 text-red-700 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
             >
-              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
               Hipoxia (89%)
             </button>
             <button
               onClick={() => simulator.triggerAnomaly('tachycardia')}
               title="Disparar Taquicardia crítica en demo"
-              className="px-2.5 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/60 border border-amber-500/60 text-amber-300 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
+              className="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border border-amber-200 text-amber-800 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
             >
-              <Heart className="w-3.5 h-3.5 text-amber-400" />
+              <Heart className="w-3.5 h-3.5 text-amber-600" />
               Taquicardia (138)
             </button>
             <button
               onClick={() => simulator.triggerAnomaly('radiation')}
               title="Disparar Tormenta de Radiación SPE"
-              className="px-2.5 py-1.5 rounded-lg bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/60 text-purple-300 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
+              className="px-2.5 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 border border-purple-200 text-purple-700 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all"
             >
-              <Flame className="w-3.5 h-3.5 text-purple-400" />
+              <Flame className="w-3.5 h-3.5 text-purple-600" />
               Radiación (2.15)
             </button>
             <button
               onClick={() => simulator.triggerAnomaly('reset')}
               title="Restablecer todos los valores al estado nominal"
-              className="px-2 py-1.5 rounded-lg bg-[#14223A] hover:bg-slate-800 border border-[#1E2E48] text-slate-300 text-[11px] font-mono font-bold flex items-center gap-1 transition-all"
+              className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-mono font-bold flex items-center gap-1 transition-all shadow-xs"
             >
-              <RefreshCw className="w-3 h-3 text-cyan-400" />
+              <RefreshCw className="w-3 h-3 text-blue-600" />
               Reset
             </button>
           </div>
@@ -174,10 +174,10 @@ export default function Vitals() {
               <button
                 key={code}
                 onClick={() => setSelectedCode(code)}
-                className={`min-h-[42px] px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                   selectedCode === code
-                    ? 'bg-cyan-400 text-[#070C15] shadow-[0_0_12px_rgba(34,211,238,0.4)]'
-                    : 'bg-[#0E1726] border border-[#1E2E48] text-slate-300 hover:text-white hover:border-slate-600'
+                    ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)]'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-300 shadow-xs'
                 }`}
               >
                 {label}
@@ -185,7 +185,7 @@ export default function Vitals() {
             ))}
           </div>
 
-          <span className="text-xs font-mono text-slate-400">
+          <span className="text-xs font-mono text-slate-500 font-medium">
             Ventana rodante en tiempo real (últimos 30 puntos)
           </span>
         </div>

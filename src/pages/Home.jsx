@@ -12,6 +12,23 @@ import {
   ShieldAlert,
   Flame
 } from 'lucide-react';
+import AstronautModel3D from '../components/AstronautModel3D';
+
+const ZONE_MAP = {
+  cardiovascular: 'cardio',
+  cns: 'neuro',
+  musculoskeletal: 'musculo',
+  radiation: 'radiation',
+  immune: 'metabolic'
+};
+
+const REVERSE_ZONE_MAP = {
+  cardio: 'cardiovascular',
+  neuro: 'cns',
+  musculo: 'musculoskeletal',
+  radiation: 'radiation',
+  metabolic: 'immune'
+};
 
 const SUBSYSTEMS = [
   {
@@ -88,24 +105,24 @@ export default function Home() {
   const activeSystem = SUBSYSTEMS.find(s => s.id === selectedId) || SUBSYSTEMS[0];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1440px', margin: '0 auto', width: '100%' }}>
       
-      {/* 1. Top 3 Metric Cards Strip */}
+      {/* 1. Top 3 Metric Cards Strip (Aligned 1:1 with the 3 columns below) */}
       <div 
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '18px'
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: '20px'
         }}
       >
         {/* Card 1: Presión Arterial */}
         <div 
           style={{
             background: '#FFFFFF',
-            borderRadius: '20px',
-            border: '1px solid rgba(226, 232, 240, 0.9)',
+            borderRadius: '22px',
+            border: '1px solid rgba(220, 230, 245, 0.85)',
             boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.04)',
-            padding: '18px 22px',
+            padding: '18px 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -115,35 +132,36 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div 
               style={{
-                width: '46px',
-                height: '46px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
-                background: 'rgba(37, 99, 235, 0.1)',
+                background: '#EBF3FE',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB'
+                color: '#185EE0',
+                flexShrink: 0
               }}
             >
-              <Heart size={22} />
+              <Heart size={22} strokeWidth={2.2} />
             </div>
             <div>
-              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '500' }}>
+              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '500', marginBottom: '2px' }}>
                 Presión Arterial
               </div>
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#0E1B3E', letterSpacing: '-0.02em' }}>
-                MET 142/88 <span style={{ fontSize: '12px', fontWeight: '500', color: '#64748B' }}>mmHg</span>
+                MET 142/88 <span style={{ fontSize: '12.5px', fontWeight: '500', color: '#64748B' }}>mmHg</span>
               </div>
             </div>
           </div>
 
           {/* SVG ECG Line */}
-          <div style={{ width: '80px', height: '36px' }}>
-            <svg viewBox="0 0 80 36" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+          <div style={{ width: '84px', height: '36px', flexShrink: 0 }}>
+            <svg viewBox="0 0 84 36" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
               <path
-                d="M 0 18 L 22 18 L 27 6 L 33 30 L 39 12 L 44 22 L 48 18 L 80 18"
+                d="M 0 18 L 22 18 L 27 6 L 33 30 L 39 12 L 44 22 L 48 18 L 84 18"
                 fill="none"
-                stroke="#2563EB"
+                stroke="#185EE0"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -156,10 +174,10 @@ export default function Home() {
         <div 
           style={{
             background: '#FFFFFF',
-            borderRadius: '20px',
-            border: '1px solid rgba(226, 232, 240, 0.9)',
+            borderRadius: '22px',
+            border: '1px solid rgba(220, 230, 245, 0.85)',
             boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.04)',
-            padding: '18px 22px',
+            padding: '18px 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -169,30 +187,31 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div 
               style={{
-                width: '46px',
-                height: '46px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
-                background: 'rgba(37, 99, 235, 0.1)',
+                background: '#EBF3FE',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB'
+                color: '#185EE0',
+                flexShrink: 0
               }}
             >
-              <Wind size={22} />
+              <Wind size={22} strokeWidth={2.2} />
             </div>
             <div>
-              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '500' }}>
+              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '500', marginBottom: '2px' }}>
                 Oxígeno en Sangre
               </div>
-              <div style={{ fontSize: '16px', fontWeight: '800', color: '#10B981', letterSpacing: '-0.01em' }}>
-                NOMINAL <span style={{ fontSize: '12px', fontWeight: '500', color: '#0E1B3E' }}>(índice 94/100)</span>
+              <div style={{ fontSize: '16px', fontWeight: '800', color: '#059669', letterSpacing: '-0.01em' }}>
+                NOMINAL <span style={{ fontSize: '12.5px', fontWeight: '600', color: '#0E1B3E' }}>(índice 94/100)</span>
               </div>
             </div>
           </div>
 
           {/* Circular Gauge ~94% */}
-          <div style={{ width: '44px', height: '44px', position: 'relative' }}>
+          <div style={{ width: '44px', height: '44px', position: 'relative', flexShrink: 0 }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
               <circle
                 cx="18"
@@ -207,7 +226,7 @@ export default function Home() {
                 cy="18"
                 r="15"
                 fill="none"
-                stroke="#0284C7"
+                stroke="#185EE0"
                 strokeWidth="3.5"
                 strokeDasharray="94.2"
                 strokeDashoffset="12"
@@ -221,10 +240,10 @@ export default function Home() {
         <div 
           style={{
             background: '#FFFFFF',
-            borderRadius: '20px',
-            border: '1px solid rgba(226, 232, 240, 0.9)',
+            borderRadius: '22px',
+            border: '1px solid rgba(220, 230, 245, 0.85)',
             boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.04)',
-            padding: '18px 22px',
+            padding: '18px 24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -234,20 +253,21 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div 
               style={{
-                width: '46px',
-                height: '46px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
-                background: 'rgba(37, 99, 235, 0.1)',
+                background: '#EBF3FE',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB'
+                color: '#185EE0',
+                flexShrink: 0
               }}
             >
-              <Thermometer size={22} />
+              <Thermometer size={22} strokeWidth={2.2} />
             </div>
             <div>
-              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '500' }}>
+              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '500', marginBottom: '2px' }}>
                 Temperatura Corporal
               </div>
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#0E1B3E', letterSpacing: '-0.02em' }}>
@@ -257,7 +277,7 @@ export default function Home() {
           </div>
 
           {/* Circular Gauge ~35% */}
-          <div style={{ width: '44px', height: '44px', position: 'relative' }}>
+          <div style={{ width: '44px', height: '44px', position: 'relative', flexShrink: 0 }}>
             <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
               <circle
                 cx="18"
@@ -287,8 +307,8 @@ export default function Home() {
       <div 
         style={{
           display: 'grid',
-          gridTemplateColumns: '1.05fr 1fr 1.05fr',
-          gap: '22px',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: '20px',
           alignItems: 'stretch'
         }}
       >
@@ -390,7 +410,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Center Column: Astronaut Model on Holographic Pedestal */}
+        {/* Center Column: Live 3D Astronaut Model on Holographic Pedestal */}
         <div 
           style={{
             position: 'relative',
@@ -398,156 +418,21 @@ export default function Home() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            minHeight: '380px'
+            minHeight: '480px',
+            width: '100%',
+            overflow: 'visible'
           }}
         >
-          {/* Concentric Glow Rings in background */}
-          <div 
-            style={{
-              position: 'absolute',
-              bottom: '10px',
-              width: '260px',
-              height: '90px',
-              background: 'radial-gradient(ellipse at center, rgba(34, 211, 238, 0.3) 0%, rgba(59, 130, 246, 0.15) 45%, transparent 70%)',
-              pointerEvents: 'none'
-            }} 
-          />
-
-          {/* Full-body Astronaut with Pedestal */}
-          <img 
-            src="/astronaut_blended.png"
-            alt="Astronauta Artemis xEMU"
-            style={{
-              maxHeight: '410px',
-              width: 'auto',
-              objectFit: 'contain',
-              zIndex: 5,
-              filter: 'drop-shadow(0 15px 25px rgba(11, 27, 61, 0.12))'
+          <AstronautModel3D
+            embedded={true}
+            height="480px"
+            selectedZone={ZONE_MAP[selectedId] || 'cardio'}
+            onSelectZone={(zona) => {
+              const mapped = REVERSE_ZONE_MAP[zona.id] || 'cardiovascular';
+              setSelectedId(mapped);
+              console.log('Zona seleccionada:', zona.id, zona.value);
             }}
           />
-
-          {/* Interactive Biological Target Hotspots */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-            {/* Head (Neurocognitivo) */}
-            <div 
-              onClick={() => setSelectedId('cns')}
-              title="Sistema Neurocognitivo"
-              style={{
-                position: 'absolute',
-                top: '20%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '36px',
-                height: '36px',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {selectedId === 'cns' && (
-                <div style={{
-                  position: 'absolute',
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  border: '2px solid #3B82F6',
-                  boxShadow: '0 0 12px rgba(59, 130, 246, 0.6)'
-                }} className="sonar-ring" />
-              )}
-            </div>
-
-            {/* Chest (Cardiovascular) */}
-            <div 
-              onClick={() => setSelectedId('cardiovascular')}
-              title="Sistema Cardiovascular"
-              style={{
-                position: 'absolute',
-                top: '36%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '40px',
-                height: '40px',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {selectedId === 'cardiovascular' && (
-                <div style={{
-                  position: 'absolute',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  border: '2px solid #2563EB',
-                  boxShadow: '0 0 12px rgba(37, 99, 235, 0.6)'
-                }} className="sonar-ring" />
-              )}
-            </div>
-
-            {/* Pelvis/Legs (Óseo-Muscular) */}
-            <div 
-              onClick={() => setSelectedId('musculoskeletal')}
-              title="Sistema Óseo-Muscular"
-              style={{
-                position: 'absolute',
-                top: '65%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '50px',
-                height: '50px',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {selectedId === 'musculoskeletal' && (
-                <div style={{
-                  position: 'absolute',
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '50%',
-                  border: '2px solid #10B981',
-                  boxShadow: '0 0 12px rgba(16, 185, 129, 0.6)'
-                }} className="sonar-ring" />
-              )}
-            </div>
-
-            {/* Right Shoulder (Dosímetro Radiación) */}
-            <div 
-              onClick={() => setSelectedId('radiation')}
-              title="Dosímetro de Radiación"
-              style={{
-                position: 'absolute',
-                top: '30%',
-                left: '59%',
-                transform: 'translate(-50%, -50%)',
-                width: '30px',
-                height: '30px',
-                pointerEvents: 'auto',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {selectedId === 'radiation' && (
-                <div style={{
-                  position: 'absolute',
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  border: '2px solid #059669',
-                  boxShadow: '0 0 12px rgba(5, 150, 105, 0.6)'
-                }} className="sonar-ring" />
-              )}
-            </div>
-          </div>
         </div>
 
         {/* Right Column: Ficha Clínica NASA */}

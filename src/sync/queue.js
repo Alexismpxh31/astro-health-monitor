@@ -47,7 +47,9 @@ export async function syncPending() {
 
         if (error) {
           // If RLS blocks anon write or server error, record as failed
-          console.warn(`[sync] Failed to push ${table}/${row.id}:`, error.message)
+          if (failed === 0) {
+            console.warn(`[sync] Sincronización en espera: ${table} requiere permisos RLS o mapeo de esquema en Supabase (${error.message}).`)
+          }
           failed++
         } else {
           // Mark as synced locally

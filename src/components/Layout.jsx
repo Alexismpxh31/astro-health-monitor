@@ -21,7 +21,7 @@ export default function Layout() {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F0F5FA', position: 'relative' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F0F5FA', position: 'relative', overflowX: 'hidden' }}>
       
       {/* Earth Atmosphere Orbital Glow in Top-Right Corner */}
       <div 
@@ -29,15 +29,15 @@ export default function Layout() {
           position: 'absolute',
           top: 0,
           right: 0,
-          width: '450px',
-          height: '180px',
+          width: '680px',
+          height: '340px',
           backgroundImage: 'url(/earth_corner.png)',
-          backgroundSize: 'contain',
+          backgroundSize: 'cover',
           backgroundPosition: 'top right',
           backgroundRepeat: 'no-repeat',
           pointerEvents: 'none',
           zIndex: 1,
-          opacity: 0.95
+          opacity: 1
         }} 
       />
 
@@ -173,21 +173,22 @@ export default function Layout() {
           </div>
 
           {/* Right Status Pills */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', zIndex: 10 }}>
             {/* Online Status Pill */}
             <div 
               style={{
-                background: 'rgba(8, 22, 59, 0.88)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                padding: '6px 14px',
+                background: 'rgba(3, 11, 30, 0.78)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255, 255, 255, 0.16)',
+                padding: '6px 16px',
                 borderRadius: '9999px',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
                 color: '#FFFFFF',
                 fontSize: '12px',
-                fontWeight: '600'
+                fontWeight: '600',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
               }}
             >
               <span 
@@ -195,20 +196,23 @@ export default function Layout() {
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  background: '#10B981',
-                  boxShadow: '0 0 8px #10B981'
+                  background: '#22C55E',
+                  boxShadow: '0 0 10px #22C55E'
                 }} 
               />
               <span>En línea</span>
             </div>
 
+            {/* Vertical subtle divider */}
+            <div style={{ width: '1px', height: '24px', background: 'rgba(255, 255, 255, 0.22)' }} />
+
             {/* Astronaut Profile Pill */}
             <div 
               style={{
-                background: 'rgba(8, 22, 59, 0.88)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                padding: '5px 14px 5px 8px',
+                background: 'rgba(3, 11, 30, 0.78)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255, 255, 255, 0.16)',
+                padding: '5px 16px 5px 8px',
                 borderRadius: '9999px',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -216,7 +220,8 @@ export default function Layout() {
                 color: '#FFFFFF',
                 fontSize: '12px',
                 fontWeight: '700',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
               }}
             >
               <div 
@@ -224,7 +229,7 @@ export default function Layout() {
                   width: '24px',
                   height: '24px',
                   borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.22)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -233,7 +238,7 @@ export default function Layout() {
                 <User size={14} className="text-white" />
               </div>
               <span>CDR. WALTER</span>
-              <ChevronDown size={14} className="text-slate-400" />
+              <ChevronDown size={14} className="text-slate-300" />
             </div>
           </div>
         </header>

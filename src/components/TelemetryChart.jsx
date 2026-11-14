@@ -5,11 +5,11 @@ export const TelemetryChart = ({
   threshold,
   unit = '',
   title = '',
-  color = '#22D3EE'
+  color = '#185EE0'
 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="h-64 flex items-center justify-center border border-dashed border-space-border rounded-xl text-space-muted font-mono text-xs">
+      <div className="h-64 flex items-center justify-center border border-dashed border-slate-200 rounded-2xl text-slate-400 font-mono text-xs bg-white">
         Esperando telemetría de vuelo...
       </div>
     );
@@ -46,13 +46,13 @@ export const TelemetryChart = ({
   const yCritMin = threshold ? getY(threshold.minCritical) : null;
 
   return (
-    <div className="w-full bg-space-surface/90 border border-space-border p-4 rounded-xl space-y-3">
+    <div className="w-full bg-white border border-slate-200/90 p-5 rounded-2xl shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] space-y-3">
       {title && (
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-mono tracking-wider uppercase text-space-muted">
+          <h4 className="text-xs font-mono tracking-wider uppercase text-slate-500 font-bold">
             {title}
           </h4>
-          <span className="text-xs font-mono text-space-cyan font-bold tabular-nums">
+          <span className="text-xs font-mono text-blue-600 font-extrabold tabular-nums">
             Último: {data[data.length - 1]?.value} {unit}
           </span>
         </div>
@@ -61,9 +61,9 @@ export const TelemetryChart = ({
       <div className="w-full overflow-x-auto">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-56 select-none font-mono text-[10px]">
           {/* Background grid */}
-          <line x1={padding.left} y1={padding.top} x2={width - padding.right} y2={padding.top} stroke="#1E293B" strokeDasharray="3 3" />
-          <line x1={padding.left} y1={height / 2} x2={width - padding.right} y2={height / 2} stroke="#1E293B" strokeDasharray="3 3" />
-          <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#1E293B" />
+          <line x1={padding.left} y1={padding.top} x2={width - padding.right} y2={padding.top} stroke="#E2E8F0" strokeDasharray="3 3" />
+          <line x1={padding.left} y1={height / 2} x2={width - padding.right} y2={height / 2} stroke="#E2E8F0" strokeDasharray="3 3" />
+          <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#CBD5E1" />
 
           {/* NASA Normal Reference Band */}
           {yNormalMin !== null && yNormalMax !== null && (
@@ -73,7 +73,7 @@ export const TelemetryChart = ({
               width={width - padding.left - padding.right}
               height={Math.abs(yNormalMin - yNormalMax)}
               fill="#22C55E"
-              fillOpacity="0.08"
+              fillOpacity="0.1"
             />
           )}
 
@@ -89,7 +89,7 @@ export const TelemetryChart = ({
                 strokeWidth="1.2"
                 strokeDasharray="4 4"
               />
-              <text x={width - padding.right - 5} y={yCritMax - 4} textAnchor="end" fill="#EF4444">
+              <text x={width - padding.right - 5} y={yCritMax - 4} textAnchor="end" fill="#DC2626" fontWeight="bold">
                 LÍMITE CRÍTICO ALTO ({threshold.maxCritical})
               </text>
             </g>
@@ -106,7 +106,7 @@ export const TelemetryChart = ({
                 strokeWidth="1.2"
                 strokeDasharray="4 4"
               />
-              <text x={width - padding.right - 5} y={yCritMin + 12} textAnchor="end" fill="#EF4444">
+              <text x={width - padding.right - 5} y={yCritMin + 12} textAnchor="end" fill="#DC2626" fontWeight="bold">
                 LÍMITE CRÍTICO BAJO ({threshold.minCritical})
               </text>
             </g>

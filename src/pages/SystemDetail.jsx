@@ -59,14 +59,14 @@ export default function SystemDetail() {
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={() => navigate('/')}
-          className="min-h-[44px] px-4 py-2 rounded-xl bg-[#0E1726] border border-[#1E2E48] text-xs font-mono font-bold text-slate-300 hover:text-white hover:border-cyan-400 flex items-center gap-2 transition-all shadow-sm"
+          className="min-h-[44px] px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-mono font-bold text-slate-700 hover:text-blue-600 hover:border-blue-400 flex items-center gap-2 transition-all shadow-xs"
         >
-          <ArrowLeft className="w-4 h-4 text-cyan-400" />
+          <ArrowLeft className="w-4 h-4 text-blue-600" />
           Volver a Bio-HUD Anatómico
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-slate-400">ESTADO CLÍNICO:</span>
+        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-slate-200/90 shadow-xs">
+          <span className="text-xs font-mono text-slate-500 font-bold">ESTADO CLÍNICO:</span>
           <TrafficLight level="normal" size="md" />
         </div>
       </div>
@@ -81,8 +81,8 @@ export default function SystemDetail() {
               onClick={() => setActiveSystemId(s.id)}
               className={`min-h-[44px] px-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider transition-all flex items-center gap-2 ${
                 isActive
-                  ? 'bg-cyan-400 text-[#070C15] shadow-[0_0_15px_rgba(34,211,238,0.35)]'
-                  : 'bg-[#0E1726] border border-[#1E2E48] text-slate-300 hover:text-white hover:border-slate-600'
+                  ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)]'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-300 shadow-xs'
               }`}
             >
               <span>{s.name}</span>
@@ -92,35 +92,35 @@ export default function SystemDetail() {
       </div>
 
       {/* System Technical Sheet */}
-      <div className="bg-[#0E1726]/95 border border-[#1E2E48] p-6 rounded-2xl shadow-lg space-y-4">
+      <div className="bg-white border border-slate-200/90 p-6 rounded-2xl shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-widest font-bold flex items-center gap-1.5">
+          <span className="text-[11px] font-mono text-blue-600 uppercase tracking-widest font-bold flex items-center gap-1.5">
             <Flame size={14} />
             PELIGRO NASA ASOCIADO: {system.hazard}
           </span>
-          <span className="text-xs font-mono px-2.5 py-1 rounded bg-[#14223A] border border-[#1E2E48] text-slate-300 font-semibold">
+          <span className="text-xs font-mono px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 font-bold">
             MARCO RIDGE NASA
           </span>
         </div>
 
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-[#0E1B3E] tracking-tight">
             {system.name}
           </h1>
-          <span className="text-xs font-mono text-cyan-300/90 block mt-1 font-semibold">
+          <span className="text-xs font-mono text-slate-600 block mt-1 font-semibold">
             {system.riskName}
           </span>
         </div>
 
-        <p className="text-sm text-slate-300 leading-relaxed max-w-4xl">
+        <p className="text-sm text-slate-600 leading-relaxed max-w-4xl">
           {system.description}
         </p>
 
         {/* Research Protocol Badge */}
-        <div className="p-4 rounded-xl bg-[#14223A]/80 border border-[#1E2E48] flex items-start gap-3 text-xs text-slate-200 font-mono">
-          <Info className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs text-slate-700 font-mono">
+          <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
-            <strong className="text-cyan-400">Protocolo de Investigación NASA:</strong> {system.researchProtocol}
+            <strong className="text-blue-700 font-bold">Protocolo de Investigación NASA:</strong> {system.researchProtocol}
           </div>
         </div>
       </div>
@@ -134,31 +134,31 @@ export default function SystemDetail() {
             threshold={primaryIndicator}
             unit={primaryIndicator.unit}
             title={`Tendencia Histórica · ${primaryIndicator.name}`}
-            color="#22D3EE"
+            color="#185EE0"
           />
 
           {/* NASA Limits Matrix */}
-          <div className="bg-[#0E1726]/95 border border-[#1E2E48] p-4 rounded-xl text-xs font-mono shadow-md">
-            <h4 className="text-cyan-400 uppercase tracking-wider mb-3 font-bold flex items-center gap-2">
-              <Shield className="w-4 h-4" />
+          <div className="bg-white border border-slate-200/90 p-5 rounded-2xl shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)] text-xs font-mono">
+            <h4 className="text-[#0E1B3E] uppercase tracking-wider mb-3 font-extrabold flex items-center gap-2">
+              <Shield className="w-4 h-4 text-blue-600" />
               Límites Clínicos NASA HRP ({primaryIndicator.code})
             </h4>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-3 rounded-lg bg-[#14223A] border border-red-500/30">
-                <span className="block text-[10px] text-red-400 font-bold uppercase tracking-wider">CRÍTICO BAJO</span>
-                <span className="text-base font-extrabold text-white tabular-nums">
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200">
+                <span className="block text-[10px] text-red-600 font-bold uppercase tracking-wider">CRÍTICO BAJO</span>
+                <span className="text-base font-extrabold text-red-700 tabular-nums">
                   &lt; {primaryIndicator.minCritical} {primaryIndicator.unit}
                 </span>
               </div>
-              <div className="p-3 rounded-lg bg-[#14223A] border border-emerald-500/30">
-                <span className="block text-[10px] text-emerald-400 font-bold uppercase tracking-wider">RANGO NOMINAL</span>
-                <span className="text-base font-extrabold text-white tabular-nums">
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                <span className="block text-[10px] text-emerald-700 font-bold uppercase tracking-wider">RANGO NOMINAL</span>
+                <span className="text-base font-extrabold text-emerald-800 tabular-nums">
                   {primaryIndicator.minNormal} - {primaryIndicator.maxNormal} {primaryIndicator.unit}
                 </span>
               </div>
-              <div className="p-3 rounded-lg bg-[#14223A] border border-red-500/30">
-                <span className="block text-[10px] text-red-400 font-bold uppercase tracking-wider">CRÍTICO ALTO</span>
-                <span className="text-base font-extrabold text-white tabular-nums">
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200">
+                <span className="block text-[10px] text-red-600 font-bold uppercase tracking-wider">CRÍTICO ALTO</span>
+                <span className="text-base font-extrabold text-red-700 tabular-nums">
                   &gt; {primaryIndicator.maxCritical} {primaryIndicator.unit}
                 </span>
               </div>
@@ -168,13 +168,13 @@ export default function SystemDetail() {
 
         {/* Right: Prescribed NASA Countermeasures */}
         <div className="lg:col-span-5 space-y-3">
-          <div className="bg-[#0E1726]/95 border border-[#1E2E48] p-5 rounded-2xl space-y-4 shadow-md">
+          <div className="bg-white border border-slate-200/90 p-6 rounded-2xl space-y-4 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.04)]">
             <div>
-              <h3 className="text-sm font-mono tracking-wider uppercase text-cyan-400 flex items-center gap-2 font-bold">
-                <ClipboardList className="w-4 h-4" />
+              <h3 className="text-sm font-mono tracking-wider uppercase text-[#0E1B3E] flex items-center gap-2 font-bold">
+                <ClipboardList className="w-4 h-4 text-blue-600" />
                 Contramedidas Clínicas Prescritas (HRP)
               </h3>
-              <p className="text-xs text-slate-400 font-mono mt-1">
+              <p className="text-xs text-slate-500 font-mono mt-1">
                 Acciones obligatorias validadas por los estudios CIPHER y Standard Measures para mitigar este riesgo:
               </p>
             </div>
@@ -188,8 +188,8 @@ export default function SystemDetail() {
                     onClick={() => handleCompleteCountermeasure(idx)}
                     className={`p-3.5 rounded-xl border text-xs leading-relaxed flex items-start gap-3 font-mono cursor-pointer transition-all select-none ${
                       isDone
-                        ? 'bg-emerald-950/30 border-emerald-500/60 text-emerald-200'
-                        : 'bg-[#14223A] border-[#1E2E48] text-slate-200 hover:border-slate-500 hover:bg-[#1A2C4B]'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900 shadow-xs'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/40'
                     }`}
                   >
                     <button
@@ -197,8 +197,8 @@ export default function SystemDetail() {
                       aria-label="Registrar cumplimiento"
                       className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold mt-0.5 transition-colors ${
                         isDone
-                          ? 'bg-emerald-500 text-[#070C15]'
-                          : 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/40'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-blue-100 text-blue-700 border border-blue-300'
                       }`}
                     >
                       {isDone ? <CheckCircle2 size={13} /> : idx + 1}
@@ -208,7 +208,7 @@ export default function SystemDetail() {
                         {cm}
                       </span>
                       {isDone && (
-                        <span className="block text-[10px] text-emerald-400 font-bold mt-1 uppercase">
+                        <span className="block text-[10px] text-emerald-700 font-bold mt-1 uppercase">
                           ✓ Completado por CDR Walter
                         </span>
                       )}
@@ -218,8 +218,8 @@ export default function SystemDetail() {
               })}
             </ul>
 
-            <div className="p-3 rounded-xl bg-[#070C15] border border-[#1E2E48] flex items-center gap-2 text-[11px] font-mono text-slate-400">
-              <Award size={14} className="text-amber-400" />
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-[11px] font-mono text-slate-500">
+              <Award size={14} className="text-amber-500" />
               <span>Haz clic en una contramedida para registrar su ejecución médica.</span>
             </div>
           </div>

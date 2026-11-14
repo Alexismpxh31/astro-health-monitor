@@ -217,7 +217,10 @@ function createSuitTextures() {
 
 export default function AstronautModel3D({
   telemetry = DEFAULT_TELEMETRY,
-  onSelectZone
+  onSelectZone,
+  selectedZone: propSelectedZone,
+  embedded = false,
+  height = '100%'
 }) {
   const mountRef = useRef(null);
   const autoRotateRef = useRef(false);
@@ -227,6 +230,13 @@ export default function AstronautModel3D({
   const [hoveredZone, setHoveredZone] = useState(null);
   const [autoRotate, setAutoRotate] = useState(false);
   const [showHud, setShowHud] = useState(true);
+
+  useEffect(() => {
+    if (propSelectedZone) {
+      setSelectedZone(propSelectedZone);
+      selectedZoneRef.current = propSelectedZone;
+    }
+  }, [propSelectedZone]);
 
   const activeData = telemetry[selectedZone] || DEFAULT_TELEMETRY[selectedZone];
   const badgeStyle = STATUS_BADGE[activeData?.status || 'optimal'];
@@ -252,18 +262,24 @@ export default function AstronautModel3D({
 
     // 1. Escena limpia estilo estudio claro (como la referencia)
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xeef4fc);
-    scene.fog = new THREE.Fog(0xeef4fc, 6.5, 14);
+    if (!embedded) {
+      scene.background = new THREE.Color(0xeef4fc);
+      scene.fog = new THREE.Fog(0xeef4fc, 6.5, 14);
+    }
 
     const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 50);
-    camera.position.set(0, 1.15, 4.15);
+    camera.position.set(0, embedded ? 1.05 : 1.15, embedded ? 3.9 : 4.15);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
+      alpha: true,
       powerPreference: 'high-performance'
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    if (embedded) {
+      renderer.setClearColor(0x000000, 0);
+    }
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -776,35 +792,79 @@ export default function AstronautModel3D({
   }, []);
 
   return (
-    <div style={styles.wrapper}>
+    <div style={{
+      ...styles.wrapper,
+      height: embedded ? (height || '460px') : '660px',
+      backgroundColor: embedded ? 'transparent' : '#eef4fc',
+      border: embedded ? 'none' : '1px solid #cbd5e1',
+      boxShadow: embedded ? 'none' : '0 12px 32px rgba(15, 23, 42, 0.08)',
+      borderRadius: embedded ? '0' : '18px'
+    }}>
       <div ref={mountRef} style={styles.canvas} />
 
-      {/* Controles superiores */}
-      <div style={styles.topBar}>
-        <div>
-          <span style={styles.tag}>MODELO 3D INTERACTIVO · EVA SUIT</span>
-          <h3 style={styles.title}>Gemelo Digital del Astronauta</h3>
-        </div>
-        <div style={styles.btnGroup}>
+      {/* Embedded 360 Hint and Auto-rotate button */}
+      {embedded && (
+        <div style={{
+          position: 'absolute',
+          bottom: '12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          zIndex: 10
+        }}>
           <button
             type="button"
             onClick={() => setAutoRotate((v) => !v)}
-            style={styles.btn}
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              color: '#0E1B3E',
+              border: '1px solid rgba(203, 213, 225, 0.9)',
+              borderRadius: '9999px',
+              padding: '5px 14px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.06)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
           >
-            {autoRotate ? 'Detener giro 360°' : 'Girar 360°'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowHud((v) => !v)}
-            style={styles.btn}
-          >
-            {showHud ? 'Ocultar HUD' : 'Mostrar HUD'}
+            <span>{autoRotate ? '⏸ Detener Giro 360°' : '🔄 Auto-Giro 360°'}</span>
           </button>
         </div>
-      </div>
+      )}
 
-      {/* Panel de telemetría acoplado */}
-      {showHud && activeData && (
+      {/* Controles superiores (solo en modo standalone) */}
+      {!embedded && (
+        <div style={styles.topBar}>
+          <div>
+            <span style={styles.tag}>MODELO 3D INTERACTIVO · EVA SUIT</span>
+            <h3 style={styles.title}>Gemelo Digital del Astronauta</h3>
+          </div>
+          <div style={styles.btnGroup}>
+            <button
+              type="button"
+              onClick={() => setAutoRotate((v) => !v)}
+              style={styles.btn}
+            >
+              {autoRotate ? 'Detener giro 360°' : 'Girar 360°'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowHud((v) => !v)}
+              style={styles.btn}
+            >
+              {showHud ? 'Ocultar HUD' : 'Mostrar HUD'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Panel de telemetría acoplado (solo en modo standalone) */}
+      {!embedded && showHud && activeData && (
         <>
           <div style={styles.zoneList}>
             {Object.values(telemetry).map((item) => {
