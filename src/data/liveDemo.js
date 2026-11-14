@@ -1,7 +1,9 @@
+import { getSession, ROLE } from '../auth/session.js'
 import { addLiveDemoReadings } from './demoCrew.js'
 
 // Live demo controller shared by every page: keeps running while the flight
-// surgeon moves between the crew table and a crew member's detail.
+// surgeon moves between the crew table and a crew member's detail, and stops by
+// itself when the flight surgeon logs out.
 
 const LIVE_INTERVAL_MS = 2500
 
@@ -16,6 +18,10 @@ function setStatus(next) {
 }
 
 async function tick() {
+  if (getSession()?.roleCode !== ROLE.FLIGHT_SURGEON) {
+    stopLiveDemo() // logged out (or another user logged in): never write in the background
+    return
+  }
   if (isWriting) return // previous write still running: skip this tick
   isWriting = true
   try {

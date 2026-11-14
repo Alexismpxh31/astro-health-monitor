@@ -47,7 +47,8 @@
     "empty": "No astronauts are assigned to this mission.",
     "loadError": "The demo crew could not be prepared. Reload the page.",
     "simulateError": "Simulated readings could not be generated. Try again.",
-    "medicalOfficer": "Medical officer"
+    "medicalOfficer": "Medical officer",
+    "officerView": "Medical officer view (read-only): you can check your crewmates in an emergency. Thresholds and notes are managed by the flight surgeon."
   },
   "crewDetail": {
     "back": "Back to crew",

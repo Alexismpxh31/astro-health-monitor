@@ -10,6 +10,8 @@ import { verifyPin } from './pin.js'
  * @typedef {Object} Session
  * @property {string} userId
  * @property {string|null} roleCode - roles.code of the user ('astronaut' | 'flight_surgeon').
+ * @property {boolean} [isMedicalOfficer] - Astronaut flagged as crew medical officer (crew table):
+ *   may view crewmates' health in read-only mode.
  * @property {string} startedAt - ISO 8601 UTC timestamp.
  *
  * @typedef {Object} LoginResult
@@ -143,7 +145,13 @@ export async function login(userId, pin) {
   locks.delete(userId)
   saveLocks()
   const role = await db.roles.get(user.roleId)
-  const session = { userId, roleCode: role?.code ?? null, startedAt: new Date().toISOString() }
+  const crewRows = await db.crew.where('userId').equals(userId).toArray()
+  const session = {
+    userId,
+    roleCode: role?.code ?? null,
+    isMedicalOfficer: crewRows.some((row) => row.isMedicalOfficer),
+    startedAt: new Date().toISOString(),
+  }
   setSession(session)
   return { ok: true, session }
 }

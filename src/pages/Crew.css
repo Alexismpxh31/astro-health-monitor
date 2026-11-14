@@ -238,3 +238,14 @@
     text-align: right;
   }
 }
+
+/* Read-only view for the crew medical officer. */
+.crew-readonly-note {
+  margin: 0 0 1rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  background-color: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+}

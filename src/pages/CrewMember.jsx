@@ -10,6 +10,7 @@ import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
 import { loadMemberData } from './crew/memberData.js'
 import NotesPanel from './crew/NotesPanel.jsx'
 import ThresholdEditor from './crew/ThresholdEditor.jsx'
+import { useCanManageCrew } from './crew/useCrewAccess.js'
 import './CrewMember.css'
 
 // Flight surgeon view of one crew member: trends per indicator, personal thresholds,
@@ -22,6 +23,7 @@ export default function CrewMember() {
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const data = useLiveQuery(() => loadMemberData(userId), [userId])
   const [editingIndicatorId, setEditingIndicatorId] = useState(null)
+  const canManage = useCanManageCrew()
 
   useEffect(() => {
     ensureDemoCrew().catch((error) => console.error('[crew] Could not prepare the demo crew', error))
@@ -68,7 +70,7 @@ export default function CrewMember() {
           <TrafficLight level={overall} />
         </div>
         <div className="crew-detail-actions">
-          <LiveDemoToggle />
+          {canManage && <LiveDemoToggle />}
           <button type="button" onClick={handleExport} disabled={exportRows.length === 0}>
             {t('crewDetail.exportCsv')}
           </button>
@@ -92,9 +94,9 @@ export default function CrewMember() {
                     item={item}
                     lang={lang}
                     isEditing={isEditing}
-                    onEdit={() => setEditingIndicatorId(isEditing ? null : item.indicator.id)}
+                    onEdit={canManage ? () => setEditingIndicatorId(isEditing ? null : item.indicator.id) : undefined}
                   >
-                    {isEditing && (
+                    {canManage && isEditing && (
                       <ThresholdEditor
                         indicator={item.indicator}
                         userId={user.id}
@@ -112,14 +114,18 @@ export default function CrewMember() {
         </div>
 
         <aside className="crew-detail-side">
-          <NotesPanel
-            key={user.id}
-            recipientId={user.id}
-            senderId={surgeonId}
-            notes={notes}
-            lang={lang}
-            initialDraft={noteDraft}
-          />
+          {canManage ? (
+            <NotesPanel
+              key={user.id}
+              recipientId={user.id}
+              senderId={surgeonId}
+              notes={notes}
+              lang={lang}
+              initialDraft={noteDraft}
+            />
+          ) : (
+            <p className="crew-readonly-note">{t('crew.officerView')}</p>
+          )}
         </aside>
       </div>
     </section>

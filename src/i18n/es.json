@@ -47,7 +47,8 @@
     "empty": "No hay astronautas asignados a esta misión.",
     "loadError": "No se pudo preparar la tripulación de demostración. Recarga la página.",
     "simulateError": "No se pudieron generar lecturas simuladas. Inténtalo de nuevo.",
-    "medicalOfficer": "Oficial médico"
+    "medicalOfficer": "Oficial médico",
+    "officerView": "Vista de oficial médico (solo lectura): puedes ver el estado de tus compañeros en una emergencia. Los umbrales y las notas los gestiona el médico de vuelo."
   },
   "crewDetail": {
     "back": "Volver a la tripulación",

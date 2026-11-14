@@ -28,8 +28,9 @@ export default function App() {
             <Route path="/checkin" element={<Checkin />} />
             <Route path="/sensors" element={<Sensors />} />
             <Route path="/comms" element={<Comms />} />
-            {/* Flight surgeon only: astronauts are sent back to the home page. */}
-            <Route element={<RequireSession roleCode={ROLE.FLIGHT_SURGEON} />}>
+            {/* Flight surgeon, plus the crew medical officer in read-only mode.
+                Other astronauts are sent back to the home page. */}
+            <Route element={<RequireSession roleCode={ROLE.FLIGHT_SURGEON} allowMedicalOfficer />}>
               <Route path="/crew" element={<Crew />} />
               <Route path="/crew/:userId" element={<CrewMember />} />
             </Route>

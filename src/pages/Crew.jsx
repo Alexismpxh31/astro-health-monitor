@@ -9,6 +9,7 @@ import { buildCrewStatus, hasRole, LEVEL } from './crew/crewStatus.js'
 import { DISPLAY_CODE } from './crew/display.js'
 import CrewAlerts from './crew/CrewAlerts.jsx'
 import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
+import { useCanManageCrew } from './crew/useCrewAccess.js'
 import { useLiveDemo } from './crew/useLiveDemo.js'
 import './Crew.css'
 
@@ -55,6 +56,7 @@ export default function Crew() {
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const data = useLiveQuery(loadCrewData)
   const { isLive, hasError: liveFailed } = useLiveDemo()
+  const canManage = useCanManageCrew()
   const [errorKey, setErrorKey] = useState(null)
   const [isSimulating, setIsSimulating] = useState(false)
   const [levelFilter, setLevelFilter] = useState(null)
@@ -116,13 +118,17 @@ export default function Crew() {
             {t('crew.subtitle', { count: rows.length, mission: mission?.name ?? '' })}
           </p>
         </div>
-        <div className="crew-actions">
-          <LiveDemoToggle />
-          <button type="button" onClick={handleSimulateOnce} disabled={isSimulating || isLive}>
-            {isSimulating ? t('crew.simulating') : t('crew.simulate')}
-          </button>
-        </div>
+        {canManage && (
+          <div className="crew-actions">
+            <LiveDemoToggle />
+            <button type="button" onClick={handleSimulateOnce} disabled={isSimulating || isLive}>
+              {isSimulating ? t('crew.simulating') : t('crew.simulate')}
+            </button>
+          </div>
+        )}
       </header>
+
+      {!canManage && <p className="crew-readonly-note">{t('crew.officerView')}</p>}
 
       {shownErrorKey && (
         <p className="crew-error" role="alert">
@@ -220,7 +226,7 @@ export default function Crew() {
               </table>
             </div>
           )}
-          <CrewAlerts users={astronauts} />
+          <CrewAlerts users={astronauts} canSendNotes={canManage} />
         </>
       )}
     </section>
