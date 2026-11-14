@@ -1,5 +1,7 @@
 {
-  "app": { "name": "Astro Health Monitor" },
+  "app": {
+    "name": "Astro Health Monitor"
+  },
   "pages": {
     "login": "Iniciar sesión",
     "home": "Inicio",
@@ -84,5 +86,33 @@
     "underConstruction": "En construcción",
     "language": "Idioma",
     "navigation": "Navegación principal"
+  },
+  "sensors": {
+    "simulatedData": "Datos simulados",
+    "start": "Iniciar simulador",
+    "stop": "Detener simulador",
+    "scenario": "Escenario",
+    "scenarios": {
+      "normal": "Normal",
+      "solarStorm": "Tormenta solar",
+      "hypoxia": "Hipoxia",
+      "boneLoss": "Pérdida ósea",
+      "sleepDeprivation": "Privación de sueño",
+      "infection": "Infección"
+    },
+    "statusRunning": "Simulador en marcha: generando lecturas.",
+    "statusStopped": "Simulador detenido.",
+    "latestReadings": "Últimas lecturas",
+    "latestAlerts": "Últimas alertas",
+    "noReadings": "Aún no hay lecturas.",
+    "noAlerts": "Aún no hay alertas."
+  },
+  "levels": {
+    "NORMAL": "Normal",
+    "WARNING": "Precaución",
+    "CRITICAL": "Crítico"
+  },
+  "rules": {
+    "criticalTitle": "Alerta crítica"
   }
 }
