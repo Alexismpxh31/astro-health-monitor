@@ -28,6 +28,11 @@
 
 .crew-detail-title h1 {
   margin: 0;
+  color: #0E1B3E;
+}
+
+.crew-detail-content h2 {
+  color: #0E1B3E;
 }
 
 .crew-detail-actions {
