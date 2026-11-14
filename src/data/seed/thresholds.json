@@ -1,0 +1,5 @@
+[
+  { "id": "00000000-0000-4000-8000-000000000a01", "indicatorId": "00000000-0000-4000-8000-000000000401", "userId": null, "criticalMin": 40, "warnMin": 50, "warnMax": 100, "criticalMax": 130 },
+  { "id": "00000000-0000-4000-8000-000000000a02", "indicatorId": "00000000-0000-4000-8000-000000000402", "userId": null, "criticalMin": 90, "warnMin": 94, "warnMax": null, "criticalMax": null },
+  { "id": "00000000-0000-4000-8000-000000000a03", "indicatorId": "00000000-0000-4000-8000-000000000403", "userId": null, "criticalMin": 80, "warnMin": 90, "warnMax": 130, "criticalMax": 160 }
+]

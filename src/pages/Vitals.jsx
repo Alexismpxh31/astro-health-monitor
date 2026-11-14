@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { VitalCard } from '../components/VitalCard';
-import { TelemetryChart } from '../components/TelemetryChart';
-import { simulator } from '../data/simulator';
-import { NASA_INDICATORS_MAP } from '../data/nasaHrpData';
+import { VitalCard } from '../components/VitalCard.jsx';
+import { TelemetryChart } from '../components/TelemetryChart.jsx';
+import { simulator } from '../data/simulator.js';
+import { NASA_INDICATORS_MAP } from '../data/nasaHrpData.js';
 import { Play, Pause, AlertTriangle, Heart, Zap, RefreshCw, Radio } from 'lucide-react';
 
-export const Vitals = ({ onNavigate = () => {} }) => {
+export default function Vitals() {
   const [vitals, setVitals] = useState(simulator.state);
   const [history, setHistory] = useState(simulator.history);
   const [selectedCode, setSelectedCode] = useState('HR');
@@ -177,4 +177,4 @@ export const Vitals = ({ onNavigate = () => {} }) => {
       </div>
     </div>
   );
-};
+}

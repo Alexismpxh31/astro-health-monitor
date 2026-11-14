@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { NASA_HRP_SYSTEMS, NASA_INDICATORS_MAP } from '../data/nasaHrpData';
-import { TelemetryChart } from '../components/TelemetryChart';
-import { TrafficLight } from '../components/TrafficLight';
-import { ArrowLeft, Shield, CheckCircle2, Info, Activity } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { NASA_HRP_SYSTEMS, NASA_INDICATORS_MAP } from '../data/nasaHrpData.js';
+import { TelemetryChart } from '../components/TelemetryChart.jsx';
+import { TrafficLight } from '../components/TrafficLight.jsx';
+import { ArrowLeft, Shield, CheckCircle2, Info } from 'lucide-react';
 
-export const SystemDetail = ({ systemId = 'cardiovascular', onNavigate = () => {} }) => {
-  const [activeSystemId, setActiveSystemId] = useState(systemId);
+export default function SystemDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [activeSystemId, setActiveSystemId] = useState(id || 'cardiovascular');
 
   const system = NASA_HRP_SYSTEMS.find(s => s.id === activeSystemId) || NASA_HRP_SYSTEMS[0];
   const primaryIndicatorCode = system.indicators[0];
-  const primaryIndicator = NASA_INDICATORS_MAP[primaryIndicatorCode];
+  const primaryIndicator = NASA_INDICATORS_MAP[primaryIndicatorCode] || NASA_INDICATORS_MAP.HR;
 
-  // Mock historical curve points
+  // Historical curve points
   const historyData = [
     { time: '10:00:00', value: primaryIndicator.typical - 2 },
     { time: '10:05:00', value: primaryIndicator.typical },
@@ -27,7 +30,7 @@ export const SystemDetail = ({ systemId = 'cardiovascular', onNavigate = () => {
       {/* Top Navigation Back */}
       <div className="flex items-center justify-between gap-4">
         <button
-          onClick={() => onNavigate('/')}
+          onClick={() => navigate('/')}
           className="min-h-[44px] px-4 py-2 rounded-xl bg-space-surface border border-space-border text-xs font-mono text-space-muted hover:text-white flex items-center gap-2 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -154,4 +157,4 @@ export const SystemDetail = ({ systemId = 'cardiovascular', onNavigate = () => {
       </div>
     </div>
   );
-};
+}

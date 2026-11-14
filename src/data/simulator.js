@@ -2,7 +2,7 @@
  * Astroskin Spaceflight Biomedical Telemetry Simulator
  * Generates continuous physiological telemetry with noise and supports real-time anomaly injection.
  */
-import { NASA_INDICATORS_MAP } from './nasaHrpData';
+import { NASA_INDICATORS_MAP } from './nasaHrpData.js';
 
 class TelemetrySimulator {
   constructor() {
@@ -128,3 +128,30 @@ class TelemetrySimulator {
 }
 
 export const simulator = new TelemetrySimulator();
+
+// Team stub compatibility
+export function generateReading(userId, indicatorCode) {
+  return {
+    id: crypto.randomUUID(),
+    userId,
+    indicatorCode,
+    value: simulator.state[indicatorCode] || 72,
+    unit: NASA_INDICATORS_MAP[indicatorCode]?.unit || '',
+    measuredAt: new Date().toISOString(),
+    source: 'simulated'
+  };
+}
+
+export function startSimulator(options = {}) {
+  simulator.start(options.intervalMs || 1800);
+  const unsub = simulator.subscribe((state) => {
+    if (options.onReading) {
+      const code = options.indicatorCodes?.[0] || 'HR';
+      options.onReading(generateReading(options.userId || 'user-1', code));
+    }
+  });
+  return () => {
+    unsub();
+    simulator.stop();
+  };
+}

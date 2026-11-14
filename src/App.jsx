@@ -1,23 +1,33 @@
-import { useState } from 'react';
-import AstronautBody3D from './components/AstronautBody3D';
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Layout from './components/Layout.jsx'
+import Alerts from './pages/Alerts.jsx'
+import Checkin from './pages/Checkin.jsx'
+import Comms from './pages/Comms.jsx'
+import Crew from './pages/Crew.jsx'
+import CrewMember from './pages/CrewMember.jsx'
+import Home from './pages/Home.jsx'
+import Login from './pages/Login.jsx'
+import Sensors from './pages/Sensors.jsx'
+import SystemDetail from './pages/SystemDetail.jsx'
+import Vitals from './pages/Vitals.jsx'
 
 export default function App() {
-  const [activeSystem, setActiveSystem] = useState(null);
-
   return (
-    <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px' }}>
-      <AstronautBody3D
-        onSelectZone={(systemData) => {
-          setActiveSystem(systemData);
-          // Aquí puedes filtrar tus datos de Supabase o Dexie según systemData.id
-        }}
-      />
-
-      {activeSystem && (
-        <p style={{ marginTop: '12px', fontFamily: 'sans-serif', color: '#334155' }}>
-          Sistema seleccionado para gráficas históricas: <strong>{activeSystem.name}</strong> ({activeSystem.value})
-        </p>
-      )}
-    </main>
-  );
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/vitals" element={<Vitals />} />
+          <Route path="/system/:id" element={<SystemDetail />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/checkin" element={<Checkin />} />
+          <Route path="/sensors" element={<Sensors />} />
+          <Route path="/comms" element={<Comms />} />
+          <Route path="/crew" element={<Crew />} />
+          <Route path="/crew/:userId" element={<CrewMember />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  )
 }
