@@ -12,6 +12,8 @@ export default function Checkin() {
   const { t, i18n } = useTranslation()
   const session = getSession()
   const userId = session?.userId ?? DEMO_ASTRONAUT_ID
+  const isEnglish = i18n.language?.startsWith('en')
+  const lang = isEnglish ? 'en' : 'es'
 
   const [mood, setMood] = useState(4)
   const [sleepHours, setSleepHours] = useState(7.5)
@@ -40,7 +42,7 @@ export default function Checkin() {
         .where('[userId+date]')
         .between([userId, ''], [userId, '\uffff'])
         .reverse()
-        .limit(4)
+        .limit(5)
         .toArray(),
     [userId]
   )
@@ -85,34 +87,82 @@ export default function Checkin() {
     })
   }
 
-  const evaluateCheckin = () => {
-    let level = 'normal'
-    const recommendations = []
+  /**
+   * Evalúa cada indicador contra db.thresholds y obtiene la recomendación oficial
+   * desde db.recommendations (con respaldo en i18n si aún no se ha sembrado).
+   */
+  const evaluateWithDatabase = async (metrics) => {
+    const [indicators, thresholds, alertLevels, recommendations, units] = await Promise.all([
+      db.indicators.toArray(),
+      db.thresholds.toArray(),
+      db.alertLevels.toArray(),
+      db.recommendations.toArray(),
+      db.units.toArray(),
+    ])
 
-    const elevate = (newLevel, recKey, value = '') => {
-      if (newLevel === 'critical') level = 'critical'
-      else if (newLevel === 'caution' && level === 'normal') level = 'caution'
-      recommendations.push(t(`checkin.recs.${recKey}`, { value }))
+    const indByCode = Object.fromEntries(indicators.map((i) => [i.code, i]))
+    const levelByCode = Object.fromEntries(alertLevels.map((l) => [l.code, l]))
+    const unitById = Object.fromEntries(units.map((u) => [u.id, u.symbol]))
+
+    let overallLevel = 'normal'
+    const findings = []
+
+    for (const { code, value, readingId } of metrics) {
+      if (value === null || value === undefined) continue
+      const indicator = indByCode[code]
+      if (!indicator) continue
+
+      // Priorizar umbral personal del astronauta si el médico de vuelo lo ajustó
+      const threshold =
+        thresholds.find((th) => th.indicatorId === indicator.id && th.userId === userId) ||
+        thresholds.find((th) => th.indicatorId === indicator.id && th.userId == null)
+
+      if (!threshold) continue
+
+      let levelCode = 'normal'
+      let direction = null
+
+      if (value < threshold.minCritical) {
+        levelCode = 'critical'
+        direction = 'low'
+      } else if (value > threshold.maxCritical) {
+        levelCode = 'critical'
+        direction = 'high'
+      } else if (value < threshold.minNormal) {
+        levelCode = 'caution'
+        direction = 'low'
+      } else if (value > threshold.maxNormal) {
+        levelCode = 'caution'
+        direction = 'high'
+      }
+
+      if (levelCode === 'normal') continue
+
+      if (levelCode === 'critical') overallLevel = 'critical'
+      else if (levelCode === 'caution' && overallLevel === 'normal') overallLevel = 'caution'
+
+      const levelObj = levelByCode[levelCode]
+      const rec = recommendations.find(
+        (r) =>
+          r.indicatorId === indicator.id &&
+          r.alertLevelId === levelObj?.id &&
+          (r.direction === direction || r.direction == null)
+      )
+
+      const unitSymbol = unitById[indicator.unitId] || ''
+      const rawText = rec?.text?.[lang] || rec?.text?.es
+      const formattedText = rawText
+        ? rawText.replace(/%value%/g, String(value)).replace(/%unit%/g, unitSymbol)
+        : t(`checkin.recs.REC_${code}_${levelCode.toUpperCase()}`, { value })
+
+      findings.push({
+        text: formattedText,
+        readingId,
+        recommendationId: rec?.id ?? null,
+      })
     }
 
-    // Umbrales alineados a TH_SLEEP_H (6.5 - 9.0 h nominal)
-    if (sleepHours < 4) elevate('critical', 'REC_SLEEP_H_LOW_CRITICAL', sleepHours)
-    else if (sleepHours < 6.5) elevate('caution', 'REC_SLEEP_H_LOW_CAUTION', sleepHours)
-    else if (sleepHours > 14) elevate('critical', 'REC_SLEEP_H_HIGH_CRITICAL', sleepHours)
-    else if (sleepHours > 9) elevate('caution', 'REC_SLEEP_H_HIGH_CAUTION', sleepHours)
-
-    if (mood < 1.5) elevate('critical', 'REC_MOOD_LOW_CRITICAL', mood)
-    else if (mood < 2.5) elevate('caution', 'REC_MOOD_LOW_CAUTION', mood)
-
-    if (stress > 4.5) elevate('critical', 'REC_STRESS_HIGH_CRITICAL', stress)
-    else if (stress > 3) elevate('caution', 'REC_STRESS_HIGH_CAUTION', stress)
-
-    if (pvtMs !== null) {
-      if (pvtMs > 450) elevate('critical', 'REC_PVT_CRITICAL', pvtMs)
-      else if (pvtMs > 320) elevate('caution', 'REC_PVT_CAUTION', pvtMs)
-    }
-
-    return { level, recommendations }
+    return { level: overallLevel, findings }
   }
 
   const handleSubmit = async (e) => {
@@ -125,12 +175,24 @@ export default function Checkin() {
     const combinedNotes = [cleanNotes, pvtTag].filter(Boolean).join(' ') || null
 
     let checkinId = crypto.randomUUID()
+    const sleepReadingId = crypto.randomUUID()
+    const moodReadingId = crypto.randomUUID()
+    const stressReadingId = crypto.randomUUID()
+    const pvtReadingId = pvtMs !== null ? crypto.randomUUID() : null
+
+    const result = await evaluateWithDatabase([
+      { code: 'SLEEP_H', value: sleepHours, readingId: sleepReadingId },
+      { code: 'MOOD', value: mood, readingId: moodReadingId },
+      { code: 'STRESS', value: stress, readingId: stressReadingId },
+      { code: 'PVT', value: pvtMs, readingId: pvtReadingId },
+    ])
 
     await db.transaction(
       'rw',
       db.dailyCheckins,
       db.checkinSymptoms,
       db.readings,
+      db.alerts,
       async () => {
         const existing = await db.dailyCheckins
           .where('[userId+date]')
@@ -171,10 +233,40 @@ export default function Checkin() {
           )
         }
 
-        // Guardar también PVT como lectura oficial para que lo vean Vitals y el motor de reglas
-        if (pvtMs !== null) {
-          await db.readings.put({
-            id: crypto.randomUUID(),
+        // Registrar también las lecturas en db.readings para gráficas y motor de alertas
+        const readingRows = [
+          {
+            id: sleepReadingId,
+            userId,
+            indicatorCode: 'SLEEP_H',
+            value: sleepHours,
+            measuredAt: nowIso,
+            source: 'simulated',
+            syncStatus: 'pending',
+          },
+          {
+            id: moodReadingId,
+            userId,
+            indicatorCode: 'MOOD',
+            value: mood,
+            measuredAt: nowIso,
+            source: 'simulated',
+            syncStatus: 'pending',
+          },
+          {
+            id: stressReadingId,
+            userId,
+            indicatorCode: 'STRESS',
+            value: stress,
+            measuredAt: nowIso,
+            source: 'simulated',
+            syncStatus: 'pending',
+          },
+        ]
+
+        if (pvtMs !== null && pvtReadingId) {
+          readingRows.push({
+            id: pvtReadingId,
             userId,
             indicatorCode: 'PVT',
             value: pvtMs,
@@ -183,10 +275,65 @@ export default function Checkin() {
             syncStatus: 'pending',
           })
         }
+
+        await db.readings.bulkPut(readingRows)
+
+        // Si hubo hallazgos fuera de rango, generar alertas clínicas locales
+        if (result.findings.length > 0) {
+          await db.alerts.bulkPut(
+            result.findings.map((f) => ({
+              id: crypto.randomUUID(),
+              readingId: f.readingId,
+              recommendationId: f.recommendationId,
+              generatedAt: nowIso,
+              attendedAt: null,
+              syncStatus: 'pending',
+            }))
+          )
+        }
       }
     )
 
-    setEvaluation(evaluateCheckin())
+    setEvaluation({
+      level: result.level,
+      recommendations: result.findings.map((f) => f.text),
+    })
+  }
+
+  /** Exporta todos los chequeos locales del astronauta a un archivo CSV descargable */
+  const handleExportCsv = async () => {
+    const allCheckins = await db.dailyCheckins
+      .where('[userId+date]')
+      .between([userId, ''], [userId, '\uffff'])
+      .toArray()
+
+    if (allCheckins.length === 0) return
+
+    const allLinks = await db.checkinSymptoms.toArray()
+    const symMap = Object.fromEntries(
+      symptomsList.map((s) => [s.id, isEnglish ? s.nameEn : s.nameEs])
+    )
+
+    const headers = ['date_utc', 'mood_1_5', 'sleep_hours', 'stress_1_5', 'symptoms', 'notes', 'sync_status']
+    const rows = allCheckins.map((c) => {
+      const syms = allLinks
+        .filter((l) => l.checkinId === c.id)
+        .map((l) => symMap[l.symptomId] || l.symptomId)
+        .join('; ')
+
+      return [c.date, c.mood, c.sleepHours, c.stress, syms, c.notes || '', c.syncStatus]
+        .map((val) => `"${String(val).replace(/"/g, '""')}"`)
+        .join(',')
+    })
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `astrosalud_checkin_${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   const pvtButtonLabel = {
@@ -197,7 +344,6 @@ export default function Checkin() {
     done: t('checkin.pvtRetry'),
   }[pvtState]
 
-  const isEnglish = i18n.language?.startsWith('en')
   const sleepStatusClass =
     sleepHours >= 6.5 && sleepHours <= 9 ? 'is-nominal' : 'is-warn'
 
@@ -209,7 +355,7 @@ export default function Checkin() {
       </header>
 
       <form onSubmit={handleSubmit} className="checkin-grid">
-        {/* Columna izquierda: Estado diario */}
+        {/* Columna izquierda: Estado psicofisiológico */}
         <div className="checkin-col">
           {/* 1. Ánimo */}
           <div className="checkin-card">
@@ -375,9 +521,17 @@ export default function Checkin() {
         </div>
       )}
 
-      {/* Cola local en Dexie con el mismo estilo de filas de Sensors */}
+      {/* Cola local en Dexie + Exportación CSV */}
       <div>
-        <h2>{t('checkin.historyTitle')}</h2>
+        <div className="history-head">
+          <h2>{t('checkin.historyTitle')}</h2>
+          {recentCheckins && recentCheckins.length > 0 && (
+            <button type="button" className="csv-btn" onClick={handleExportCsv}>
+              ↓ {isEnglish ? 'Export CSV' : 'Exportar CSV'}
+            </button>
+          )}
+        </div>
+
         {!recentCheckins || recentCheckins.length === 0 ? (
           <p className="muted">{t('checkin.historyEmpty')}</p>
         ) : (
