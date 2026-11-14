@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -112,18 +112,17 @@ export default function AstronautModel3D({
 
     // 1. Escena y Cámara
     const scene = new THREE.Scene();
-    scene.background = null; // Canvas transparente para integrarse con el fondo cósmico
+    scene.background = null;
 
     const width = container.clientWidth || 480;
     const heightPx = container.clientHeight || 530;
 
     const camera = new THREE.PerspectiveCamera(40, width / heightPx, 0.1, 50);
-    // Posición ergonómica centrada en el torso del astronauta
     const initialCamPos = new THREE.Vector3(0, 1.25, 2.85);
     const cameraTarget = new THREE.Vector3(0, 1.04, 0);
     camera.position.copy(initialCamPos);
 
-    // 2. Renderer con PBR, ToneMapping y Antialiasing
+    // 2. Renderer con PBR y ToneMapping
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -138,14 +137,14 @@ export default function AstronautModel3D({
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    // 3. RoomEnvironment con PMREMGenerator (reflejos hiper-realistas en visor y metal)
+    // 3. RoomEnvironment con PMREMGenerator
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
     const roomEnv = new RoomEnvironment();
     const envTexture = pmremGenerator.fromScene(roomEnv, 0.04).texture;
     scene.environment = envTexture;
 
-    // 4. Iluminación de estudio propia equilibrada (suave, sin quemar blancos)
+    // 4. Iluminación de estudio
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x0f172a, 1.25);
     hemiLight.position.set(0, 8, 0);
     scene.add(hemiLight);
@@ -166,14 +165,14 @@ export default function AstronautModel3D({
     rimLight.position.set(0, 4, -4);
     scene.add(rimLight);
 
-    // 5. OrbitControls fluido
+    // 5. OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.target.copy(cameraTarget);
     controls.minDistance = 1.3;
     controls.maxDistance = 5.5;
-    controls.maxPolarAngle = Math.PI / 2 + 0.05; // No atravesar la base
+    controls.maxPolarAngle = Math.PI / 2 + 0.05;
     controls.autoRotate = autoRotate;
     controls.autoRotateSpeed = 1.3;
     controlsRef.current = controls;
@@ -184,7 +183,8 @@ export default function AstronautModel3D({
       controls.update();
     };
 
-    // Colecciones para interacción
+    // 6. Estado y colecciones declaradas ANTES de cargar el modelo
+    const activeZoneRef = { current: activeZone };
     const interactiveMeshes = [];
     const meshesByZone = {
       neuro: [],
@@ -193,122 +193,7 @@ export default function AstronautModel3D({
       musculo: [],
       radiation: [],
     };
-    let platformRings = [];
-
-    // 6. Carga de GLTFLoader
-    const loader = new GLTFLoader();
-    loader.load(
-      '/models/astronauta.glb',
-      (gltf) => {
-        if (isDisposed) return;
-
-        const root = gltf.scene;
-
-        // A. DESACTIVAR Y ELIMINAR LUCES Y CÁMARAS EXPORTADAS DE BLENDER
-        const toRemove = [];
-        root.traverse((child) => {
-          if (
-            child.isLight ||
-            child.isCamera ||
-            (child.name && (child.name.startsWith('preview_') || child.name.toLowerCase().includes('light')))
-          ) {
-            toRemove.push(child);
-          }
-        });
-        toRemove.forEach((node) => {
-          if (node.parent) node.parent.remove(node);
-          if (typeof node.dispose === 'function') node.dispose();
-        });
-
-        // B. ESCALADO Y CENTRADO AUTOMÁTICO (~2.08 unidades de alto, base en Y = 0)
-        const initialBox = new THREE.Box3().setFromObject(root);
-        const initialSize = new THREE.Vector3();
-        initialBox.getSize(initialSize);
-
-        const TARGET_HEIGHT = 2.08;
-        const scaleFactor = TARGET_HEIGHT / (initialSize.y || 1);
-        root.scale.setScalar(scaleFactor);
-
-        // Recomputar bounding box tras escalar
-        const scaledBox = new THREE.Box3().setFromObject(root);
-        const scaledCenter = new THREE.Vector3();
-        scaledBox.getCenter(scaledCenter);
-
-        // Centrar en X y Z, y posar base de plataforma exactamente en Y = 0
-        root.position.x = -scaledCenter.x;
-        root.position.z = -scaledCenter.z;
-        root.position.y = -scaledBox.min.y;
-
-        // C. MAPEO DE MALLAS INTERACTIVAS Y CLONACIÓN DE MATERIALES
-        root.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-
-            // Nodos de plataforma: excluir de Raycaster
-            if (child.name.startsWith('platform_')) {
-              child.raycast = () => {}; // Desactiva intersección
-              if (child.name.startsWith('platform_ring_')) {
-                platformRings.push(child);
-                if (child.material && child.material.emissive) {
-                  child.material.emissiveIntensity = 2.2;
-                }
-              }
-              return;
-            }
-
-            // Clonar material individual para resaltar por pieza sin alterar otras
-            if (child.material) {
-              child.material = child.material.clone();
-              child.userData.originalEmissive = child.material.emissive
-                ? child.material.emissive.clone()
-                : new THREE.Color(0x000000);
-              child.userData.originalEmissiveIntensity = child.material.emissiveIntensity ?? 1.0;
-            }
-
-            // Determinar zona interactiva según prefijo
-            let zone = null;
-            if (child.name.startsWith('neuro_')) zone = 'neuro';
-            else if (child.name.startsWith('cardio_')) zone = 'cardio';
-            else if (child.name.startsWith('metabolic_')) zone = 'metabolic';
-            else if (child.name.startsWith('musculo_')) zone = 'musculo';
-
-            if (zone) {
-              child.userData.zone = zone;
-              child.userData.meshName = child.name;
-              interactiveMeshes.push(child);
-              meshesByZone[zone].push(child);
-
-              // Si es componente PLSS, vincular también a radiación (soporte vital & blindaje)
-              if (child.name.includes('plss')) {
-                meshesByZone.radiation.push(child);
-              }
-            }
-          }
-        });
-
-        scene.add(root);
-        setLoading(false);
-        // Resaltar la zona activa inicial una vez cargado el modelo
-        applyZoneHighlights(activeZoneRef.current, null);
-      },
-      (xhr) => {
-        if (xhr.total > 0) {
-          const pct = Math.round((xhr.loaded / xhr.total) * 100);
-          setLoadProgress(pct);
-        }
-      },
-      (err) => {
-        console.error('[AstronautModel3D] Error cargando astronauta.glb:', err);
-        setLoadError('Error al cargar astronauta.glb');
-        setLoading(false);
-      }
-    );
-
-    // 7. Raycaster para detección de Hover y Clic
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2(-999, -999);
-    let currentHoveredMesh = null;
+    const platformRings = [];
 
     function applyZoneHighlights(zoneToHighlight, hoveredMesh) {
       interactiveMeshes.forEach((mesh) => {
@@ -318,24 +203,150 @@ export default function AstronautModel3D({
         const isHovered = mesh === hoveredMesh;
         const isInActiveZone =
           zoneToHighlight === 'radiation'
-            ? mesh.name.includes('plss')
+            ? mesh.name?.includes('plss')
             : mesh.userData.zone === zoneToHighlight;
 
         if (isHovered) {
-          // Hover individual: cian brillante focalizado
           mat.emissive.set(0x38bdf8);
           mat.emissiveIntensity = 0.65;
         } else if (isInActiveZone) {
-          // Zona seleccionada: fulgor cian elegante y sutil
           mat.emissive.set(0x06b6d4);
           mat.emissiveIntensity = 0.32;
         } else {
-          // Estado normal
           mat.emissive.copy(mesh.userData.originalEmissive || new THREE.Color(0x000000));
           mat.emissiveIntensity = mesh.userData.originalEmissiveIntensity ?? 1.0;
         }
       });
     }
+
+    updateHighlightsRef.current = (zone, hovered) => {
+      activeZoneRef.current = zone;
+      applyZoneHighlights(zone, hovered);
+    };
+
+    // 7. Carga de GLTFLoader con URL canónica segura
+    const baseUrl = (import.meta.env?.BASE_URL || '/').replace(/\/$/, '');
+    const modelUrl = `${baseUrl}/models/astronauta.glb`;
+
+    const loader = new GLTFLoader();
+    loader.load(
+      modelUrl,
+      (gltf) => {
+        if (isDisposed) return;
+
+        try {
+          const root = gltf.scene;
+
+          // A. DESACTIVAR Y ELIMINAR LUCES Y CÁMARAS EXPORTADAS DE BLENDER
+          const toRemove = [];
+          root.traverse((child) => {
+            if (
+              child.isLight ||
+              child.isCamera ||
+              (child.name && (child.name.startsWith('preview_') || child.name.toLowerCase().includes('light')))
+            ) {
+              toRemove.push(child);
+            }
+          });
+          toRemove.forEach((node) => {
+            if (node.parent) node.parent.remove(node);
+            if (typeof node.dispose === 'function') node.dispose();
+          });
+
+          // B. ESCALADO Y CENTRADO AUTOMÁTICO (~2.08 unidades de alto, base en Y = 0)
+          const initialBox = new THREE.Box3().setFromObject(root);
+          const initialSize = new THREE.Vector3();
+          initialBox.getSize(initialSize);
+
+          const TARGET_HEIGHT = 2.08;
+          const scaleFactor = TARGET_HEIGHT / (initialSize.y || 1);
+          root.scale.setScalar(scaleFactor);
+
+          // Recomputar bounding box tras escalar
+          const scaledBox = new THREE.Box3().setFromObject(root);
+          const scaledCenter = new THREE.Vector3();
+          scaledBox.getCenter(scaledCenter);
+
+          // Centrar en X y Z, y posar base de plataforma exactamente en Y = 0
+          root.position.x = -scaledCenter.x;
+          root.position.z = -scaledCenter.z;
+          root.position.y = -scaledBox.min.y;
+
+          // C. MAPEO DE MALLAS INTERACTIVAS Y CLONACIÓN DE MATERIALES
+          root.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+
+              // Nodos de plataforma: excluir de Raycaster
+              if (child.name.startsWith('platform_')) {
+                child.raycast = () => {};
+                if (child.name.startsWith('platform_ring_')) {
+                  platformRings.push(child);
+                  if (child.material && child.material.emissive) {
+                    child.material.emissiveIntensity = 2.2;
+                  }
+                }
+                return;
+              }
+
+              // Clonar material individual para resaltar por pieza sin alterar otras
+              if (child.material) {
+                child.material = child.material.clone();
+                child.userData.originalEmissive = child.material.emissive
+                  ? child.material.emissive.clone()
+                  : new THREE.Color(0x000000);
+                child.userData.originalEmissiveIntensity = child.material.emissiveIntensity ?? 1.0;
+              }
+
+              // Determinar zona interactiva según prefijo
+              let zone = null;
+              if (child.name.startsWith('neuro_')) zone = 'neuro';
+              else if (child.name.startsWith('cardio_')) zone = 'cardio';
+              else if (child.name.startsWith('metabolic_')) zone = 'metabolic';
+              else if (child.name.startsWith('musculo_')) zone = 'musculo';
+
+              if (zone) {
+                child.userData.zone = zone;
+                child.userData.meshName = child.name;
+                interactiveMeshes.push(child);
+                meshesByZone[zone].push(child);
+
+                // Si es componente PLSS, vincular también a radiación
+                if (child.name.includes('plss')) {
+                  meshesByZone.radiation.push(child);
+                }
+              }
+            }
+          });
+
+          scene.add(root);
+          setLoading(false);
+          // Resaltar la zona activa inicial
+          applyZoneHighlights(activeZoneRef.current, null);
+        } catch (procErr) {
+          console.error('[AstronautModel3D] Error procesando modelo glTF:', procErr);
+          setLoadError(`Error al procesar modelo: ${procErr.message}`);
+          setLoading(false);
+        }
+      },
+      (xhr) => {
+        if (xhr.total > 0) {
+          const pct = Math.round((xhr.loaded / xhr.total) * 100);
+          setLoadProgress(pct);
+        }
+      },
+      (err) => {
+        console.error('[AstronautModel3D] Error cargando astronauta.glb:', err);
+        setLoadError(`Error al cargar astronauta.glb: ${err?.message || 'Archivo no disponible'}`);
+        setLoading(false);
+      }
+    );
+
+    // 8. Raycaster para detección de Hover y Clic
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(-999, -999);
+    let currentHoveredMesh = null;
 
     const onPointerMove = (e) => {
       const rect = renderer.domElement.getBoundingClientRect();
@@ -393,14 +404,7 @@ export default function AstronautModel3D({
     dom.addEventListener('pointermove', onPointerMove);
     dom.addEventListener('click', onClick);
 
-    // Ref para el render loop y llamadas externas
-    const activeZoneRef = { current: activeZone };
-    updateHighlightsRef.current = (zone, hovered) => {
-      activeZoneRef.current = zone;
-      applyZoneHighlights(zone, hovered);
-    };
-
-    // 8. Render loop
+    // 9. Render loop
     const clock = new THREE.Clock();
     const animate = () => {
       if (isDisposed) return;
@@ -421,7 +425,7 @@ export default function AstronautModel3D({
     };
     animate();
 
-    // 9. Resize observer
+    // 10. Resize handler
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth || 480;
