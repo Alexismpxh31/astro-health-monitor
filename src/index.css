@@ -118,3 +118,109 @@ button:focus-visible, a:focus-visible {
   stroke-dasharray: 200;
   animation: ecg-dash 3s linear infinite;
 }
+
+/* ---------- Sensors page: simulator controls and live lists ---------- */
+
+h2 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.sim-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 480px;
+  padding: 1rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.sim-panel p {
+  margin: 0;
+}
+
+.sim-badge {
+  align-self: flex-start;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  border-radius: 999px;
+}
+
+.sim-toggle {
+  min-height: 64px;
+  font-size: 1.25rem;
+  color: var(--bg);
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.sim-toggle.is-running {
+  color: var(--text);
+  background-color: transparent;
+  border-color: var(--danger);
+}
+
+.sim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.sim-field select {
+  min-height: 48px;
+  padding: 0 0.75rem;
+  font: inherit;
+  color: var(--text);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.sim-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sim-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.sim-row-name {
+  flex: 1 1 10rem;
+}
+
+.sim-row-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sim-alert {
+  border-left: 4px solid var(--level-color);
+}
+
+.sim-level {
+  font-weight: 700;
+  color: var(--level-color);
+}
+
+.sim-advice {
+  flex-basis: 100%;
+  font-size: 0.875rem;
+}

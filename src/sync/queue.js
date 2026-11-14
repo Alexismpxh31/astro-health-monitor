@@ -1,6 +1,8 @@
 import { db } from '../db/db.js'
 import { supabase } from './supabaseClient.js'
 
+import { db } from '../db/db.js'
+
 /** Tables that carry a syncStatus field and take part in the sync queue. */
 export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins']
 
@@ -10,6 +12,7 @@ export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins']
  * @returns {Promise<number>}
  */
 export async function getPendingCount() {
+ cambios_Walter_IU_Model_3D
   let count = 0
   for (const table of SYNCABLE_TABLES) {
     if (db[table]) {
@@ -18,6 +21,16 @@ export async function getPendingCount() {
     }
   }
   return count
+=======
+  // TODO: sum db[table].where('syncStatus').equals('pending').count() over SYNCABLE_TABLES.
+    const counts = await Promise.all(
+    SYNCABLE_TABLES.map((tableName) =>
+      db.table(tableName).where('syncStatus').equals('pending').count(),
+    ),
+  )
+
+  return counts.reduce((total, count) => total + count, 0)
+ main
 }
 
 /**
