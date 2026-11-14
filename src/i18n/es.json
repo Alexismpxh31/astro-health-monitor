@@ -19,19 +19,10 @@
     "offline": "Sin señal"
   },
   "comms": {
-  "loading": "Consultando registros pendientes.",
-  "pendingCount_one": "{{count}} registro pendiente de sincronizar",
-  "pendingCount_other": "{{count}} registros pendientes de sincronizar",
-  "syncNow": "Sincronizar ahora",
-  "syncing": "Sincronizando…",
-  "notConfigured": "Falta configurar la conexión con Supabase.",
-  "offline": "Sin conexión. Vuelve a intentarlo al recuperar la señal.",
-  "signInRequired": "Inicia sesión con tu cuenta de astronauta para sincronizar.",
-  "sent_one": "{{count}} lectura sincronizada.",
-  "sent_other": "{{count}} lecturas sincronizadas.",
-  "nothingToSend": "No hay lecturas de pulso pendientes para este perfil.",
-  "syncError": "No se pudo completar la sincronización. Revisa la consola y vuelve a intentarlo."
-},
+    "loading": "Consultando registros pendientes…",
+    "pendingCount_one": "{{count}} registro pendiente de sincronizar",
+    "pendingCount_other": "{{count}} registros pendientes de sincronizar"
+  },
   "common": {
     "underConstruction": "En construcción",
     "language": "Idioma",
