@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ArrowLeft, Activity, ShieldAlert, AlertTriangle } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -80,7 +80,7 @@ const NASA_SYSTEMS_METADATA = {
 
 export default function SystemDetail() {
   const { id } = useParams()
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const lang = i18n.language?.startsWith('es') ? 'es' : 'en'
   const isEs = lang === 'es'
   const session = useSession()

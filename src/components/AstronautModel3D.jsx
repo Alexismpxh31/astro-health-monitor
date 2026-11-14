@@ -69,10 +69,116 @@ const STATUS_BADGE = {
 };
 
 /**
+ * Construye un astronauta procedural PBR de alta fidelidad si el archivo .glb
+ * no estuviera disponible en el entorno del cliente.
+ */
+function createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings) {
+  const group = new THREE.Group();
+
+  // Materiales PBR
+  const suitFabric = new THREE.MeshStandardMaterial({
+    color: 0xeeeeee,
+    roughness: 0.6,
+    metalness: 0.05,
+  });
+  const navyJoints = new THREE.MeshStandardMaterial({
+    color: 0x1e293b,
+    roughness: 0.5,
+    metalness: 0.2,
+  });
+  const brushedMetal = new THREE.MeshStandardMaterial({
+    color: 0x94a3b8,
+    roughness: 0.2,
+    metalness: 0.9,
+  });
+  const visorGlass = new THREE.MeshStandardMaterial({
+    color: 0x0a101f,
+    roughness: 0.05,
+    metalness: 0.95,
+  });
+  const ringGlow = new THREE.MeshStandardMaterial({
+    color: 0x06b6d4,
+    emissive: new THREE.Color(0x06b6d4),
+    emissiveIntensity: 2.2,
+    roughness: 0.2,
+  });
+
+  // Plataforma
+  const platBase = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.95, 0.08, 48), suitFabric);
+  platBase.position.y = 0.04;
+  platBase.raycast = () => {};
+  group.add(platBase);
+
+  [0.85, 0.68, 0.5].forEach((radius) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.015, 16, 48), ringGlow.clone());
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.082;
+    ring.raycast = () => {};
+    platformRings.push(ring);
+    group.add(ring);
+  });
+
+  // Función auxiliar para registrar mallas interactivas
+  function addPart(geom, mat, zone, name, pos, rot) {
+    const clonedMat = mat.clone();
+    const mesh = new THREE.Mesh(geom, clonedMat);
+    if (pos) mesh.position.set(...pos);
+    if (rot) mesh.rotation.set(...rot);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = {
+      zone,
+      meshName: name,
+      originalEmissive: clonedMat.emissive ? clonedMat.emissive.clone() : new THREE.Color(0x000000),
+      originalEmissiveIntensity: clonedMat.emissiveIntensity ?? 1.0,
+    };
+    interactiveMeshes.push(mesh);
+    if (meshesByZone[zone]) meshesByZone[zone].push(mesh);
+    group.add(mesh);
+    return mesh;
+  }
+
+  // 1. NEURO: Casco y Visor
+  addPart(new THREE.SphereGeometry(0.24, 32, 24), suitFabric, 'neuro', 'neuro_helmet', [0, 1.82, 0]);
+  addPart(new THREE.SphereGeometry(0.19, 24, 24, 0, Math.PI * 2, 0, Math.PI / 2), visorGlass, 'neuro', 'neuro_visor', [0, 1.83, 0.08], [Math.PI / 2, 0, 0]);
+  addPart(new THREE.TorusGeometry(0.19, 0.02, 16, 32), brushedMetal, 'neuro', 'neuro_collar', [0, 1.62, 0], [Math.PI / 2, 0, 0]);
+
+  // 2. CARDIO: Torso HUT & Mochila PLSS
+  addPart(new THREE.CylinderGeometry(0.26, 0.23, 0.44, 24), suitFabric, 'cardio', 'cardio_torso', [0, 1.4, 0]);
+  const plss = addPart(new THREE.BoxGeometry(0.38, 0.46, 0.2), suitFabric, 'cardio', 'cardio_plss', [0, 1.42, -0.22]);
+  meshesByZone.radiation.push(plss);
+  addPart(new THREE.CylinderGeometry(0.04, 0.04, 0.08, 16), brushedMetal, 'cardio', 'cardio_valve_1', [-0.1, 1.68, -0.22]);
+  addPart(new THREE.CylinderGeometry(0.04, 0.04, 0.08, 16), brushedMetal, 'cardio', 'cardio_valve_2', [0.1, 1.68, -0.22]);
+
+  // 3. METABOLIC: Abdomen y Pelvis
+  addPart(new THREE.CylinderGeometry(0.22, 0.22, 0.16, 24), suitFabric, 'metabolic', 'metabolic_abdomen', [0, 1.14, 0]);
+  addPart(new THREE.CylinderGeometry(0.23, 0.2, 0.14, 24), navyJoints, 'metabolic', 'metabolic_pelvis', [0, 1.0, 0]);
+  addPart(new THREE.BoxGeometry(0.1, 0.06, 0.04), brushedMetal, 'metabolic', 'metabolic_buckle', [0, 1.08, 0.22]);
+
+  // 4. MUSCULO: Brazos, Piernas y Botas
+  [-1, 1].forEach((side) => {
+    // Brazos
+    addPart(new THREE.SphereGeometry(0.1, 16, 16), suitFabric, 'musculo', `musculo_shoulder_${side}`, [side * 0.32, 1.5, 0]);
+    addPart(new THREE.CylinderGeometry(0.08, 0.07, 0.26, 16), suitFabric, 'musculo', `musculo_arm_${side}`, [side * 0.34, 1.32, 0]);
+    addPart(new THREE.SphereGeometry(0.07, 16, 16), navyJoints, 'musculo', `musculo_elbow_${side}`, [side * 0.35, 1.16, 0]);
+    addPart(new THREE.CylinderGeometry(0.07, 0.06, 0.22, 16), suitFabric, 'musculo', `musculo_forearm_${side}`, [side * 0.35, 1.02, 0]);
+    addPart(new THREE.SphereGeometry(0.06, 16, 16), navyJoints, 'musculo', `musculo_glove_${side}`, [side * 0.35, 0.88, 0]);
+
+    // Piernas
+    addPart(new THREE.CylinderGeometry(0.1, 0.09, 0.36, 16), suitFabric, 'musculo', `musculo_thigh_${side}`, [side * 0.14, 0.76, 0]);
+    addPart(new THREE.SphereGeometry(0.09, 16, 16), navyJoints, 'musculo', `musculo_knee_${side}`, [side * 0.14, 0.54, 0]);
+    addPart(new THREE.CylinderGeometry(0.09, 0.08, 0.34, 16), suitFabric, 'musculo', `musculo_shin_${side}`, [side * 0.14, 0.34, 0]);
+    addPart(new THREE.BoxGeometry(0.14, 0.12, 0.26), navyJoints, 'musculo', `musculo_boot_${side}`, [side * 0.14, 0.14, 0.04]);
+  });
+
+  scene.add(group);
+  return group;
+}
+
+/**
  * AstronautModel3D
- * Carga el modelo PBR de producción glTF (/models/astronauta.glb)
- * optimizado con RoomEnvironment, iluminación de estudio suave,
- * descarte de luces de Blender, plataforma integrada e interactividad total.
+ * Carga el modelo de producción glTF (/models/astronauta.glb)
+ * con fallback procedural PBR automático para garantizar 100% de disponibilidad.
  */
 export default function AstronautModel3D({
   theme = 'dark',
@@ -86,22 +192,18 @@ export default function AstronautModel3D({
   const controlsRef = useRef(null);
   const resetCameraRef = useRef(null);
   const updateHighlightsRef = useRef(null);
+  const onSelectZoneRef = useRef(onSelectZone);
+  useEffect(() => {
+    onSelectZoneRef.current = onSelectZone;
+  }, [onSelectZone]);
 
-  const [activeZone, setActiveZone] = useState(selectedZone || 'cardio');
   const [hoveredZone, setHoveredZone] = useState(null);
   const [autoRotate, setAutoRotate] = useState(true);
   const [loading, setLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
-  const [loadError, setLoadError] = useState(null);
 
+  const activeZone = selectedZone || 'cardio';
   const isDark = theme === 'dark' || embedded;
-
-  // Sincronizar activeZone con prop externa
-  useEffect(() => {
-    if (selectedZone && selectedZone !== activeZone) {
-      setActiveZone(selectedZone);
-    }
-  }, [selectedZone]);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -122,7 +224,7 @@ export default function AstronautModel3D({
     const cameraTarget = new THREE.Vector3(0, 1.04, 0);
     camera.position.copy(initialCamPos);
 
-    // 2. Renderer con PBR y ToneMapping
+    // 2. Renderer PBR con ToneMapping
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -134,7 +236,7 @@ export default function AstronautModel3D({
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     container.appendChild(renderer.domElement);
 
     // 3. RoomEnvironment con PMREMGenerator
@@ -165,7 +267,7 @@ export default function AstronautModel3D({
     rimLight.position.set(0, 4, -4);
     scene.add(rimLight);
 
-    // 5. OrbitControls
+    // 5. OrbitControls fluido
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
@@ -183,7 +285,7 @@ export default function AstronautModel3D({
       controls.update();
     };
 
-    // 6. Estado y colecciones declaradas ANTES de cargar el modelo
+    // 6. Colecciones e interactividad
     const activeZoneRef = { current: activeZone };
     const interactiveMeshes = [];
     const meshesByZone = {
@@ -224,7 +326,7 @@ export default function AstronautModel3D({
       applyZoneHighlights(zone, hovered);
     };
 
-    // 7. Carga de GLTFLoader con URL canónica segura
+    // 7. Carga de GLTFLoader con fallback automático
     const baseUrl = (import.meta.env?.BASE_URL || '/').replace(/\/$/, '');
     const modelUrl = `${baseUrl}/models/astronauta.glb`;
 
@@ -237,7 +339,7 @@ export default function AstronautModel3D({
         try {
           const root = gltf.scene;
 
-          // A. DESACTIVAR Y ELIMINAR LUCES Y CÁMARAS EXPORTADAS DE BLENDER
+          // A. Filtrar luces y cámaras de Blender
           const toRemove = [];
           root.traverse((child) => {
             if (
@@ -253,7 +355,7 @@ export default function AstronautModel3D({
             if (typeof node.dispose === 'function') node.dispose();
           });
 
-          // B. ESCALADO Y CENTRADO AUTOMÁTICO (~2.08 unidades de alto, base en Y = 0)
+          // B. Escalado y centrado
           const initialBox = new THREE.Box3().setFromObject(root);
           const initialSize = new THREE.Vector3();
           initialBox.getSize(initialSize);
@@ -262,23 +364,20 @@ export default function AstronautModel3D({
           const scaleFactor = TARGET_HEIGHT / (initialSize.y || 1);
           root.scale.setScalar(scaleFactor);
 
-          // Recomputar bounding box tras escalar
           const scaledBox = new THREE.Box3().setFromObject(root);
           const scaledCenter = new THREE.Vector3();
           scaledBox.getCenter(scaledCenter);
 
-          // Centrar en X y Z, y posar base de plataforma exactamente en Y = 0
           root.position.x = -scaledCenter.x;
           root.position.z = -scaledCenter.z;
           root.position.y = -scaledBox.min.y;
 
-          // C. MAPEO DE MALLAS INTERACTIVAS Y CLONACIÓN DE MATERIALES
+          // C. Mallas interactivas
           root.traverse((child) => {
             if (child.isMesh) {
               child.castShadow = true;
               child.receiveShadow = true;
 
-              // Nodos de plataforma: excluir de Raycaster
               if (child.name.startsWith('platform_')) {
                 child.raycast = () => {};
                 if (child.name.startsWith('platform_ring_')) {
@@ -290,7 +389,6 @@ export default function AstronautModel3D({
                 return;
               }
 
-              // Clonar material individual para resaltar por pieza sin alterar otras
               if (child.material) {
                 child.material = child.material.clone();
                 child.userData.originalEmissive = child.material.emissive
@@ -299,7 +397,6 @@ export default function AstronautModel3D({
                 child.userData.originalEmissiveIntensity = child.material.emissiveIntensity ?? 1.0;
               }
 
-              // Determinar zona interactiva según prefijo
               let zone = null;
               if (child.name.startsWith('neuro_')) zone = 'neuro';
               else if (child.name.startsWith('cardio_')) zone = 'cardio';
@@ -312,7 +409,6 @@ export default function AstronautModel3D({
                 interactiveMeshes.push(child);
                 meshesByZone[zone].push(child);
 
-                // Si es componente PLSS, vincular también a radiación
                 if (child.name.includes('plss')) {
                   meshesByZone.radiation.push(child);
                 }
@@ -322,12 +418,12 @@ export default function AstronautModel3D({
 
           scene.add(root);
           setLoading(false);
-          // Resaltar la zona activa inicial
           applyZoneHighlights(activeZoneRef.current, null);
         } catch (procErr) {
-          console.error('[AstronautModel3D] Error procesando modelo glTF:', procErr);
-          setLoadError(`Error al procesar modelo: ${procErr.message}`);
+          console.warn('[AstronautModel3D] Fallback a modelo procedural por error en glTF:', procErr);
+          createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings);
           setLoading(false);
+          applyZoneHighlights(activeZoneRef.current, null);
         }
       },
       (xhr) => {
@@ -336,14 +432,15 @@ export default function AstronautModel3D({
           setLoadProgress(pct);
         }
       },
-      (err) => {
-        console.error('[AstronautModel3D] Error cargando astronauta.glb:', err);
-        setLoadError(`Error al cargar astronauta.glb: ${err?.message || 'Archivo no disponible'}`);
+      (loadErr) => {
+        console.warn('[AstronautModel3D] Activando astronauta procedural PBR tras error de carga:', loadErr);
+        createProceduralFallback(scene, interactiveMeshes, meshesByZone, platformRings);
         setLoading(false);
+        applyZoneHighlights(activeZoneRef.current, null);
       }
     );
 
-    // 8. Raycaster para detección de Hover y Clic
+    // 8. Raycaster para interacción
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2(-999, -999);
     let currentHoveredMesh = null;
@@ -387,10 +484,9 @@ export default function AstronautModel3D({
         const hit = intersects[0].object;
         const zone = hit.userData.zone;
         if (zone) {
-          setActiveZone(zone);
           const meta = ZONE_SYSTEM_MAP[zone];
-          if (onSelectZone && meta) {
-            onSelectZone({
+          if (onSelectZoneRef.current && meta) {
+            onSelectZoneRef.current({
               id: meta.systemId,
               zoneCode: meta.zoneCode,
               name: meta.name,
@@ -404,15 +500,14 @@ export default function AstronautModel3D({
     dom.addEventListener('pointermove', onPointerMove);
     dom.addEventListener('click', onClick);
 
-    // 9. Render loop
-    const clock = new THREE.Clock();
+    // 9. Render loop usando performance.now()
+    const startTime = performance.now();
     const animate = () => {
       if (isDisposed) return;
       animationFrameId = requestAnimationFrame(animate);
 
-      const elapsed = clock.getElapsedTime();
+      const elapsed = (performance.now() - startTime) * 0.001;
 
-      // Pulsación sutil en anillos de luz de la plataforma
       if (platformRings.length > 0) {
         const pulse = 1.8 + Math.sin(elapsed * 2.5) * 0.45;
         platformRings.forEach((ring) => {
@@ -425,7 +520,7 @@ export default function AstronautModel3D({
     };
     animate();
 
-    // 10. Resize handler
+    // 10. Resize
     const handleResize = () => {
       if (!container) return;
       const w = container.clientWidth || 480;
@@ -436,7 +531,6 @@ export default function AstronautModel3D({
     };
     window.addEventListener('resize', handleResize);
 
-    // Cleanup
     return () => {
       isDisposed = true;
       cancelAnimationFrame(animationFrameId);
@@ -460,16 +554,14 @@ export default function AstronautModel3D({
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Actualizar auto-rotate en el control
   useEffect(() => {
     if (controlsRef.current) {
       controlsRef.current.autoRotate = autoRotate;
     }
   }, [autoRotate]);
 
-  // Actualizar resaltado en el modelo 3D al cambiar activeZone
   useEffect(() => {
     if (updateHighlightsRef.current) {
       updateHighlightsRef.current(activeZone, null);
@@ -492,7 +584,6 @@ export default function AstronautModel3D({
         userSelect: 'none',
       }}
     >
-      {/* Canvas container */}
       <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
 
       {/* Loading overlay */}
@@ -524,35 +615,12 @@ export default function AstronautModel3D({
             }}
           />
           <span style={{ fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.04em' }}>
-            Cargando Modelo EVA 3D... {loadProgress > 0 ? `${loadProgress}%` : ''}
-          </span>
-          <span style={{ fontSize: '0.75rem', opacity: 0.7, marginTop: '4px' }}>
-            Texturas PBR & Mallas Anatómicas
+            Iniciando Telemetría EVA 3D... {loadProgress > 0 ? `${loadProgress}%` : ''}
           </span>
         </div>
       )}
 
-      {/* Error state */}
-      {loadError && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(11, 18, 32, 0.85)',
-            color: '#ef4444',
-            fontSize: '0.9rem',
-            padding: '20px',
-            textAlign: 'center',
-          }}
-        >
-          {loadError}
-        </div>
-      )}
-
-      {/* Control Buttons Floating Pill */}
+      {/* Controles flotantes */}
       <div
         style={{
           position: 'absolute',
@@ -574,9 +642,7 @@ export default function AstronautModel3D({
           type="button"
           onClick={() => setAutoRotate((prev) => !prev)}
           style={{
-            background: autoRotate
-              ? 'rgba(6, 182, 212, 0.18)'
-              : 'transparent',
+            background: autoRotate ? 'rgba(6, 182, 212, 0.18)' : 'transparent',
             color: autoRotate ? '#38bdf8' : (isDark ? '#94a3b8' : '#475569'),
             border: 'none',
             borderRadius: '9999px',
@@ -612,7 +678,7 @@ export default function AstronautModel3D({
         </button>
       </div>
 
-      {/* Floating HUD Telemetry Card */}
+      {/* HUD de Telemetría */}
       {showHud && (
         <div
           style={{
@@ -667,7 +733,6 @@ export default function AstronautModel3D({
         </div>
       )}
 
-      {/* Keyframe animation for spinner */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
