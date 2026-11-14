@@ -1,12 +1,7 @@
-<<<<<<< HEAD
-﻿{
-  "app": { "name": "Astro Health Monitor" },
-=======
 {
   "app": {
     "name": "Astro Health Monitor"
   },
->>>>>>> origin/main
   "pages": {
     "login": "Iniciar sesión",
     "home": "Inicio",
@@ -28,7 +23,34 @@
     "language": "Idioma",
     "navigation": "Navegación principal"
   },
-<<<<<<< HEAD
+  "sensors": {
+    "simulatedData": "Datos simulados",
+    "start": "Iniciar simulador",
+    "stop": "Detener simulador",
+    "scenario": "Escenario",
+    "scenarios": {
+      "normal": "Normal",
+      "solarStorm": "Tormenta solar",
+      "hypoxia": "Hipoxia",
+      "boneLoss": "Pérdida ósea",
+      "sleepDeprivation": "Privación de sueño",
+      "infection": "Infección"
+    },
+    "statusRunning": "Simulador en marcha: generando lecturas.",
+    "statusStopped": "Simulador detenido.",
+    "latestReadings": "Últimas lecturas",
+    "latestAlerts": "Últimas alertas",
+    "noReadings": "Aún no hay lecturas.",
+    "noAlerts": "Aún no hay alertas."
+  },
+  "levels": {
+    "NORMAL": "Normal",
+    "WARNING": "Precaución",
+    "CRITICAL": "Crítico"
+  },
+  "rules": {
+    "criticalTitle": "Alerta crítica"
+  },
   "checkin": {
     "title": "Chequeo Diario de Tripulación",
     "subtitle": "Almacenamiento local IndexedDB (Dexie) · Sincroniza con Control de Misión",
@@ -88,34 +110,5 @@
     "historyEmpty": "Aún no hay chequeos guardados en este dispositivo.",
     "syncPending": "Pendiente de envío",
     "syncSynced": "Sincronizado"
-=======
-  "sensors": {
-    "simulatedData": "Datos simulados",
-    "start": "Iniciar simulador",
-    "stop": "Detener simulador",
-    "scenario": "Escenario",
-    "scenarios": {
-      "normal": "Normal",
-      "solarStorm": "Tormenta solar",
-      "hypoxia": "Hipoxia",
-      "boneLoss": "Pérdida ósea",
-      "sleepDeprivation": "Privación de sueño",
-      "infection": "Infección"
-    },
-    "statusRunning": "Simulador en marcha: generando lecturas.",
-    "statusStopped": "Simulador detenido.",
-    "latestReadings": "Últimas lecturas",
-    "latestAlerts": "Últimas alertas",
-    "noReadings": "Aún no hay lecturas.",
-    "noAlerts": "Aún no hay alertas."
-  },
-  "levels": {
-    "NORMAL": "Normal",
-    "WARNING": "Precaución",
-    "CRITICAL": "Crítico"
-  },
-  "rules": {
-    "criticalTitle": "Alerta crítica"
->>>>>>> origin/main
   }
 }

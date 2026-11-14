@@ -1,12 +1,7 @@
-<<<<<<< HEAD
-﻿{
-  "app": { "name": "Astro Health Monitor" },
-=======
 {
   "app": {
     "name": "Astro Health Monitor"
   },
->>>>>>> origin/main
   "pages": {
     "login": "Log in",
     "home": "Home",
@@ -28,7 +23,34 @@
     "language": "Language",
     "navigation": "Main navigation"
   },
-<<<<<<< HEAD
+  "sensors": {
+    "simulatedData": "Simulated data",
+    "start": "Start simulator",
+    "stop": "Stop simulator",
+    "scenario": "Scenario",
+    "scenarios": {
+      "normal": "Normal",
+      "solarStorm": "Solar storm",
+      "hypoxia": "Hypoxia",
+      "boneLoss": "Bone loss",
+      "sleepDeprivation": "Sleep deprivation",
+      "infection": "Infection"
+    },
+    "statusRunning": "Simulator running: generating readings.",
+    "statusStopped": "Simulator stopped.",
+    "latestReadings": "Latest readings",
+    "latestAlerts": "Latest alerts",
+    "noReadings": "No readings yet.",
+    "noAlerts": "No alerts yet."
+  },
+  "levels": {
+    "NORMAL": "Normal",
+    "WARNING": "Warning",
+    "CRITICAL": "Critical"
+  },
+  "rules": {
+    "criticalTitle": "Critical alert"
+  },
   "checkin": {
     "title": "Crew Daily Health Check-in",
     "subtitle": "Local IndexedDB storage (Dexie) · Syncs with Mission Control",
@@ -88,34 +110,5 @@
     "historyEmpty": "No check-ins saved on this device yet.",
     "syncPending": "Pending sync",
     "syncSynced": "Synced"
-=======
-  "sensors": {
-    "simulatedData": "Simulated data",
-    "start": "Start simulator",
-    "stop": "Stop simulator",
-    "scenario": "Scenario",
-    "scenarios": {
-      "normal": "Normal",
-      "solarStorm": "Solar storm",
-      "hypoxia": "Hypoxia",
-      "boneLoss": "Bone loss",
-      "sleepDeprivation": "Sleep deprivation",
-      "infection": "Infection"
-    },
-    "statusRunning": "Simulator running: generating readings.",
-    "statusStopped": "Simulator stopped.",
-    "latestReadings": "Latest readings",
-    "latestAlerts": "Latest alerts",
-    "noReadings": "No readings yet.",
-    "noAlerts": "No alerts yet."
-  },
-  "levels": {
-    "NORMAL": "Normal",
-    "WARNING": "Warning",
-    "CRITICAL": "Critical"
-  },
-  "rules": {
-    "criticalTitle": "Critical alert"
->>>>>>> origin/main
   }
 }
