@@ -361,3 +361,12 @@
 .sync-tag.synced {
   color: var(--ok);
 }
+
+.checkin-save-error {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+}

@@ -213,7 +213,9 @@
     "historyTitle": "Registros locales en Dexie (cola de sincronización)",
     "historyEmpty": "Aún no hay chequeos guardados en este dispositivo.",
     "syncPending": "Pendiente de envío",
-    "syncSynced": "Sincronizado"
+    "syncSynced": "Sincronizado",
+    "notAllowed": "El médico de vuelo no puede registrar chequeos diarios. Solo los astronautas guardan su propio chequeo.",
+    "saveError": "No se pudo guardar el chequeo. Inténtalo de nuevo."
   },
   "directions": {
     "high": "alto",

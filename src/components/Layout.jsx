@@ -7,16 +7,19 @@ import { db } from '../db/db.js'
 import { SUPPORTED_LANGUAGES } from '../i18n/index.js'
 import ConnectionStatus from './ConnectionStatus.jsx'
 
-// `roleCode`: the link is only shown to users with that role
-// (`allowMedicalOfficer`: and to the crew medical officer).
+// `show(session)`: who sees the link (default: everyone with a session).
+const isAstronautView = (session) => session.roleCode !== ROLE.FLIGHT_SURGEON
+const canViewCrew = (session) => session.roleCode === ROLE.FLIGHT_SURGEON || Boolean(session.isMedicalOfficer)
+
+// The flight surgeon only gets Crew and Sensors: the other screens are astronaut self-care.
 const NAV_ITEMS = [
-  { to: '/', labelKey: 'pages.home', end: true },
-  { to: '/vitals', labelKey: 'pages.vitals' },
-  { to: '/alerts', labelKey: 'pages.alerts' },
-  { to: '/checkin', labelKey: 'pages.checkin' },
+  { to: '/crew', labelKey: 'pages.crew', show: canViewCrew },
+  { to: '/', labelKey: 'pages.home', end: true, show: isAstronautView },
+  { to: '/vitals', labelKey: 'pages.vitals', show: isAstronautView },
+  { to: '/alerts', labelKey: 'pages.alerts', show: isAstronautView },
+  { to: '/checkin', labelKey: 'pages.checkin', show: isAstronautView },
   { to: '/sensors', labelKey: 'pages.sensors' },
-  { to: '/comms', labelKey: 'pages.comms' },
-  { to: '/crew', labelKey: 'pages.crew', roleCode: ROLE.FLIGHT_SURGEON, allowMedicalOfficer: true },
+  { to: '/comms', labelKey: 'pages.comms', show: isAstronautView },
 ]
 
 // App shell: top bar (app name, connection status, language, session) + navigation + page outlet.
@@ -27,12 +30,7 @@ export default function Layout() {
   const user = useLiveQuery(() => (userId ? db.users.get(userId) : undefined), [userId])
 
   const userName = user ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name : ''
-  const navItems = NAV_ITEMS.filter(
-    (item) =>
-      !item.roleCode ||
-      item.roleCode === session?.roleCode ||
-      (item.allowMedicalOfficer && session?.isMedicalOfficer),
-  )
+  const navItems = session ? NAV_ITEMS.filter((item) => !item.show || item.show(session)) : []
 
   function handleLogout() {
     // The simulator writes readings for the session user, so it must not outlive the session.

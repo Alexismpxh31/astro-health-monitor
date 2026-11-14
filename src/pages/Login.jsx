@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router-dom'
-import { getLockedUntil, login, ROLE, useSession } from '../auth/session.js'
+import { getLockedUntil, homePathFor, login, useSession } from '../auth/session.js'
 import { db } from '../db/db.js'
 
 const PIN_LENGTH = 4
@@ -19,10 +19,6 @@ async function loadLoginUsers() {
       fullName: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name,
       roleCode: codeByRoleId.get(user.roleId) ?? null,
     }))
-}
-
-function homePathFor(roleCode) {
-  return roleCode === ROLE.FLIGHT_SURGEON ? '/crew' : '/'
 }
 
 export default function Login() {
