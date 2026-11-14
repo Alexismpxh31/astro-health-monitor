@@ -7,6 +7,7 @@
 // bottom of the file adds the live API used by the 3D model UI (simulator.subscribe,
 // simulator.state, simulator.history, simulator.triggerAnomaly, startSimulator...).
 
+import { defaultUserId } from './demoUser.js'
 import catalogs from './seed/catalogs.json'
 import { db } from '../db/db.js'
 import { createReading } from '../models/reading.js'
@@ -150,12 +151,12 @@ function slowTick() {
  * Fast vital signs every 2 s, slow indicators every 20 s.
  * Calling it while already running switches the simulation to the new user.
  *
- * @param {string} forUserId - UUID of the user the readings belong to.
+ * @param {string} [forUserId] - UUID of the user the readings belong to.
+ *   Default: the logged-in user, or the demo astronaut (see ./demoUser.js).
  */
 export function start(forUserId) {
-  if (!forUserId) throw new Error('[simulator] start(userId) requires a user id')
   stop()
-  userId = forUserId
+  userId = forUserId || defaultUserId()
   // Emit right away so the UI does not wait for the first interval.
   fastTick()
   slowTick()
@@ -204,7 +205,6 @@ export function setScenario(name) {
 // Keeps the last value of every indicator and a short rolling history in memory,
 // and notifies subscribers after every tick. Key names match the 3D model UI.
 
-const DEFAULT_USER_ID = '00000000-0000-4000-8000-000000000901'
 const HISTORY_CODES = ['HR', 'SPO2', 'TSKIN', 'RR', 'RAD_D', 'SBP']
 const HISTORY_LENGTH = 25
 
@@ -301,7 +301,7 @@ const ANOMALY_TO_SCENARIO = {
 /**
  * Object API used by the 3D model UI.
  * simulator.start() accepts a user id (string); any other argument (e.g. an interval in ms)
- * is ignored and the demo astronaut is used.
+ * is ignored and the default user is used (see ./demoUser.js).
  */
 export const simulator = {
   get state() {
@@ -322,7 +322,7 @@ export const simulator = {
   },
   start(forUserId) {
     if (isRunning()) return
-    start(typeof forUserId === 'string' && forUserId ? forUserId : DEFAULT_USER_ID)
+    start(typeof forUserId === 'string' && forUserId ? forUserId : defaultUserId())
   },
   stop() {
     stop()
@@ -363,7 +363,7 @@ export function generateReading(forUserId, indicatorCode) {
  * @returns {() => void} cleanup function that unsubscribes and stops the simulator.
  */
 export function startSimulator(options = {}) {
-  const forUserId = options.userId || DEFAULT_USER_ID
+  const forUserId = options.userId || defaultUserId()
   if (!isRunning()) start(forUserId)
   const unsubscribe = simulator.subscribe(() => {
     if (options.onReading) {

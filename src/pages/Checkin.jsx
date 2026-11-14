@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { getSession } from '../auth/session.js'
+import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import catalogs from '../data/seed/catalogs.json'
 import { db, seedIfEmpty } from '../db/db.js'
 import './Checkin.css'
-
-const DEMO_ASTRONAUT_ID = '00000000-0000-4000-8000-000000000901'
 
 export default function Checkin() {
   const { t, i18n } = useTranslation()

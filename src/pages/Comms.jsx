@@ -2,10 +2,9 @@ import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { getSession } from '../auth/session.js'
+import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import { db } from '../db/db.js'
 import { getPendingCount } from '../sync/queue.js'
-
-const DEMO_ASTRONAUT_ID = 'a0000000-0000-4000-8000-000000000002'
 
 export default function Comms() {
   const { t, i18n } = useTranslation()
