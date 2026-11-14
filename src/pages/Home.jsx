@@ -121,14 +121,67 @@ export default function Home() {
     }
   }, []);
 
+  // Live queries to Dexie for active alerts
+  const activeAlerts = useLiveQuery(async () => {
+    try {
+      const list = await db.alerts.filter(a => !a.attendedAt).toArray();
+      const levels = await db.alertLevels.toArray();
+      const readings = await Promise.all(list.map(a => db.readings.get(a.readingId)));
+      return list.map((a, i) => ({
+        ...a,
+        indicatorCode: readings[i]?.indicatorCode,
+        levelCode: levels.find(l => l.id === a.alertLevelId)?.code
+      }));
+    } catch {
+      return [];
+    }
+  }, []);
+
+  // Compute dynamic status per subsystem based on Dexie alerts/readings
+  const getSubsystemStatus = (subId) => {
+    const alertsFor = (codes) => activeAlerts?.filter(a => codes.includes(a.indicatorCode)) || [];
+    if (subId === 'cardiovascular') {
+      const al = alertsFor(['HR', 'SPO2', 'SBP', 'DBP', 'RR']);
+      if (al.some(a => a.levelCode === 'critical')) return { label: 'Alerta', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.12)', tag: 'CRÍTICO' };
+      if (al.some(a => a.levelCode === 'caution')) return { label: 'Atención', color: '#D97706', bg: 'rgba(217, 119, 6, 0.12)', tag: 'PRECAUCIÓN' };
+      return { label: 'Normal', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', tag: 'NOMINAL' };
+    }
+    if (subId === 'cns') {
+      const al = alertsFor(['PVT', 'SLEEP_H', 'MOOD', 'STRESS']);
+      if (al.some(a => a.levelCode === 'critical')) return { label: 'Fatiga Alta', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.12)', tag: 'ALERTA' };
+      if (al.some(a => a.levelCode === 'caution')) return { label: 'Fatiga Moderada', color: '#D97706', bg: 'rgba(217, 119, 6, 0.12)', tag: 'ATENCIÓN' };
+      return { label: 'Óptimo', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', tag: 'ÓPTIMO' };
+    }
+    if (subId === 'musculoskeletal') {
+      const al = alertsFor(['BMD', 'MUSCLE']);
+      if (al.some(a => a.levelCode === 'critical')) return { label: 'Descarga Crítica', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.12)', tag: 'ALERTA' };
+      if (al.some(a => a.levelCode === 'caution')) return { label: 'Ajustar ARED', color: '#D97706', bg: 'rgba(217, 119, 6, 0.12)', tag: 'ATENCIÓN' };
+      return { label: 'Estable', color: '#2563EB', bg: 'rgba(37, 99, 235, 0.12)', tag: 'ESTABLE' };
+    }
+    if (subId === 'radiation') {
+      const al = alertsFor(['RAD_D', 'RAD_DOSE']);
+      if (al.some(a => a.levelCode === 'critical')) return { label: 'Tormenta SPE', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.12)', tag: 'ALERTA SPE' };
+      if (al.some(a => a.levelCode === 'caution')) return { label: 'Dosis Elevada', color: '#D97706', bg: 'rgba(217, 119, 6, 0.12)', tag: 'PRECAUCIÓN' };
+      return { label: 'Controlado', color: '#059669', bg: 'rgba(16, 185, 129, 0.12)', tag: 'CONTROLADO' };
+    }
+    if (subId === 'immune') {
+      const al = alertsFor(['WBC', 'IL6', 'CORTISOL']);
+      if (al.some(a => a.levelCode === 'critical')) return { label: 'Inflamación', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.12)', tag: 'ALERTA' };
+      return { label: 'Normal', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', tag: 'NORMAL' };
+    }
+    return { label: 'Normal', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)', tag: 'NOMINAL' };
+  };
+
   const bpText = latestReadings?.SBP && latestReadings?.DBP 
     ? `MET ${Math.round(latestReadings.SBP.value)}/${Math.round(latestReadings.DBP.value)} mmHg`
     : 'MET 142/88 mmHg';
 
+  const hrNumber = latestReadings?.HR ? Math.round(latestReadings.HR.value) : 72;
   const spo2Val = latestReadings?.SPO2 ? Math.round(latestReadings.SPO2.value) : 94;
   const radVal = latestReadings?.RAD_D ? `${latestReadings.RAD_D.value.toFixed(2)} mSv/d` : '0.35 mSv/d';
 
   const activeSystem = SUBSYSTEMS.find(s => s.id === selectedId) || SUBSYSTEMS[0];
+  const activeStatus = getSubsystemStatus(activeSystem.id);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1440px', margin: '0 auto', width: '100%' }}>
@@ -397,29 +450,34 @@ export default function Home() {
                   </div>
 
                   {/* Status Indicator Pill */}
-                  <div 
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      background: sub.statusBg,
-                      padding: '3px 8px',
-                      borderRadius: '9999px',
-                      fontSize: '10.5px',
-                      fontWeight: '700',
-                      color: sub.statusColor
-                    }}
-                  >
-                    <span 
-                      style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        background: sub.statusColor
-                      }} 
-                    />
-                    <span>{sub.statusLabel}</span>
-                  </div>
+                  {(() => {
+                    const st = getSubsystemStatus(sub.id);
+                    return (
+                      <div 
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          background: st.bg,
+                          padding: '3px 8px',
+                          borderRadius: '9999px',
+                          fontSize: '10.5px',
+                          fontWeight: '700',
+                          color: st.color
+                        }}
+                      >
+                        <span 
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            background: st.color
+                          }} 
+                        />
+                        <span>{st.label}</span>
+                      </div>
+                    );
+                  })()}
                 </button>
               );
             })}
@@ -443,6 +501,53 @@ export default function Home() {
             embedded={true}
             height="520px"
             selectedZone={ZONE_MAP[selectedId] || 'cardio'}
+            telemetry={{
+              cardio: {
+                id: 'cardio',
+                name: 'Coraza Pectoral (HUT) y Mochila PLSS',
+                region: 'Tórax y Soporte Vital Primario',
+                metric: 'Ritmo Cardíaco · SpO₂',
+                value: `${hrNumber} BPM · ${spo2Val} %`,
+                status: activeAlerts?.some(a => ['HR', 'SPO2'].includes(a.indicatorCode)) ? 'warning' : 'optimal',
+                detail: 'Circulación y oxigenación tisular en tiempo real desde telemetría Astroskin.'
+              },
+              neuro: {
+                id: 'neuro',
+                name: 'Casco y Sistema Neuro-Vestibular',
+                region: 'Visor Presurizado / Unidad Cefálica',
+                metric: 'Latencia PVT · O₂ Casco',
+                value: `${latestReadings?.PVT ? Math.round(latestReadings.PVT.value) + ' ms' : '240 ms'} · 4.3 psi`,
+                status: activeAlerts?.some(a => ['PVT', 'SLEEP_H'].includes(a.indicatorCode)) ? 'warning' : 'optimal',
+                detail: 'Sello hermético y vigilancia psicomotora del astronauta.'
+              },
+              metabolic: {
+                id: 'metabolic',
+                name: 'Corsé Abdominal y Biomarcadores',
+                region: 'Cintura / Metabolismo',
+                metric: 'Cortisol · IL-6',
+                value: `${latestReadings?.CORTISOL ? latestReadings.CORTISOL.value.toFixed(1) + ' nmol/L' : '14 nmol/L'}`,
+                status: activeAlerts?.some(a => ['CORTISOL', 'IL6', 'WBC'].includes(a.indicatorCode)) ? 'warning' : 'optimal',
+                detail: 'Respuesta al estrés y vigilancia inmunológica en vuelo.'
+              },
+              musculo: {
+                id: 'musculo',
+                name: 'Extremidades y Carga ARED',
+                region: 'Articulaciones y Tracción EVA',
+                metric: 'Densidad Ósea BMD',
+                value: `${latestReadings?.BMD ? latestReadings.BMD.value.toFixed(1) + ' %/mes' : '-0.8 %/mes'}`,
+                status: activeAlerts?.some(a => ['BMD', 'MUSCLE'].includes(a.indicatorCode)) ? 'warning' : 'optimal',
+                detail: 'Integridad musculoesquelética frente a microgravedad.'
+              },
+              radiation: {
+                id: 'radiation',
+                name: 'Dosimetría Integral del Traje',
+                region: 'Blindaje Radiación Cósmica',
+                metric: 'Dosis Diaria / Acumulada',
+                value: radVal,
+                status: activeAlerts?.some(a => ['RAD_D', 'RAD_DOSE'].includes(a.indicatorCode)) ? 'critical' : 'optimal',
+                detail: 'Monitoreo continuo de rayos cósmicos y partículas solares SPE.'
+              }
+            }}
             onSelectZone={(zona) => {
               const mapped = REVERSE_ZONE_MAP[zona.id] || 'cardiovascular';
               setSelectedId(mapped);
@@ -480,16 +585,16 @@ export default function Home() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  background: 'rgba(16, 185, 129, 0.12)',
+                  background: activeStatus.bg,
                   padding: '3px 9px',
                   borderRadius: '9999px',
                   fontSize: '10.5px',
                   fontWeight: '700',
-                  color: '#059669'
+                  color: activeStatus.color
                 }}
               >
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                <span>{activeSystem.tag}</span>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: activeStatus.color }} />
+                <span>{activeStatus.tag}</span>
               </div>
             </div>
 

@@ -4,42 +4,63 @@ import { CheckCircle2, AlertTriangle, AlertOctagon } from 'lucide-react';
 export const TrafficLight = ({ level = 'normal', showText = true, size = 'md' }) => {
   const configs = {
     critical: {
-      bg: 'bg-red-950/70 border-red-500/80 text-red-400',
-      dot: 'bg-status-critical',
+      bg: 'rgba(239, 68, 68, 0.12)',
+      border: '#FECACA',
+      color: '#DC2626',
+      dot: '#EF4444',
       text: 'CRÍTICO',
-      Icon: AlertOctagon,
-      glow: 'shadow-glow-red'
+      Icon: AlertOctagon
     },
     caution: {
-      bg: 'bg-amber-950/70 border-amber-500/80 text-amber-400',
-      dot: 'bg-status-caution',
+      bg: 'rgba(245, 158, 11, 0.12)',
+      border: '#FDE68A',
+      color: '#D97706',
+      dot: '#F59E0B',
       text: 'PRECAUCIÓN',
-      Icon: AlertTriangle,
-      glow: ''
+      Icon: AlertTriangle
     },
     normal: {
-      bg: 'bg-emerald-950/60 border-emerald-500/70 text-emerald-400',
-      dot: 'bg-status-normal',
+      bg: 'rgba(16, 185, 129, 0.12)',
+      border: '#A7F3D0',
+      color: '#059669',
+      dot: '#10B981',
       text: 'NOMINAL',
-      Icon: CheckCircle2,
-      glow: ''
+      Icon: CheckCircle2
     }
   };
 
   const config = configs[level] || configs.normal;
   const IconComponent = config.Icon;
 
-  const sizeClasses = {
-    sm: 'text-[11px] px-2 py-0.5 gap-1',
-    md: 'text-xs px-2.5 py-1 gap-1.5',
-    lg: 'text-sm px-3.5 py-1.5 gap-2 font-medium'
-  }[size];
+  const pad = size === 'sm' ? '3px 8px' : size === 'lg' ? '6px 14px' : '4px 10px';
+  const fontSize = size === 'sm' ? '10px' : size === 'lg' ? '12px' : '11px';
 
   return (
-    <div className={`inline-flex items-center rounded-full border backdrop-blur-sm ${config.bg} ${config.glow} ${sizeClasses}`}>
-      <span className={`w-2 h-2 rounded-full ${config.dot} ${level === 'critical' ? 'animate-ping' : ''}`} />
-      <IconComponent className="w-3.5 h-3.5 flex-shrink-0" />
-      {showText && <span className="font-mono tracking-wider font-semibold">{config.text}</span>}
+    <div 
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: pad,
+        borderRadius: '9999px',
+        background: config.bg,
+        border: `1px solid ${config.border}`,
+        color: config.color,
+        fontSize,
+        fontFamily: 'monospace',
+        fontWeight: '700'
+      }}
+    >
+      <span 
+        style={{
+          width: '6px',
+          height: '6px',
+          borderRadius: '50%',
+          background: config.dot
+        }} 
+      />
+      <IconComponent size={13} style={{ flexShrink: 0 }} />
+      {showText && <span style={{ letterSpacing: '0.05em' }}>{config.text}</span>}
     </div>
   );
 };
