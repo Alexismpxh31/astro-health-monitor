@@ -3,13 +3,15 @@ import { useSession } from './session.js'
 
 /**
  * Route guard. Without a session every child route redirects to /login.
- * With `roleCode`, users of any other role are sent to the home page.
+ * With `roleCode`, users of any other role are sent to the home page, except the crew
+ * medical officer when `allowMedicalOfficer` is set (read-only view of crewmates).
  *
- * @param {{ roleCode?: string }} props
+ * @param {{ roleCode?: string, allowMedicalOfficer?: boolean }} props
  */
-export default function RequireSession({ roleCode }) {
+export default function RequireSession({ roleCode, allowMedicalOfficer = false }) {
   const session = useSession()
   if (!session) return <Navigate to="/login" replace />
-  if (roleCode && session.roleCode !== roleCode) return <Navigate to="/" replace />
+  const allowed = !roleCode || session.roleCode === roleCode || (allowMedicalOfficer && session.isMedicalOfficer)
+  if (!allowed) return <Navigate to="/" replace />
   return <Outlet />
 }

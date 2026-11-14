@@ -136,9 +136,11 @@ export default function IndicatorTrend({ item, lang, isEditing, onEdit, children
 
       <footer className="indicator-card-footer">
         <span className={`indicator-threshold-tag ${isPersonal ? 'is-personal' : ''}`}>{thresholdLabel}</span>
-        <button type="button" aria-expanded={isEditing} onClick={onEdit}>
-          {t('crewDetail.adjustThreshold')}
-        </button>
+        {onEdit && (
+          <button type="button" aria-expanded={isEditing} onClick={onEdit}>
+            {t('crewDetail.adjustThreshold')}
+          </button>
+        )}
       </footer>
 
       {children}

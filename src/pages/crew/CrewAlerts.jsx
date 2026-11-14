@@ -17,8 +17,9 @@ const LEVEL_FROM_CODE = { caution: 'WARNING', critical: 'CRITICAL' }
  *
  * @param {Object} props
  * @param {Object[]} props.users - Astronauts shown in the crew table.
+ * @param {boolean} [props.canSendNotes=true] - false for the read-only medical officer view.
  */
-export default function CrewAlerts({ users }) {
+export default function CrewAlerts({ users, canSendNotes = true }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
@@ -102,9 +103,11 @@ export default function CrewAlerts({ users }) {
                       ? t('crewAlerts.attended', { time: timeFormat.format(new Date(item.alert.attendedAt)) })
                       : t('crewAlerts.open')}
                   </span>
-                  <button type="button" onClick={() => sendNote(item, advice)}>
-                    {t('crewAlerts.sendNote')}
-                  </button>
+                  {canSendNotes && (
+                    <button type="button" onClick={() => sendNote(item, advice)}>
+                      {t('crewAlerts.sendNote')}
+                    </button>
+                  )}
                 </div>
               </li>
             )

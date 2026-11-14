@@ -7,7 +7,8 @@ import { db } from '../db/db.js'
 import { SUPPORTED_LANGUAGES } from '../i18n/index.js'
 import ConnectionStatus from './ConnectionStatus.jsx'
 
-// `roleCode`: the link is only shown to users with that role.
+// `roleCode`: the link is only shown to users with that role
+// (`allowMedicalOfficer`: and to the crew medical officer).
 const NAV_ITEMS = [
   { to: '/', labelKey: 'pages.home', end: true },
   { to: '/vitals', labelKey: 'pages.vitals' },
@@ -15,7 +16,7 @@ const NAV_ITEMS = [
   { to: '/checkin', labelKey: 'pages.checkin' },
   { to: '/sensors', labelKey: 'pages.sensors' },
   { to: '/comms', labelKey: 'pages.comms' },
-  { to: '/crew', labelKey: 'pages.crew', roleCode: ROLE.FLIGHT_SURGEON },
+  { to: '/crew', labelKey: 'pages.crew', roleCode: ROLE.FLIGHT_SURGEON, allowMedicalOfficer: true },
 ]
 
 // App shell: top bar (app name, connection status, language, session) + navigation + page outlet.
@@ -26,7 +27,12 @@ export default function Layout() {
   const user = useLiveQuery(() => (userId ? db.users.get(userId) : undefined), [userId])
 
   const userName = user ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name : ''
-  const navItems = NAV_ITEMS.filter((item) => !item.roleCode || item.roleCode === session?.roleCode)
+  const navItems = NAV_ITEMS.filter(
+    (item) =>
+      !item.roleCode ||
+      item.roleCode === session?.roleCode ||
+      (item.allowMedicalOfficer && session?.isMedicalOfficer),
+  )
 
   function handleLogout() {
     // The simulator writes readings for the session user, so it must not outlive the session.
