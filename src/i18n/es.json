@@ -13,6 +13,28 @@
     "crewMember": "Tripulante"
   },
   "connection": { "online": "En línea", "offline": "Sin señal" },
+  "trafficLight": {
+    "NORMAL": "Normal",
+    "WARNING": "Precaución",
+    "CRITICAL": "Crítico",
+    "NO_DATA": "Sin evaluar"
+  },
+  "crew": {
+    "subtitle_one": "Misión {{mission}}: {{count}} astronauta",
+    "subtitle_other": "Misión {{mission}}: {{count}} astronautas",
+    "member": "Tripulante",
+    "overall": "Estado general",
+    "lastReading": "Última lectura",
+    "simulate": "Generar lecturas simuladas",
+    "simulating": "Generando…",
+    "simulatedNote": "Incluye datos simulados para la demostración. No son datos médicos reales.",
+    "summaryLabel": "Resumen del estado de la tripulación",
+    "tableCaption": "Estado de salud de cada tripulante por sistema corporal",
+    "loading": "Cargando tripulación…",
+    "empty": "No hay astronautas asignados a esta misión.",
+    "loadError": "No se pudo preparar la tripulación de demostración. Recarga la página.",
+    "simulateError": "No se pudieron generar lecturas simuladas. Inténtalo de nuevo."
+  },
   "common": {
     "underConstruction": "En construcción",
     "language": "Idioma",

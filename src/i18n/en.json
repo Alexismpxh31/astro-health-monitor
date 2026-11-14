@@ -13,6 +13,28 @@
     "crewMember": "Crew member"
   },
   "connection": { "online": "Online", "offline": "No signal" },
+  "trafficLight": {
+    "NORMAL": "Normal",
+    "WARNING": "Warning",
+    "CRITICAL": "Critical",
+    "NO_DATA": "Not assessed"
+  },
+  "crew": {
+    "subtitle_one": "Mission {{mission}}: {{count}} astronaut",
+    "subtitle_other": "Mission {{mission}}: {{count}} astronauts",
+    "member": "Crew member",
+    "overall": "Overall status",
+    "lastReading": "Last reading",
+    "simulate": "Generate simulated readings",
+    "simulating": "Generating…",
+    "simulatedNote": "Includes simulated data for the demo. This is not real medical data.",
+    "summaryLabel": "Crew status summary",
+    "tableCaption": "Health status of each crew member by body system",
+    "loading": "Loading crew…",
+    "empty": "No astronauts are assigned to this mission.",
+    "loadError": "The demo crew could not be prepared. Reload the page.",
+    "simulateError": "Simulated readings could not be generated. Try again."
+  },
   "common": {
     "underConstruction": "Under construction",
     "language": "Language",
