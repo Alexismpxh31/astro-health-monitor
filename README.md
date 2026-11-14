@@ -132,7 +132,7 @@ It is generated, do not edit it by hand:
 npm run gen:sql   # regenerates supabase/setup_final.sql
 ```
 
-Upgrading an existing database without dropping it: the `alter table ... add column if not exists` lines in `scripts/schema.sql` (thresholds.mode, missions.name_es / name_en / comm_delay_*, messages.alert_id) can be run on their own in the SQL Editor.
+Upgrading an existing database without dropping it: run `supabase/upgrade_missions_alert_id.sql` in the SQL Editor (adds the missions columns, `messages.alert_id`, the Mars demo mission and astronauts Four and Five; safe to run more than once). The `alter table ... add column if not exists` lines in `scripts/schema.sql` are the same changes.
 
 ### Sync
 
