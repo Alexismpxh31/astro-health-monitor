@@ -1,17 +1,23 @@
-// Sync queue (STUB).
-// Pushes locally stored rows with syncStatus 'pending' to Supabase when online.
+import { db } from '../db/db.js'
+import { supabase } from './supabaseClient.js'
 
 /** Tables that carry a syncStatus field and take part in the sync queue. */
-export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins', 'messages']
+export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins']
 
 /**
- * Counts the rows still waiting to be synced.
+ * Counts the rows still waiting to be synced in Dexie.
  *
  * @returns {Promise<number>}
  */
 export async function getPendingCount() {
-  // TODO: sum db[table].where('syncStatus').equals('pending').count() over SYNCABLE_TABLES.
-  return 0
+  let count = 0
+  for (const table of SYNCABLE_TABLES) {
+    if (db[table]) {
+      const pending = await db[table].where('syncStatus').equals('pending').count()
+      count += pending
+    }
+  }
+  return count
 }
 
 /**
@@ -20,24 +26,72 @@ export async function getPendingCount() {
  * @returns {Promise<{ pushed: number, failed: number }>}
  */
 export async function syncPending() {
-  // TODO:
-  // 1. If the supabase client is null or navigator.onLine is false -> return zeros.
-  // 2. For each table in SYNCABLE_TABLES:
-  //    a. Read rows where syncStatus === 'pending'.
-  //    b. Upsert them to Supabase in batches (onConflict: 'id').
-  //    c. On success set syncStatus = 'synced' locally; on error count as failed (retried later).
-  return { pushed: 0, failed: 0 }
+  if (!supabase || typeof navigator === 'undefined' || !navigator.onLine) {
+    return { pushed: 0, failed: 0 }
+  }
+
+  let pushed = 0
+  let failed = 0
+
+  for (const table of SYNCABLE_TABLES) {
+    if (!db[table]) continue
+
+    try {
+      const pendingRows = await db[table].where('syncStatus').equals('pending').toArray()
+      if (pendingRows.length === 0) continue
+
+      for (const row of pendingRows) {
+        // Strip out local-only fields before sending to Supabase
+        const { syncStatus, ...payload } = row
+        const { error } = await supabase.from(table).upsert(payload, { onConflict: 'id' })
+
+        if (error) {
+          // If RLS blocks anon write or server error, record as failed
+          console.warn(`[sync] Failed to push ${table}/${row.id}:`, error.message)
+          failed++
+        } else {
+          // Mark as synced locally
+          await db[table].update(row.id, { syncStatus: 'synced' })
+          pushed++
+        }
+      }
+    } catch (err) {
+      console.error(`[sync] Error during sync of ${table}:`, err)
+      failed++
+    }
+  }
+
+  return { pushed, failed }
 }
 
 /**
- * Starts automatic syncing: on the 'online' event and on a timer.
+ * Starts automatic syncing: on the 'online' event and on a recurring interval.
  *
  * @param {Object} [options]
  * @param {number} [options.intervalMs=30000]
  * @returns {() => void} stop function.
  */
 export function startAutoSync(options = {}) {
-  // TODO: window.addEventListener('online', syncPending) + setInterval(syncPending, intervalMs).
-  console.warn('[sync] startAutoSync is not implemented yet', options)
-  return () => {}
+  const intervalMs = options.intervalMs || 30000
+
+  const handleOnline = () => {
+    syncPending().then(({ pushed, failed }) => {
+      if (pushed > 0) console.log(`[sync] Online sync: pushed ${pushed} records to Supabase.`)
+    })
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', handleOnline)
+  }
+
+  const timer = setInterval(() => {
+    syncPending()
+  }, intervalMs)
+
+  return () => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', handleOnline)
+    }
+    clearInterval(timer)
+  }
 }

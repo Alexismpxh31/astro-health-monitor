@@ -3,6 +3,8 @@
  * Generates continuous physiological telemetry with noise and supports real-time anomaly injection.
  */
 import { NASA_INDICATORS_MAP } from './nasaHrpData.js';
+import { db } from '../db/db.js';
+import { createReading } from '../models/reading.js';
 
 class TelemetrySimulator {
   constructor() {
@@ -101,6 +103,21 @@ class TelemetrySimulator {
     });
 
     this.notify();
+
+    // Persist live reading sample to Dexie offline DB (with pending sync to Supabase)
+    try {
+      const defaultUserId = '00000000-0000-4000-8000-000000000901';
+      const r = createReading({
+        userId: defaultUserId,
+        indicatorCode: 'HR',
+        value: this.state.HR,
+        unit: 'bpm',
+        source: 'simulated'
+      });
+      db.readings.put(r).catch(() => {});
+    } catch (e) {
+      // non-blocking
+    }
   }
 
   // Live Hackathon Anomaly Injections for Demonstration
