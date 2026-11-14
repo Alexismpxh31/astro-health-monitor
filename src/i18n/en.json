@@ -44,7 +44,8 @@
     "loading": "Loading crew…",
     "empty": "No astronauts are assigned to this mission.",
     "loadError": "The demo crew could not be prepared. Reload the page.",
-    "simulateError": "Simulated readings could not be generated. Try again."
+    "simulateError": "Simulated readings could not be generated. Try again.",
+    "medicalOfficer": "Medical officer"
   },
   "crewDetail": {
     "back": "Back to crew",
@@ -223,5 +224,23 @@
     },
     "logout": "Log out",
     "signedInAs": "Logged-in user"
+  },
+  "crewAlerts": {
+    "title": "Crew alerts",
+    "unattended_one": "{{count}} unattended alert",
+    "unattended_other": "{{count}} unattended alerts",
+    "onlyOpen": "Unattended only",
+    "empty": "No crew alerts yet.",
+    "emptyOpen": "No unattended alerts.",
+    "open": "Unattended",
+    "attended": "Attended {{time}}",
+    "sendNote": "Send note",
+    "more_one": "And {{count}} more alert.",
+    "more_other": "And {{count}} more alerts.",
+    "draft": "I saw your {{indicator}} alert ({{value}} {{unit}}) at {{time}}. {{advice}} Let me know when you have done it.",
+    "direction": {
+      "high": "went up",
+      "low": "went down"
+    }
   }
 }

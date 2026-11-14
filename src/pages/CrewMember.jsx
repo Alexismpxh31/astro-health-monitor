@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
 import { ensureDemoCrew } from '../data/demoCrew.js'
 import { csvFileName, downloadCsv, readingsToCsv } from './crew/exportCsv.js'
@@ -16,6 +16,8 @@ import './CrewMember.css'
 // notes to the astronaut and CSV export.
 export default function CrewMember() {
   const { userId } = useParams()
+  // "Send note" on a crew alert opens this page with a prefilled note.
+  const noteDraft = useLocation().state?.noteDraft ?? ''
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const data = useLiveQuery(() => loadMemberData(userId), [userId])
@@ -110,7 +112,14 @@ export default function CrewMember() {
         </div>
 
         <aside className="crew-detail-side">
-          <NotesPanel recipientId={user.id} senderId={surgeonId} notes={notes} lang={lang} />
+          <NotesPanel
+            key={user.id}
+            recipientId={user.id}
+            senderId={surgeonId}
+            notes={notes}
+            lang={lang}
+            initialDraft={noteDraft}
+          />
         </aside>
       </div>
     </section>
