@@ -242,9 +242,9 @@ export async function evaluateReading(reading) {
   }
 
   // Check + insert in one transaction so concurrent readings cannot both pass the check.
-  const created = await db.transaction('rw', db.alerts, async () => {
+  const created = await db.transaction('rw', db.alerts, db.readings, async () => {
     const since = new Date(Date.now() - ALERT_COOLDOWN_MS).toISOString()
-    const duplicate = await db.alerts
+    const candidates = await db.alerts
       .where('generatedAt')
       .aboveOrEqual(since)
       .filter(
@@ -255,7 +255,11 @@ export async function evaluateReading(reading) {
           // Alerts stored before `direction` existed count as the same direction.
           (row.direction ?? direction) === direction,
       )
-      .first()
+      .toArray()
+    // Only the same astronaut counts as a duplicate: on the flight surgeon's device
+    // one crew member's alert must not hide another's.
+    const candidateReadings = await db.readings.bulkGet(candidates.map((row) => row.readingId))
+    const duplicate = candidateReadings.some((row) => row?.userId === reading.userId)
     if (duplicate) return false
     await db.alerts.add(alert)
     return true

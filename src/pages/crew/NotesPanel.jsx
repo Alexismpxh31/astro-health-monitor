@@ -18,11 +18,12 @@ function noteStatusKey(note) {
  * @param {string|null} props.senderId
  * @param {Object[]} props.notes - Messages sent to this crew member, newest first.
  * @param {string} props.lang
+ * @param {string} [props.initialDraft] - Text to start with (e.g. written from an alert).
  */
-export default function NotesPanel({ recipientId, senderId, notes, lang }) {
+export default function NotesPanel({ recipientId, senderId, notes, lang, initialDraft = '' }) {
   const { t } = useTranslation()
   const fieldId = useId()
-  const [text, setText] = useState('')
+  const [text, setText] = useState(initialDraft.slice(0, MAX_LENGTH))
   const [errorKey, setErrorKey] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const dateFormat = new Intl.DateTimeFormat(lang, { dateStyle: 'short', timeStyle: 'short' })
@@ -70,6 +71,7 @@ export default function NotesPanel({ recipientId, senderId, notes, lang }) {
           rows={4}
           maxLength={MAX_LENGTH}
           value={text}
+          autoFocus={Boolean(initialDraft)}
           placeholder={t('crewDetail.notes.placeholder')}
           onChange={(event) => setText(event.target.value)}
         />
