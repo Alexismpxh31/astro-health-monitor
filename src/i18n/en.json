@@ -200,6 +200,31 @@
     "high": "high",
     "low": "low"
   },
+  "login": {
+    "chooseUser": "Choose your user to continue.",
+    "loading": "Loading crew…",
+    "noUsers": "There are no active users on this device.",
+    "enterPin": "Enter your 4-digit PIN",
+    "pinProgress": "{{entered}} of {{total}} digits entered",
+    "delete": "Delete",
+    "enter": "Enter",
+    "changeUser": "Switch user",
+    "wrongPin_one": "Wrong PIN. {{count}} attempt left.",
+    "wrongPin_other": "Wrong PIN. {{count}} attempts left.",
+    "locked": "Too many failed attempts. Access is temporarily locked.",
+    "lockedCountdown_one": "You can try again in {{count}} second.",
+    "lockedCountdown_other": "You can try again in {{count}} seconds.",
+    "error": "The PIN could not be checked. Try again.",
+    "offlineNote": "Works offline: the PIN is checked on this device."
+  },
+  "auth": {
+    "roles": {
+      "astronaut": "Astronaut",
+      "flight_surgeon": "Flight surgeon"
+    },
+    "logout": "Log out",
+    "signedInAs": "Logged-in user"
+  },
   "crewAlerts": {
     "title": "Crew alerts",
     "unattended_one": "{{count}} unattended alert",
