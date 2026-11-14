@@ -1,0 +1,21 @@
+{
+  "app": { "name": "Astro Health Monitor" },
+  "pages": {
+    "login": "Iniciar sesión",
+    "home": "Inicio",
+    "vitals": "Signos vitales",
+    "systemDetail": "Detalle del sistema",
+    "alerts": "Alertas",
+    "checkin": "Chequeo diario",
+    "sensors": "Sensores",
+    "comms": "Comunicaciones",
+    "crew": "Tripulación",
+    "crewMember": "Tripulante"
+  },
+  "connection": { "online": "En línea", "offline": "Sin señal" },
+  "common": {
+    "underConstruction": "En construcción",
+    "language": "Idioma",
+    "navigation": "Navegación principal"
+  }
+}
