@@ -145,7 +145,26 @@
     "latestReadings": "Últimas lecturas",
     "latestAlerts": "Últimas alertas",
     "noReadings": "Aún no hay lecturas.",
-    "noAlerts": "Aún no hay alertas."
+    "noAlerts": "Aún no hay alertas.",
+    "ble": {
+      "title": "Sensor real (Bluetooth)",
+      "connect": "Conectar pulsómetro",
+      "disconnect": "Desconectar pulsómetro",
+      "unnamedDevice": "pulsómetro",
+      "status": {
+        "disconnected": "Desconectado",
+        "connecting": "Conectando… elige tu pulsómetro en la ventana del navegador.",
+        "connected": "Conectado a {{name}}",
+        "reconnecting": "Se perdió la conexión. Reintentando…"
+      },
+      "errors": {
+        "insecure": "El Bluetooth solo funciona si la app se abre por https://.",
+        "unsupported": "Este navegador no es compatible con Web Bluetooth (Safari y Firefox no lo permiten). Usa Chrome o Edge en computadora o Android.",
+        "failed": "No se pudo conectar con el pulsómetro. Comprueba que esté encendido y cerca, e inténtalo de nuevo.",
+        "lost": "Se perdió la conexión con el pulsómetro y el reintento falló. Vuelve a conectarlo."
+      },
+      "exclusiveNote": "El pulsómetro y el simulador no funcionan a la vez: al conectar uno se detiene el otro."
+    }
   },
   "levels": {
     "normal": "Normal",

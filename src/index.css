@@ -526,3 +526,42 @@ h2 {
   line-height: 1.2;
   color: var(--danger);
 }
+
+/* ---------- Sensors page: BLE heart rate sensor ---------- */
+
+.ble-panel {
+  margin-top: 1rem;
+}
+
+.ble-badge {
+  align-self: flex-start;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+}
+
+.ble-panel .sim-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ble-status {
+  font-weight: 600;
+}
+
+.ble-status.is-connected {
+  color: var(--ok);
+}
+
+.ble-status.is-connecting,
+.ble-status.is-reconnecting {
+  color: var(--warn);
+}
+
+.ble-error {
+  font-weight: 700;
+  color: var(--danger);
+}
