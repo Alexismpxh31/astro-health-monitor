@@ -42,7 +42,8 @@ export async function loadMemberData(userId) {
     db.bodySystems.toArray(),
     db.indicators.toArray(),
     db.thresholds.toArray(),
-    db.readings.where('userId').equals(userId).toArray(),
+    db.readings.where('userId').equals(userId)
+      .filter((reading) => userId === session.userId || reading.syncStatus === 'synced').toArray(),
     session.roleCode === FLIGHT_SURGEON_ROLE_CODE
       ? db.messages.where('recipientId').equals(userId).toArray()
       : [],

@@ -1,14 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
-import { ensureDemoCrew } from '../data/demoCrew.js'
 import BodyView from './crew/BodyView.jsx'
 import { localName } from './crew/display.js'
 import { csvFileName, downloadCsv, readingsToCsv } from './crew/exportCsv.js'
 import IndicatorTrend from './crew/IndicatorTrend.jsx'
-import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
 import { loadMemberData } from './crew/memberData.js'
 import NotesPanel from './crew/NotesPanel.jsx'
 import ThresholdEditor from './crew/ThresholdEditor.jsx'
@@ -27,10 +25,6 @@ export default function CrewMember() {
   const [editingIndicatorId, setEditingIndicatorId] = useState(null)
   const [systemCode, setSystemCode] = useState(null)
   const canManage = useCanManageCrew()
-
-  useEffect(() => {
-    ensureDemoCrew().catch((error) => console.error('[crew] Could not prepare the demo crew', error))
-  }, [])
 
   const backLink = (
     <Link to="/crew" className="crew-detail-back">
@@ -75,7 +69,6 @@ export default function CrewMember() {
           <TrafficLight level={overall} />
         </div>
         <div className="crew-detail-actions">
-          {canManage && <LiveDemoToggle />}
           {canManage && <button type="button" onClick={handleExport} disabled={exportRows.length === 0}>
             {t('crewDetail.exportCsv')}
           </button>}

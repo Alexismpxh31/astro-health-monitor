@@ -1,18 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
-import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
 import { useSession } from '../auth/session.js'
 import { loadCrewData } from './crew/crewData.js'
 import { clearCurrentMission, useCurrentMission } from './missions/missionStore.js'
 import { LEVEL } from './crew/crewStatus.js'
 import { DISPLAY_CODE } from './crew/display.js'
 import CrewAlerts from './crew/CrewAlerts.jsx'
-import LiveDemoToggle from './crew/LiveDemoToggle.jsx'
 import { useCanManageCrew } from './crew/useCrewAccess.js'
-import { useLiveDemo } from './crew/useLiveDemo.js'
 import './Crew.css'
 
 const SUMMARY_LEVELS = [LEVEL.CRITICAL, LEVEL.WARNING, LEVEL.NORMAL]
@@ -30,38 +27,13 @@ export default function Crew() {
     () => (userId ? loadCrewData(userId, missionFilter, canManage) : null),
     [userId, missionFilter, canManage],
   )
-  const { isLive, hasError: liveFailed } = useLiveDemo()
-  const [errorKey, setErrorKey] = useState(null)
-  const [isSimulating, setIsSimulating] = useState(false)
   const [levelFilter, setLevelFilter] = useState(null)
-
-  useEffect(() => {
-    ensureDemoCrew().catch((error) => {
-      console.error('[crew] Could not prepare the demo crew', error)
-      setErrorKey('crew.loadError')
-    })
-  }, [])
-
-  const shownErrorKey = errorKey ?? (liveFailed ? 'crew.simulateError' : null)
 
   const localName = (row) => (lang === 'en' ? row.nameEn : row.nameEs) ?? row.name ?? row.code
   const numberFormat = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 })
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   const formatReading = (reading) =>
     `${DISPLAY_CODE[reading.indicatorCode] ?? reading.indicatorCode} ${numberFormat.format(reading.value)} ${reading.unit}`
-
-  async function handleSimulateOnce() {
-    setIsSimulating(true)
-    try {
-      await addDemoReadings()
-      setErrorKey(null)
-    } catch (error) {
-      console.error('[crew] Could not add simulated readings', error)
-      setErrorKey('crew.simulateError')
-    } finally {
-      setIsSimulating(false)
-    }
-  }
 
   function toggleLevelFilter(level) {
     setLevelFilter((current) => (current === level ? null : level))
@@ -110,23 +82,9 @@ export default function Crew() {
             </Link>
           )}
         </div>
-        {canManage && (
-          <div className="crew-actions">
-            <LiveDemoToggle />
-            <button type="button" onClick={handleSimulateOnce} disabled={isSimulating || isLive}>
-              {isSimulating ? t('crew.simulating') : t('crew.simulate')}
-            </button>
-          </div>
-        )}
       </header>
 
       {!canManage && <p className="crew-readonly-note">{t('crew.officerView')}</p>}
-
-      {shownErrorKey && (
-        <p className="crew-error" role="alert">
-          {t(shownErrorKey)}
-        </p>
-      )}
 
       {hasSimulatedData && <p className="crew-simulated-note">{t('crew.simulatedNote')}</p>}
 

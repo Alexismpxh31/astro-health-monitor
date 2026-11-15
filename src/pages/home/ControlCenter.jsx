@@ -1,18 +1,15 @@
-import { useEffect } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSession } from '../../auth/session.js'
 import Icon from '../../components/icons.jsx'
 import TrafficLight from '../../components/TrafficLight.jsx'
-import { ensureDemoCrew } from '../../data/demoCrew.js'
 import { db } from '../../db/db.js'
 import { alertNoteState } from '../crew/alertNote.js'
 import { avatarLetters } from '../crew/avatar.js'
 import { formatCommDelay, loadControlCenter } from '../crew/crewData.js'
 import { LEVEL, severityOf } from '../crew/crewStatus.js'
 import { DISPLAY_CODE, localName } from '../crew/display.js'
-import LiveDemoToggle from '../crew/LiveDemoToggle.jsx'
 import { setCurrentMission } from '../missions/missionStore.js'
 import '../missions/Missions.css'
 import './ControlCenter.css'
@@ -38,10 +35,6 @@ export default function ControlCenter() {
   const userId = session?.userId
   const data = useLiveQuery(() => (userId ? loadControlCenter(userId) : null), [userId])
   const surgeon = useLiveQuery(() => (userId ? db.users.get(userId) : null), [userId])
-
-  useEffect(() => {
-    ensureDemoCrew().catch((error) => console.error('[control] Could not prepare demo data', error))
-  }, [])
 
   if (!data) return <p className="muted">{t('crew.loading')}</p>
 
@@ -77,9 +70,6 @@ export default function ControlCenter() {
           <p className="muted control-date">
             {t('control.greeting', { name: surgeon?.name ?? '' })} · {dateFormat.format(new Date())}
           </p>
-        </div>
-        <div className="mission-actions">
-          <LiveDemoToggle />
         </div>
       </header>
 

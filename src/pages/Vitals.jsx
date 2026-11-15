@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Heart, Wind, Thermometer, Radio, Gauge, Play, Square } from 'lucide-react'
+import { Heart, Wind, Thermometer, Radio, Gauge } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import {
   LineChart,
   Line,
@@ -16,7 +16,6 @@ import {
 import { useSession } from '../auth/session.js'
 import TrafficLight from '../components/TrafficLight.jsx'
 import { defaultUserId } from '../data/demoUser.js'
-import { isRunning, start as startSimulator, stop as stopSimulator } from '../data/simulator.js'
 import { db } from '../db/db.js'
 import { useTheme } from '../theme/theme.js'
 import { classifyValue, effectiveThreshold, LEVEL } from './crew/crewStatus.js'
@@ -39,7 +38,6 @@ export default function Vitals() {
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const chart = CHART_THEMES[useTheme()]
   const session = useSession()
-  const [isSimRunning, setIsSimRunning] = useState(isRunning())
 
   const vitalsData = useLiveQuery(async () => {
     const userId = defaultUserId()
@@ -96,17 +94,6 @@ export default function Vitals() {
     return { user, cards, hasAnyReadings }
   }, [session?.userId])
 
-  const handleToggleSimulation = () => {
-    if (isRunning()) {
-      stopSimulator()
-      setIsSimRunning(false)
-    } else {
-      const targetUserId = defaultUserId()
-      startSimulator(targetUserId)
-      setIsSimRunning(true)
-    }
-  }
-
   const tooltipStyle = {
     backgroundColor: chart.tooltipBg,
     border: `1px solid ${chart.grid}`,
@@ -122,22 +109,6 @@ export default function Vitals() {
           <span className="vitals-header-sub">{t('astronaut.vitalsEyebrow')}</span>
           <h1>{t('astronaut.vitalsTitle')}</h1>
         </div>
-        <div className="vitals-header-actions">
-          <button
-            type="button"
-            className={`vitals-sim-toggle${isSimRunning ? ' is-running' : ''}`}
-            onClick={handleToggleSimulation}
-          >
-            {isSimRunning ? <Square size={13} /> : <Play size={13} />}
-            <span>{isSimRunning ? t('astronaut.pauseStream') : t('astronaut.resumeStream')}</span>
-          </button>
-          {isSimRunning && (
-            <div className="vitals-pulse-indicator">
-              <div className="pulse-dot" />
-              <span>{t('astronaut.livePulse')}</span>
-            </div>
-          )}
-        </div>
       </header>
 
       {/* Simulator notice when there is no data yet */}
@@ -146,10 +117,7 @@ export default function Vitals() {
           <div className="sim-notice-text">
             <strong>{t('astronaut.noDataTitle')}</strong> <span>{t('astronaut.noDataText')}</span>
           </div>
-          <button type="button" onClick={handleToggleSimulation} className="sim-start-btn">
-            <Play size={16} />
-            <span>{t('astronaut.startSimulator')}</span>
-          </button>
+          <Link to="/sensors" className="button-link is-primary">{t('pages.sensors')}</Link>
         </aside>
       )}
 

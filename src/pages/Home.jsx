@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ROLE, useSession } from '../auth/session.js'
 import Icon from '../components/icons.jsx'
 import TrafficLight from '../components/TrafficLight.jsx'
-import { ensureDemoCrew } from '../data/demoCrew.js'
 import { localName } from './crew/display.js'
 import { RingGauge, Sparkline } from './home/charts.jsx'
 import { loadHomeData } from './home/homeData.js'
@@ -25,10 +24,6 @@ export default function Home() {
   const userId = session?.userId
   const data = useLiveQuery(() => (userId ? loadHomeData(userId) : null), [userId])
   const [selectedCode, setSelectedCode] = useState(null)
-
-  useEffect(() => {
-    ensureDemoCrew().catch((error) => console.error('[home] Could not prepare demo data', error))
-  }, [])
 
   // The flight surgeon has no health data of their own: their home is the control
   // center with every mission they follow.

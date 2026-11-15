@@ -1,11 +1,9 @@
-import { useEffect } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '../../auth/session.js'
 import Icon from '../../components/icons.jsx'
 import TrafficLight from '../../components/TrafficLight.jsx'
-import { ensureDemoCrew } from '../../data/demoCrew.js'
 import { formatCommDelay, loadMyMissions } from '../crew/crewData.js'
 import { LEVEL } from '../crew/crewStatus.js'
 import { localName } from '../crew/display.js'
@@ -23,10 +21,6 @@ export default function MissionList() {
   const currentId = useCurrentMission(userId)
   const missions = useLiveQuery(() => (userId ? loadMyMissions(userId) : []), [userId])
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' })
-
-  useEffect(() => {
-    ensureDemoCrew().catch((error) => console.error('[missions] Could not prepare demo data', error))
-  }, [])
 
   function open(missionId) {
     setCurrentMission(userId, missionId)

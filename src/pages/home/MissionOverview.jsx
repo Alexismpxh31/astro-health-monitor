@@ -5,7 +5,6 @@ import { Link, useParams } from 'react-router-dom'
 import { useSession } from '../../auth/session.js'
 import Icon from '../../components/icons.jsx'
 import TrafficLight from '../../components/TrafficLight.jsx'
-import { ensureDemoCrew } from '../../data/demoCrew.js'
 import { getProfilePendingCount } from '../../sync/queue.js'
 import CrewAlerts from '../crew/CrewAlerts.jsx'
 import { loadCrewAlerts } from '../crew/crewAlerts.js'
@@ -15,7 +14,6 @@ import '../missions/Missions.css'
 import { LEVEL, severityOf } from '../crew/crewStatus.js'
 import { avatarLetters } from '../crew/avatar.js'
 import { DISPLAY_CODE, localName } from '../crew/display.js'
-import LiveDemoToggle from '../crew/LiveDemoToggle.jsx'
 
 /** The indicator behind the worst system of a crew member (what the surgeon should look at first). */
 function worstReading(row) {
@@ -42,10 +40,6 @@ export default function MissionOverview() {
   const userKey = data?.astronauts.map((user) => user.id).join('|') ?? ''
   const alerts = useLiveQuery(() => (data ? loadCrewAlerts(data.astronauts) : null), [userKey])
   const pending = useLiveQuery(() => userId ? getProfilePendingCount(userId) : 0, [userId], 0)
-
-  useEffect(() => {
-    ensureDemoCrew().catch((error) => console.error('[home] Could not prepare the demo crew', error))
-  }, [])
 
   if (!data) return <p className="muted">{t('crew.loading')}</p>
 
@@ -77,7 +71,6 @@ export default function MissionOverview() {
           </p>
         </div>
         <div className="mission-actions">
-          <LiveDemoToggle />
           <Link to="/crew" className="button-link is-primary">
             {t('overview.openTable')}
             <Icon name="chevronRight" size={20} />

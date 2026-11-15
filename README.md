@@ -80,7 +80,6 @@ src/
   theme/theme.js      Light / dark theme store (useTheme)
   data/
     simulator.js      Simulated vital signs
-    demoCrew.js       Starting history of the demo astronauts
     adapters/         Dataset adapters (dataset rows -> Reading)
     seed/             JSON loaded into IndexedDB on first run (single source of truth, see below)
   db/db.js            Dexie schema (AstroHealthDB) + seedIfEmpty()
