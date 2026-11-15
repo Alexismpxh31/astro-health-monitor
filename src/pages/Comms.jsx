@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { useSession } from '../auth/session.js'
 import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import { db } from '../db/db.js'
@@ -10,6 +11,8 @@ import { supabase } from '../sync/supabaseClient.js'
 export default function Comms() {
   const { t, i18n } = useTranslation()
   const session = useSession()
+  const [params] = useSearchParams()
+  const reconnecting = params.get('reconnect') === '1'
   const userId = session?.userId ?? DEMO_ASTRONAUT_ID
   const pendingCount = useLiveQuery(() => getProfilePendingCount(userId), [userId])
   const [readError, setReadError] = useState(false)
@@ -59,7 +62,7 @@ export default function Comms() {
           : t('comms.pendingCount', { count: pendingCount })}
       </p>
 
-      {session && <CloudSync key={session.userId} session={session} />}
+      {session && <CloudSync key={`${session.userId}:${reconnecting}`} session={session} reconnecting={reconnecting} />}
 
       <section className="notes-panel" aria-labelledby="medical-notes-title">
         <h2 id="medical-notes-title">{t('comms.notes.title')}</h2>
@@ -93,11 +96,11 @@ export default function Comms() {
     </section>
   )
 }
-function CloudSync({ session }) {
+function CloudSync({ session, reconnecting }) {
   const { t } = useTranslation()
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState(null)
-  const [showLogin, setShowLogin] = useState(false)
+  const [showLogin, setShowLogin] = useState(reconnecting)
 
   async function run(action) {
     setBusy(true)
@@ -140,6 +143,7 @@ function CloudSync({ session }) {
         return
       }
       const { pushed, pulled, crewRecords } = await syncPending()
+      setShowLogin(false)
       const remaining = await getProfilePendingCount(session.userId)
       setFeedback({ key: 'summary', pushed, pulled, crewRecords, remaining })
     })

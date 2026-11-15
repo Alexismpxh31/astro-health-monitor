@@ -5,6 +5,7 @@ import { Navigate } from 'react-router-dom'
 import { getLockedUntil, homePathFor, login, loginWithCloudSession, useSession } from '../auth/session.js'
 import { db } from '../db/db.js'
 import { supabase } from '../sync/supabaseClient.js'
+import { useOnlineStatus } from '../utils/useOnlineStatus.js'
 import { clearCurrentMission } from './missions/missionStore.js'
 
 const PIN_LENGTH = 4
@@ -27,7 +28,8 @@ async function loadLoginUsers() {
 export default function Login() {
   const { t } = useTranslation()
   const session = useSession()
-  const users = useLiveQuery(loadLoginUsers)
+  const isOnline = useOnlineStatus()
+  const users = useLiveQuery(() => isOnline ? [] : loadLoginUsers(), [isOnline])
   const [selectedId, setSelectedId] = useState(null)
   const [cloudError, setCloudError] = useState(null)
   const [cloudBusy, setCloudBusy] = useState(false)
@@ -53,7 +55,7 @@ export default function Login() {
   }
 
   useEffect(() => {
-    if (!supabase || session || !sessionStorage.getItem(GOOGLE_LOGIN_PENDING)) return undefined
+    if (!isOnline || !supabase || session || !sessionStorage.getItem(GOOGLE_LOGIN_PENDING)) return undefined
     let active = true
     async function restoreCloudLogin() {
       try {
@@ -71,7 +73,7 @@ export default function Login() {
     }
     void restoreCloudLogin()
     return () => { active = false }
-  }, [session])
+  }, [session, isOnline])
 
   // A new login never reopens the mission picked in a previous session.
   useEffect(() => {
@@ -81,19 +83,24 @@ export default function Login() {
   // Also covers the moment right after a successful login.
   if (session) return <Navigate to={homePathFor(session.roleCode)} replace />
 
+  if (isOnline) return (
+    <section className="page login-page">
+      <h1>{t('pages.login')}</h1>
+      {supabase ? (
+        <button type="button" disabled={cloudBusy} onClick={signInWithGoogle}>
+          {t('comms.cloud.link')}
+        </button>
+      ) : <p role="status">{t('comms.cloud.notConfigured')}</p>}
+      {cloudError && <p role="alert">{t(cloudError)}</p>}
+    </section>
+  )
+
   const selected = users?.find((user) => user.id === selectedId)
   const roleLabel = (user) => (user.roleCode ? t(`auth.roles.${user.roleCode}`, user.roleCode) : '')
 
   return (
     <section className="page login-page">
       <h1>{t('pages.login')}</h1>
-      {supabase && !selected && (
-        <button type="button" disabled={cloudBusy} onClick={signInWithGoogle}>
-          {t('comms.cloud.link')}
-        </button>
-      )}
-      {cloudError && <p role="alert">{t(cloudError)}</p>}
-
       {selected ? (
         <PinStep
           key={selected.id}
