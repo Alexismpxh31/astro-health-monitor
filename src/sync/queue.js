@@ -38,6 +38,20 @@ export async function getPendingCount() {
   return counts.reduce((total, count) => total + count, 0)
 }
 
+/** Pending records associated with a single profile, including blocked dependencies. */
+export async function getProfilePendingCount(userId) {
+  const [readings, alerts, checkins, messages] = await Promise.all([
+    db.readings.where('userId').equals(userId).filter((row) => row.syncStatus === 'pending').count(),
+    db.alerts.where('syncStatus').equals('pending').toArray(),
+    db.dailyCheckins.where('syncStatus').equals('pending').filter((row) => row.userId === userId).count(),
+    db.messages.where('syncStatus').equals('pending').filter(
+      (row) => row.senderId === userId || (row.recipientId === userId && Boolean(row.readAt)),
+    ).count(),
+  ])
+  const alertReadings = await db.readings.bulkGet(alerts.map((alert) => alert.readingId))
+  return readings + checkins + messages + alertReadings.filter((row) => row?.userId === userId).length
+}
+
 /** Profile id (users.id) linked to the Supabase Auth session, or null. */
 export async function getLinkedProfileId() {
   const { data, error } = await supabase.rpc('app_user_id')
@@ -108,8 +122,15 @@ async function pushReadings(userId, stillActive) {
     .toArray()
   if (readings.length === 0) return 0
 
-  const indicators = await db.indicators.toArray()
-  const indicatorIdByCode = new Map(indicators.map((indicator) => [indicator.code, indicator.id]))
+  const { data: indicators, error: indicatorError } = await supabase
+  .from('indicators')
+  .select('id, code')
+
+if (indicatorError) throw indicatorError
+
+const indicatorIdByCode = new Map(
+  indicators.map((indicator) => [indicator.code, indicator.id]),
+)
 
   const rows = []
   for (const reading of readings) {
@@ -146,17 +167,34 @@ async function pushAlerts(userId, stillActive) {
     readings.filter((reading) => reading.userId === userId && reading.syncStatus === 'synced').map((reading) => reading.id),
   )
 
-  const rows = pending
-    .filter((alert) => readyReadingIds.has(alert.readingId) && alert.alertLevelId)
-    .map((alert) => ({
+  const candidates = pending.filter(
+    (alert) => readyReadingIds.has(alert.readingId) && alert.alertLevelId,
+  )
+  if (candidates.length === 0 || !stillActive()) return 0
+
+  const localLevels = await db.alertLevels.toArray()
+  const { data: remoteLevels, error: levelError } = await supabase
+    .from('alert_levels')
+    .select('id, code')
+  if (levelError) throw levelError
+
+  const localCodeById = new Map(localLevels.map((level) => [level.id, level.code]))
+  const remoteIdByCode = new Map(remoteLevels.map((level) => [level.code, level.id]))
+  const rows = []
+  for (const alert of candidates) {
+    const levelId = remoteIdByCode.get(localCodeById.get(alert.alertLevelId))
+    if (!levelId) continue // Keep alerts pending until their level can be resolved.
+
+    rows.push({
       id: alert.id,
       reading_id: alert.readingId,
       recommendation_id: alert.recommendationId ?? null,
-      alert_level_id: alert.alertLevelId,
+      alert_level_id: levelId,
       direction: alert.direction ?? null,
       generated_at: alert.generatedAt,
       attended_at: alert.attendedAt ?? null,
-    }))
+    })
+  }
   if (rows.length === 0 || !stillActive()) return 0
 
   await upsertAll('alerts', rows, { onConflict: 'id' })
@@ -183,19 +221,35 @@ async function pushCheckins(userId, stillActive) {
   }))
   await upsertAll('daily_checkins', rows, { onConflict: 'id' })
 
+  const symptomsByCheckin = await Promise.all(pending.map((checkin) =>
+    db.checkinSymptoms.where('checkinId').equals(checkin.id).toArray(),
+  ))
   const symptomRows = []
-  for (const checkin of pending) {
-    const symptoms = await db.checkinSymptoms
-      .where('[checkinId+symptomId]')
-      .between([checkin.id, ''], [checkin.id, '￿'])
-      .toArray()
-    symptomRows.push(...symptoms.map((item) => ({ checkin_id: item.checkinId, symptom_id: item.symptomId })))
+  const blockedCheckins = new Set()
+  if (symptomsByCheckin.some((items) => items.length > 0)) {
+    const localSymptoms = await db.symptoms.toArray()
+    const { data: remoteSymptoms, error } = await supabase.from('symptoms').select('id, code')
+    if (error) throw error
+
+    const localCodeById = new Map(localSymptoms.map(({ id, code }) => [id, code]))
+    const remoteIdByCode = new Map(remoteSymptoms.map(({ id, code }) => [code, id]))
+    for (const item of symptomsByCheckin.flat()) {
+      const symptomId = remoteIdByCode.get(localCodeById.get(item.symptomId))
+      if (symptomId) {
+        symptomRows.push({ checkin_id: item.checkinId, symptom_id: symptomId })
+      } else {
+        blockedCheckins.add(item.checkinId)
+      }
+    }
   }
+
+  if (!stillActive()) return 0
   if (symptomRows.length > 0) {
     await upsertAll('checkin_symptoms', symptomRows, { onConflict: 'checkin_id,symptom_id', ignoreDuplicates: true })
   }
 
-  return markSynced('dailyCheckins', rows.map((row) => row.id))
+  const syncedIds = rows.map((row) => row.id).filter((id) => !blockedCheckins.has(id))
+  return syncedIds.length ? markSynced('dailyCheckins', syncedIds) : 0
 }
 
 /**

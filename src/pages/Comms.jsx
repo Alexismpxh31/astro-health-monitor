@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { getSession, ROLE, useSession } from '../auth/session.js'
 import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import { db } from '../db/db.js'
-import { getLinkedProfileId, getPendingCount, syncPending } from '../sync/queue.js'
+import { getLinkedProfileId, getProfilePendingCount, syncPending } from '../sync/queue.js'
 import { supabase } from '../sync/supabaseClient.js'
 
 export default function Comms() {
   const { t, i18n } = useTranslation()
   const session = useSession()
   const userId = session?.userId ?? DEMO_ASTRONAUT_ID
-  const pendingCount = useLiveQuery(getPendingCount, [])
+  const pendingCount = useLiveQuery(() => getProfilePendingCount(userId), [userId])
   const [readError, setReadError] = useState(false)
 
   const notes = useLiveQuery(async () => {
@@ -33,7 +33,7 @@ export default function Comms() {
         if (note?.recipientId !== userId || note.readAt) return
 
         const now = new Date().toISOString()
-        await db.messages.update(noteId, { readAt: now })
+        await db.messages.update(noteId, { readAt: now, syncStatus: 'pending' })
 
         // A note sent from an alert: reading it means the astronaut got the advice,
         // so the alert is attended for the flight surgeon too.
@@ -147,8 +147,9 @@ function CloudSync({ session }) {
         setFeedback({ key: 'linkRequired' })
         return
       }
-      const { pushed } = await syncPending()
-      setFeedback({ key: pushed ? 'sent' : 'empty', count: pushed })
+      const { pushed, pulled } = await syncPending()
+      const remaining = await getProfilePendingCount(session.userId)
+      setFeedback({ key: 'summary', pushed, pulled, remaining })
     })
   }
 
@@ -171,7 +172,7 @@ function CloudSync({ session }) {
         </form>
       )}
       <p role="status">
-        {busy ? t('comms.cloud.working') : feedback && t('comms.cloud.' + feedback.key, { count: feedback.count })}
+        {busy ? t('comms.cloud.working') : feedback && t('comms.cloud.' + feedback.key, feedback)}
       </p>
     </section>
   )
