@@ -117,7 +117,17 @@ git checkout -b name/task
 
 ## AI usage
 
-Claude (Anthropic) was used as a coding assistant: initial project setup (PWA configuration, folder structure, database schema, routing, i18n), the flight surgeon panel, the visual redesign (theme tokens, side navigation, control center, missions flow) and the integration of the team's branches. Clinical thresholds, recommendations and the NASA HRP texts were reviewed by the team against the official sources listed in the seed files; the demo data is simulated and is not real medical data.
+Claude (Anthropic) was used as a coding assistant: initial project setup (PWA configuration, folder structure, database schema, routing, i18n), the flight surgeon panel, the visual redesign (theme tokens, side navigation, control center, missions flow) and the integration of the team's branches. Clinical thresholds and recommendations were drafted with AI assistance and compared by the team against the published references listed in the seed files; see "Clinical thresholds" below for what is sourced and what is a team default. The demo data is simulated and is not real medical data.
+
+## Clinical thresholds
+
+This app is decision support, not a diagnostic tool. Every threshold lives in data (`src/data/seed/thresholds.json`), carries its `source`, and has a `validated` flag, so what is sourced and what is a default stays visible in the app and in the database.
+
+- **Normal ranges** are based on published references, for example resting heart rate 60-100 bpm (Mayo Clinic), SpO₂ ≥ 95 % with < 90 % as the oxygen-support level (StatPearls), reaction-time lapse cut-offs for the 3-minute PVT used on the ISS (Basner & Dinges 2011), the 600 mSv career radiation limit (NASA OCHMO) and the 1-1.5 % per month bone loss reported by NASA.
+- **Critical limits and intermediate bands** are alert margins chosen by the team as starting defaults, because no universal published cut-off exists for them. They are marked in the seed files and can be adjusted per astronaut by the flight surgeon (only that role can write thresholds, enforced by Row Level Security).
+- **Skin temperature** has no universal clinical range, so the app learns each astronaut's usual value and alerts on the deviation from it (`mode: 'baseline'`). The deviation sizes come from a wearable manufacturer's white paper (Polar), not from a peer-reviewed study.
+- **Mood and stress** use the app's own 1-5 daily check-in scale.
+- All vital-sign data is simulated and labelled as such. Next step: review the critical limits with an aerospace-medicine specialist and replace the simulated data with real mission data.
 
 ## Supabase database
 
