@@ -242,6 +242,8 @@
     "low": "bajo"
   },
   "login": {
+    "googleError": "No se pudo iniciar sesión con Google. Inténtalo de nuevo.",
+    "googleUnlinked": "Tu cuenta de Google todavía no está vinculada a un perfil de AstroSalud.",
     "chooseUser": "Elige tu usuario para continuar.",
     "loading": "Cargando tripulación…",
     "noUsers": "No hay usuarios activos en este dispositivo.",

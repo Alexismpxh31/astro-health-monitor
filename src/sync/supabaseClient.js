@@ -32,4 +32,6 @@ if (!url || !anonKey) {
  *
  * @type {import('@supabase/supabase-js').SupabaseClient | null}
  */
-export const supabase = anonKey && isAllowed ? createClient(endpoint.href, anonKey) : null
+export const supabase = anonKey && isAllowed
+  ? createClient(endpoint.href, anonKey, { auth: { flowType: 'pkce' } })
+  : null
