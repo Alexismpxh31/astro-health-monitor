@@ -33,8 +33,9 @@
     "NO_DATA": "Sin evaluar"
   },
   "crew": {
-    "subtitle_one": "Misión {{mission}}: {{count}} astronauta",
-    "subtitle_other": "Misión {{mission}}: {{count}} astronautas",
+    "subtitle_one": "{{mission}} · {{count}} astronauta",
+    "subtitle_other": "{{mission}} · {{count}} astronautas",
+    "allMissions": "Todas las misiones",
     "member": "Tripulante",
     "overall": "Estado general",
     "lastReading": "Última lectura",
@@ -53,8 +54,8 @@
     "empty": "No hay astronautas asignados a esta misión.",
     "loadError": "No se pudo preparar la tripulación de demostración. Recarga la página.",
     "simulateError": "No se pudieron generar lecturas simuladas. Inténtalo de nuevo.",
-    "medicalOfficer": "Oficial médico",
-    "officerView": "Vista de oficial médico (solo lectura): puedes ver el estado de tus compañeros en una emergencia. Los umbrales y las notas los gestiona el médico de vuelo."
+    "medicalOfficer": "Oficial médico a bordo",
+    "officerView": "Puedes consultar el estado de la tripulación de tu misión. El equipo médico en Tierra gestiona los umbrales y las notas."
   },
   "crewDetail": {
     "back": "Volver a la tripulación",
@@ -96,7 +97,7 @@
       "pending": "Pendiente de envío",
       "synced": "Enviada",
       "read": "Leída",
-      "noSender": "No hay un médico de vuelo con sesión iniciada.",
+      "noSender": "No hay un médico en Tierra con sesión iniciada.",
       "sendError": "No se pudo guardar la nota. Inténtalo de nuevo.",
       "linkedToAlert": "Esta nota responde a una alerta: cuando el astronauta la lea, la alerta quedará atendida."
     }
@@ -118,7 +119,7 @@
     "pendingCount_one": "{{count}} registro pendiente de tu perfil",
     "pendingCount_other": "{{count}} registros pendientes de tu perfil",
     "notes": {
-      "title": "Notas del médico de vuelo",
+      "title": "Notas del médico en Tierra",
       "loading": "Cargando notas…",
       "empty": "Todavía no tienes notas del médico.",
       "markAsRead": "Marcar como leída",
@@ -222,13 +223,13 @@
     "recNominal": "Ánimo, sueño, estrés y reflejos dentro de los rangos nominales de la misión.",
     "recs": {
       "REC_SLEEP_H_LOW_CAUTION": "Dormiste poco ({value} h). Reduce la luz y el ruido antes de dormir e intenta acostarte según el horario de la misión.",
-      "REC_SLEEP_H_LOW_CRITICAL": "Sueño muy insuficiente ({value} h). Evita tareas de alto riesgo hoy y avisa al médico de vuelo.",
+      "REC_SLEEP_H_LOW_CRITICAL": "Sueño muy insuficiente ({value} h). Evita tareas de alto riesgo hoy y avisa al médico en Tierra.",
       "REC_SLEEP_H_HIGH_CAUTION": "Dormiste mucho ({value} h). Mantén horarios regulares y haz actividad física hoy.",
-      "REC_SLEEP_H_HIGH_CRITICAL": "Sueño excesivo ({value} h). Avisa al médico de vuelo, puede indicar fatiga o problemas de ánimo.",
+      "REC_SLEEP_H_HIGH_CRITICAL": "Sueño excesivo ({value} h). Avisa al médico en Tierra, puede indicar fatiga o problemas de ánimo.",
       "REC_MOOD_LOW_CAUTION": "Tu ánimo está bajo. Habla con un compañero o con tu familia y haz una actividad que disfrutes.",
-      "REC_MOOD_LOW_CRITICAL": "Tu ánimo está muy bajo. Contacta al médico de vuelo o al oficial médico de la tripulación hoy.",
+      "REC_MOOD_LOW_CRITICAL": "Tu ánimo está muy bajo. Contacta al médico en Tierra o al oficial médico de la tripulación hoy.",
       "REC_STRESS_HIGH_CAUTION": "Tu estrés está elevado. Haz 5 minutos de respiración guiada y una pausa de las tareas.",
-      "REC_STRESS_HIGH_CRITICAL": "Tu estrés es muy alto. Contacta al médico de vuelo y pide apoyo para reducir tu carga de trabajo.",
+      "REC_STRESS_HIGH_CRITICAL": "Tu estrés es muy alto. Contacta al médico en Tierra y pide apoyo para reducir tu carga de trabajo.",
       "REC_PVT_CAUTION": "Latencia PVT elevada ({value} ms): señal de fatiga. Descansa y evita tareas críticas hasta recuperarte.",
       "REC_PVT_CRITICAL": "Latencia PVT > 450 ms ({value} ms). Fatiga neurocognitiva alta: suspender tareas críticas y descansar de inmediato."
     },
@@ -236,7 +237,7 @@
     "historyEmpty": "Aún no hay chequeos guardados en este dispositivo.",
     "syncPending": "Pendiente de envío",
     "syncSynced": "Sincronizado",
-    "notAllowed": "El médico de vuelo no puede registrar chequeos diarios. Solo los astronautas guardan su propio chequeo.",
+    "notAllowed": "El médico en Tierra no puede registrar chequeos diarios. Solo los astronautas guardan su propio chequeo.",
     "saveError": "No se pudo guardar el chequeo. Inténtalo de nuevo."
   },
   "directions": {
@@ -265,7 +266,7 @@
   "auth": {
     "roles": {
       "astronaut": "Astronauta",
-      "flight_surgeon": "Médico de vuelo"
+      "flight_surgeon": "Médico de misión en Tierra"
     },
     "logout": "Cerrar sesión",
     "signedInAs": "Usuario con sesión iniciada"

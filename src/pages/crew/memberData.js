@@ -26,6 +26,15 @@ function resolveSurgeonId(roles, users) {
 export async function loadMemberData(userId) {
   const user = await db.users.get(userId)
   if (!user) return null
+  const session = getSession()
+  if (session?.roleCode !== FLIGHT_SURGEON_ROLE_CODE) {
+    if (!session?.isMedicalOfficer) return null
+    const assignments = await db.crew.where('userId').anyOf([session.userId, userId]).toArray()
+    const officerMissions = new Set(assignments
+      .filter((row) => row.userId === session.userId && row.isMedicalOfficer)
+      .map((row) => row.missionId))
+    if (!assignments.some((row) => row.userId === userId && officerMissions.has(row.missionId))) return null
+  }
 
   const [roles, users, bodySystems, indicators, thresholds, readings, messages] = await Promise.all([
     db.roles.toArray(),
@@ -34,7 +43,9 @@ export async function loadMemberData(userId) {
     db.indicators.toArray(),
     db.thresholds.toArray(),
     db.readings.where('userId').equals(userId).toArray(),
-    db.messages.where('recipientId').equals(userId).toArray(),
+    session.roleCode === FLIGHT_SURGEON_ROLE_CODE
+      ? db.messages.where('recipientId').equals(userId).toArray()
+      : [],
   ])
 
   readings.sort((a, b) => a.measuredAt.localeCompare(b.measuredAt))

@@ -33,8 +33,9 @@
     "NO_DATA": "Not assessed"
   },
   "crew": {
-    "subtitle_one": "Mission {{mission}}: {{count}} astronaut",
-    "subtitle_other": "Mission {{mission}}: {{count}} astronauts",
+    "subtitle_one": "{{mission}} · {{count}} astronaut",
+    "subtitle_other": "{{mission}} · {{count}} astronauts",
+    "allMissions": "All missions",
     "member": "Crew member",
     "overall": "Overall status",
     "lastReading": "Last reading",
@@ -53,8 +54,8 @@
     "empty": "No astronauts are assigned to this mission.",
     "loadError": "The demo crew could not be prepared. Reload the page.",
     "simulateError": "Simulated readings could not be generated. Try again.",
-    "medicalOfficer": "Medical officer",
-    "officerView": "Medical officer view (read-only): you can check your crewmates in an emergency. Thresholds and notes are managed by the flight surgeon."
+    "medicalOfficer": "Crew medical officer",
+    "officerView": "You can view crew health for your mission. The ground medical team manages thresholds and notes."
   },
   "crewDetail": {
     "back": "Back to crew",
@@ -120,7 +121,7 @@
     "notes": {
       "title": "Flight surgeon notes",
       "loading": "Loading notes…",
-      "empty": "You have no notes from the flight surgeon yet.",
+      "empty": "You have no notes from the ground flight surgeon yet.",
       "markAsRead": "Mark as read",
       "readError": "Could not mark the note as read. Please try again."
     }
@@ -211,7 +212,7 @@
     "pvtResultLabel": "Measured latency:",
     "symptomsLabel": "5. Symptoms Reported Today",
     "symptomsHint": "Select all that apply (optional)",
-    "notesLabel": "6. Notes for Flight Surgeon",
+    "notesLabel": "6. Notes for Ground Flight Surgeon",
     "notesPlaceholder": "E.g., Mild nasal congestion upon waking or fatigue after exercise...",
     "submitButton": "Save Check-in to Dexie (Offline)",
     "savedBadge": "Saved in IndexedDB · Status: pending",
@@ -222,13 +223,13 @@
     "recNominal": "Mood, sleep, stress, and reflexes are within nominal mission thresholds.",
     "recs": {
       "REC_SLEEP_H_LOW_CAUTION": "You slept little ({value} h). Reduce light and noise before bed and try to sleep at your mission schedule time.",
-      "REC_SLEEP_H_LOW_CRITICAL": "Severely insufficient sleep ({value} h). Avoid high-risk tasks today and tell the flight surgeon.",
+      "REC_SLEEP_H_LOW_CRITICAL": "Severely insufficient sleep ({value} h). Avoid high-risk tasks today and tell the ground flight surgeon.",
       "REC_SLEEP_H_HIGH_CAUTION": "You slept a lot ({value} h). Keep regular hours and do some physical activity today.",
-      "REC_SLEEP_H_HIGH_CRITICAL": "Excessive sleep ({value} h). Tell the flight surgeon, it may indicate fatigue or mood issues.",
+      "REC_SLEEP_H_HIGH_CRITICAL": "Excessive sleep ({value} h). Tell the ground flight surgeon, it may indicate fatigue or mood issues.",
       "REC_MOOD_LOW_CAUTION": "Your mood is low. Talk to a crewmate or your family and do an activity you enjoy.",
-      "REC_MOOD_LOW_CRITICAL": "Your mood is very low. Contact the flight surgeon or the crew medical officer today.",
+      "REC_MOOD_LOW_CRITICAL": "Your mood is very low. Contact the ground flight surgeon or the crew medical officer today.",
       "REC_STRESS_HIGH_CAUTION": "Your stress is elevated. Do 5 minutes of guided breathing and take a break from tasks.",
-      "REC_STRESS_HIGH_CRITICAL": "Your stress is very high. Contact the flight surgeon and ask for support to reduce your workload.",
+      "REC_STRESS_HIGH_CRITICAL": "Your stress is very high. Contact the ground flight surgeon and ask for support to reduce your workload.",
       "REC_PVT_CAUTION": "PVT latency elevated ({value} ms): a sign of fatigue. Rest and avoid critical tasks until you recover.",
       "REC_PVT_CRITICAL": "PVT latency > 450 ms ({value} ms). High neurocognitive fatigue: defer critical tasks and rest immediately."
     },
@@ -236,7 +237,7 @@
     "historyEmpty": "No check-ins saved on this device yet.",
     "syncPending": "Pending sync",
     "syncSynced": "Synced",
-    "notAllowed": "The flight surgeon cannot record daily check-ins. Only astronauts save their own check-in.",
+    "notAllowed": "The ground flight surgeon cannot record daily check-ins. Only astronauts save their own check-in.",
     "saveError": "The check-in could not be saved. Try again."
   },
   "directions": {
@@ -265,7 +266,7 @@
   "auth": {
     "roles": {
       "astronaut": "Astronaut",
-      "flight_surgeon": "Flight surgeon"
+      "flight_surgeon": "Ground flight surgeon"
     },
     "logout": "Log out",
     "signedInAs": "Logged-in user"

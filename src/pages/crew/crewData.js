@@ -63,11 +63,20 @@ async function statusRows(astronauts, ref) {
  * @returns {Promise<{ mission: Object|null, missionCount: number, bodySystems: Object[], astronauts: Object[], rows: Object[] }>}
  *   rows: one status row per astronaut, worst first (see buildCrewStatus).
  */
-export async function loadCrewData(userId, preferredMissionId = null) {
+export async function loadCrewData(userId, preferredMissionId = null, showAllMissions = false) {
   const ref = await loadReferenceData()
   const mine = missionsOf(userId, ref)
-  const mission = mine.find((item) => item.id === preferredMissionId) ?? mine[0] ?? null
-  const astronauts = mission ? astronautsOf(mission.id, ref) : []
+  const officerMissions = ref.crew.filter((row) => row.userId === userId && row.isMedicalOfficer)
+  const visibleMissions = officerMissions.length && !showAllMissions
+    ? mine.filter((item) => officerMissions.some((row) => row.missionId === item.id))
+    : mine
+  const allMissions = showAllMissions && !preferredMissionId
+  const mission = allMissions
+    ? null
+    : visibleMissions.find((item) => item.id === preferredMissionId) ?? visibleMissions[0] ?? null
+  const astronauts = allMissions
+    ? [...new Map(mine.flatMap((item) => astronautsOf(item.id, ref)).map((user) => [user.id, user])).values()]
+    : mission ? astronautsOf(mission.id, ref) : []
 
   return {
     mission,

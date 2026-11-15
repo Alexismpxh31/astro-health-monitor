@@ -76,9 +76,9 @@ export default function CrewMember() {
         </div>
         <div className="crew-detail-actions">
           {canManage && <LiveDemoToggle />}
-          <button type="button" onClick={handleExport} disabled={exportRows.length === 0}>
+          {canManage && <button type="button" onClick={handleExport} disabled={exportRows.length === 0}>
             {t('crewDetail.exportCsv')}
-          </button>
+          </button>}
         </div>
       </header>
 
