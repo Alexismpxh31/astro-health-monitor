@@ -17,18 +17,18 @@ Built for NASA Space Apps 2026. UI in Spanish and English; code, variables and c
 
 ## Roles and flow
 
-Everyone logs in with a 4-digit PIN that is checked on the device (SHA-256, works offline). Demo users: flight surgeon `9999`; astronauts One `1111`, Two `2222` (ISS medical officer), Three `3333`, Four `4444`, Five `5555` (Mars medical officer).
+Online, users can sign in with Google from `/login`. Supabase Auth maps each linked account to exactly one profile. Offline, the demo uses a 4-digit PIN checked on the device (SHA-256). Demo PINs: ground flight surgeon `9999`; astronauts One `1111`, Two `2222` (ISS medical officer), Three `3333`, Four `4444`, Five `5555` (Mars medical officer).
 
 **Astronaut**
 
 1. `/` Home: blood pressure, SpO₂ and heart rate cards, the five body systems with their traffic light, the 3D astronaut (click a zone or a system to select it) and the clinical card of the selected system (NASA HRP hazard and risk).
 2. `/vitals`, `/system/:code`, `/alerts`, `/checkin`, `/sensors`, `/comms`: live charts, system history, alerts with the recommended action, daily self-report, simulator / Bluetooth sensor, and notes from the flight surgeon.
 
-**Flight surgeon**
+**Ground flight surgeon**
 
 1. `/` Control center: every mission at once (astronauts, critical, warning, unattended alerts, unread notes), the crew members that need attention first, mission shortcuts and recent notes.
 2. `/missions` → `/missions/:id`: pick a mission (ISS, Mars transit) and see its crew. The signal delay of the mission is shown next to its name.
-3. `/crew` → `/crew/:userId`: crew table filtered by the current mission, then the detail of one astronaut: body view (3D + systems), indicator cards with trends and thresholds, alerts and notes.
+3. `/crew` → `/crew/:userId`: all five demo astronauts by default, with a mission filter, then the detail of one astronaut with a 3D body view, trends, thresholds, alerts and notes.
 4. **Note ↔ alert**: "Enviar nota" from an alert pre-fills the note and links it (`alertId`). When the astronaut marks the note as read in `/comms`, the alert becomes attended for the surgeon.
 
 The crew medical officer (an astronaut) sees the crew table of their own mission in read-only mode.
@@ -117,21 +117,17 @@ git checkout -b name/task
 
 ## AI usage
 
-Claude (Anthropic) was used as a coding assistant: initial project setup (PWA configuration, folder structure, database schema, routing, i18n), the flight surgeon panel, the visual redesign (theme tokens, side navigation, control center, missions flow) and the integration of the team's branches. Clinical thresholds and recommendations were drafted with AI assistance and compared by the team against the published references listed in the seed files; see "Clinical thresholds" below for what is sourced and what is a team default. The demo data is simulated and is not real medical data.
+Claude (Anthropic) was used as a coding assistant for the initial setup, the flight surgeon panel, the visual redesign and branch integration.
 
 ## Clinical thresholds
 
-This app is decision support, not a diagnostic tool. Every threshold lives in data (`src/data/seed/thresholds.json`), carries its `source`, and has a `validated` flag, so what is sourced and what is a default stays visible in the app and in the database.
+The 18 demo rules in `src/data/seed/thresholds.json` carry a `source` and a `validated` flag. Two rules are marked validated and cite published references for bone-density loss and radiation exposure. The radiation caution margin is an app convention. The other 16 rules need source verification before clinical use.
 
-- **Normal ranges** are based on published references, for example resting heart rate 60-100 bpm (Mayo Clinic), SpO₂ ≥ 95 % with < 90 % as the oxygen-support level (StatPearls), reaction-time lapse cut-offs for the 3-minute PVT used on the ISS (Basner & Dinges 2011), the 600 mSv career radiation limit (NASA OCHMO) and the 1-1.5 % per month bone loss reported by NASA.
-- **Critical limits and intermediate bands** are alert margins chosen by the team as starting defaults, because no universal published cut-off exists for them. They are marked in the seed files and can be adjusted per astronaut by the flight surgeon (only that role can write thresholds, enforced by Row Level Security).
-- **Skin temperature** has no universal clinical range, so the app learns each astronaut's usual value and alerts on the deviation from it (`mode: 'baseline'`). The deviation sizes come from a wearable manufacturer's white paper (Polar), not from a peer-reviewed study.
-- **Mood and stress** use the app's own 1-5 daily check-in scale.
-- All vital-sign data is simulated and labelled as such. Next step: review the critical limits with an aerospace-medicine specialist and replace the simulated data with real mission data.
+Skin temperature uses each astronaut's personal baseline. Mood and stress use the app's 1–5 check-in scale. The ground flight surgeon can adjust thresholds per astronaut. Demo scenarios use simulated readings.
 
 ## Supabase database
 
-`supabase/setup_final.sql` is the only script to run (Supabase > SQL Editor). It drops and recreates every app table, so all existing data is deleted.
+`supabase/setup_final.sql` initializes a fresh demo database (Supabase > SQL Editor). It drops and recreates the app tables, deleting existing demo data and profile links. Use the upgrade script below for an existing project.
 
 It is generated, do not edit it by hand:
 
@@ -149,10 +145,10 @@ Upgrading an existing database without dropping it: run `supabase/upgrade_missio
 Vite reads the two Supabase variables from `.env` or `.env.local` in the repository root. Restart `npm run dev` after changing them. For a Vercel build, set the same variables in the project settings and redeploy.
 
 1. Configure a Google OAuth web client with the Supabase callback URL and enable Google in **Authentication → Sign In / Providers**. For a demo using a Google OAuth app in testing mode, add the team's Google accounts as test users.
-2. In Supabase **Authentication → URL Configuration**, allow the app's `/comms` redirect URL for each environment.
-3. Open the app in separate browser profiles or devices. Enter the assigned PIN and choose **Comms → Sync now → Continue with Google** using the assigned Google account. First sign-in creates a Supabase Auth user.
+2. In Supabase **Authentication → URL Configuration**, set the production site URL and allow the app's `/login` redirect URL. Also allow `/comms` if testing Google sign-in from Communications after an offline PIN login.
+3. Open the app in separate browser profiles or devices. On the login page, choose **Continue with Google** using the assigned Google account. First sign-in creates a Supabase Auth user. A linked account opens the assigned profile without a PIN.
 4. In **Authentication → Users**, verify the email and Google identity for each account. Set each assigned profile's `public.users.auth_user_id` to that account's UID. `supabase/link_demo_profiles.sql` covers the flight surgeon and Astronaut One. Click **Sync now** again after linking.
 5. Generate a reading and an alert as Astronaut One, then sync. Sync as the flight surgeon and check the reading under **Crew → Astronaut One**. Send a note from the synced alert and sync again.
 6. As Astronaut One, sync and mark the incoming note as read, then sync again. Sync as the surgeon and verify the alert is shown as attended.
 
-The queue also runs every 30 seconds and on reconnect. It uploads the active profile's pending readings, alerts, check-ins with symptoms, and notes. Both roles receive their own conversations. The surgeon also downloads crew readings and alerts allowed by Row Level Security and can view the cached records offline.
+The queue also runs every 30 seconds and on reconnect. The header and Communications show pending records for the active profile. The queue uploads that profile's readings, alerts, check-ins with symptoms, and notes. Both roles receive their own conversations. The ground flight surgeon and onboard medical officers download the crew readings and alerts allowed by Row Level Security and can view cached records offline.

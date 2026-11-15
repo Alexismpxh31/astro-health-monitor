@@ -6,7 +6,7 @@ import { useSession } from '../../auth/session.js'
 import Icon from '../../components/icons.jsx'
 import TrafficLight from '../../components/TrafficLight.jsx'
 import { ensureDemoCrew } from '../../data/demoCrew.js'
-import { getPendingCount } from '../../sync/queue.js'
+import { getProfilePendingCount } from '../../sync/queue.js'
 import CrewAlerts from '../crew/CrewAlerts.jsx'
 import { loadCrewAlerts } from '../crew/crewAlerts.js'
 import { formatCommDelay, loadCrewData } from '../crew/crewData.js'
@@ -41,7 +41,7 @@ export default function MissionOverview() {
   }, [userId, missionId])
   const userKey = data?.astronauts.map((user) => user.id).join('|') ?? ''
   const alerts = useLiveQuery(() => (data ? loadCrewAlerts(data.astronauts) : null), [userKey])
-  const pending = useLiveQuery(getPendingCount, [], 0)
+  const pending = useLiveQuery(() => userId ? getProfilePendingCount(userId) : 0, [userId], 0)
 
   useEffect(() => {
     ensureDemoCrew().catch((error) => console.error('[home] Could not prepare the demo crew', error))

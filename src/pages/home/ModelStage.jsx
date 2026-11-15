@@ -1,5 +1,7 @@
-import AstronautModel3D from '../../components/AstronautModel3D.jsx'
+import { lazy, Suspense } from 'react'
 import { useTheme } from '../../theme/theme.js'
+
+const AstronautModel3D = lazy(() => import('../../components/AstronautModel3D.jsx'))
 
 /** Body system code (catalog) -> zone of the 3D suit model. */
 const SYSTEM_TO_ZONE = {
@@ -35,14 +37,16 @@ export default function ModelStage({ selectedSystem, levels = {}, details = {}, 
 
   return (
     <div className="model-stage">
-      <AstronautModel3D
-        theme={theme}
-        selectedZone={selectedSystem ? SYSTEM_TO_ZONE[selectedSystem] ?? null : null}
-        zoneStatus={zoneStatus}
-        zoneDetail={zoneDetail}
-        onSelectZone={(zone) => onSelectSystem?.(zone.id)}
-        height={height}
-      />
+      <Suspense fallback={<div style={{ height }} aria-busy="true" />}>
+        <AstronautModel3D
+          theme={theme}
+          selectedZone={selectedSystem ? SYSTEM_TO_ZONE[selectedSystem] ?? null : null}
+          zoneStatus={zoneStatus}
+          zoneDetail={zoneDetail}
+          onSelectZone={(zone) => onSelectSystem?.(zone.id)}
+          height={height}
+        />
+      </Suspense>
     </div>
   )
 }

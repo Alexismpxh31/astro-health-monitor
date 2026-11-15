@@ -15,28 +15,10 @@ import { getSession, ROLE } from '../auth/session.js'
 import { db } from '../db/db.js'
 import { supabase } from './supabaseClient.js'
 
-/** Tables that carry a syncStatus field and take part in the sync queue. */
-export const SYNCABLE_TABLES = ['readings', 'alerts', 'dailyCheckins', 'messages']
-
 /** Rows per upsert request. */
 const BATCH_SIZE = 500
 /** localStorage key (per profile) with the updated_at of the last note pulled. */
 const PULL_SINCE_KEY = 'astrohealth.sync.messagesSince'
-
-/**
- * Counts the rows still waiting to be synced.
- *
- * @returns {Promise<number>}
- */
-export async function getPendingCount() {
-  const counts = await Promise.all(
-    SYNCABLE_TABLES.map((tableName) =>
-      db.table(tableName).where('syncStatus').equals('pending').count(),
-    ),
-  )
-
-  return counts.reduce((total, count) => total + count, 0)
-}
 
 /** Pending records associated with a single profile, including blocked dependencies. */
 export async function getProfilePendingCount(userId) {
