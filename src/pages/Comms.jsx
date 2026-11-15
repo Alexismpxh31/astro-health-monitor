@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { getSession, useSession } from '../auth/session.js'
+import { useSession } from '../auth/session.js'
 import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import { db } from '../db/db.js'
 import { getLinkedProfileId, getProfilePendingCount, syncPending } from '../sync/queue.js'
@@ -117,25 +117,17 @@ function CloudSync({ session }) {
     }
   }
 
-  async function linkAccount(event) {
-    event.preventDefault()
-    const form = event.currentTarget
-    const credentials = new FormData(form)
+  async function linkAccount() {
     await run(async () => {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: credentials.get('email'),
-        password: credentials.get('password'),
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: new URL('/comms', window.location.origin).href,
+          queryParams: { prompt: 'select_account' },
+        },
       })
       if (error) throw error
-      if ((await getLinkedProfileId()) !== session.userId || getSession() !== session) {
-        await supabase.auth.signOut({ scope: 'local' })
-        setFeedback({ key: 'wrongProfile' })
-        return
-      }
-      setShowLogin(false)
-      setFeedback({ key: 'linked' })
     })
-    form.reset()
   }
 
   async function handleSync() {
@@ -159,17 +151,9 @@ function CloudSync({ session }) {
         {t('comms.cloud.syncNow')}
       </button>
       {showLogin && (
-        <form onSubmit={linkAccount}>
-          <label>
-            {t('comms.cloud.email')}
-            <input type="email" name="email" autoComplete="username" required />
-          </label>
-          <label>
-            {t('comms.cloud.password')}
-            <input type="password" name="password" autoComplete="current-password" required />
-          </label>
-          <button type="submit" disabled={busy}>{t('comms.cloud.link')}</button>
-        </form>
+        <button type="button" disabled={busy} onClick={linkAccount}>
+          {t('comms.cloud.link')}
+        </button>
       )}
       <p role="status">
         {busy ? t('comms.cloud.working') : feedback && t('comms.cloud.' + feedback.key, feedback)}

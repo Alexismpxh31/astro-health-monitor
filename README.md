@@ -138,10 +138,11 @@ Upgrading an existing database without dropping it: run `supabase/upgrade_missio
 
 Vite reads the two Supabase variables from `.env` or `.env.local` in the repository root. Restart `npm run dev` after changing them. For a Vercel build, set the same variables in the project settings and redeploy.
 
-1. In Supabase **Authentication → Users**, create and confirm one account for the flight surgeon and one for Astronaut One.
-2. Paste the two Auth user UIDs into `supabase/link_demo_profiles.sql` and run it in the SQL Editor.
-3. Open the app in two browser profiles or devices. On each, log in with the corresponding PIN and go to **Comms → Sync now**. Enter that profile's Supabase credentials and click **Sync now** again.
-4. Generate a reading and an alert as Astronaut One, then sync. Sync as the flight surgeon and check the reading under **Crew → Astronaut One**. Send a note from the synced alert and sync again.
-5. As Astronaut One, sync and mark the incoming note as read, then sync again. Sync as the surgeon and verify the alert is shown as attended.
+1. Configure a Google OAuth web client with the Supabase callback URL and enable Google in **Authentication → Sign In / Providers**. For a demo using a Google OAuth app in testing mode, add the team's Google accounts as test users.
+2. In Supabase **Authentication → URL Configuration**, allow the app's `/comms` redirect URL for each environment.
+3. Open the app in separate browser profiles or devices. Enter the assigned PIN and choose **Comms → Sync now → Continue with Google** using the assigned Google account. First sign-in creates a Supabase Auth user.
+4. In **Authentication → Users**, verify the email and Google identity for each account. Set each assigned profile's `public.users.auth_user_id` to that account's UID. `supabase/link_demo_profiles.sql` covers the flight surgeon and Astronaut One. Click **Sync now** again after linking.
+5. Generate a reading and an alert as Astronaut One, then sync. Sync as the flight surgeon and check the reading under **Crew → Astronaut One**. Send a note from the synced alert and sync again.
+6. As Astronaut One, sync and mark the incoming note as read, then sync again. Sync as the surgeon and verify the alert is shown as attended.
 
 The queue also runs every 30 seconds and on reconnect. It uploads the active profile's pending readings, alerts, check-ins with symptoms, and notes. Both roles receive their own conversations. The surgeon also downloads crew readings and alerts allowed by Row Level Security and can view the cached records offline.
