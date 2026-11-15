@@ -136,4 +136,12 @@ Upgrading an existing database without dropping it: run `supabase/upgrade_missio
 
 ### Sync
 
-The sync queue (`src/sync/queue.js`) runs every 30 s and when the browser comes back online. It needs a Supabase Auth user linked to the active profile (`users.auth_user_id`; link it from Comms > "Sync now"). It pushes the pending rows of the active profile (readings of every indicator, alerts, daily check-ins with symptoms, notes) and pulls the notes sent to or by the profile. Row Level Security (section 4 of the schema) limits what each profile may write.
+Vite reads the two Supabase variables from `.env` or `.env.local` in the repository root. Restart `npm run dev` after changing them. For a Vercel build, set the same variables in the project settings and redeploy.
+
+1. In Supabase **Authentication → Users**, create and confirm one account for the flight surgeon and one for Astronaut One.
+2. Paste the two Auth user UIDs into `supabase/link_demo_profiles.sql` and run it in the SQL Editor.
+3. Open the app in two browser profiles or devices. On each, log in with the corresponding PIN and go to **Comms → Sync now**. Enter that profile's Supabase credentials and click **Sync now** again.
+4. Generate a reading and an alert as Astronaut One, then sync. Sync as the flight surgeon and check the reading under **Crew → Astronaut One**. Send a note from the synced alert and sync again.
+5. As Astronaut One, sync and mark the incoming note as read, then sync again. Sync as the surgeon and verify the alert is shown as attended.
+
+The queue also runs every 30 seconds and on reconnect. It uploads the active profile's pending readings, alerts, check-ins with symptoms, and notes. Both roles receive their own conversations. The surgeon also downloads crew readings and alerts allowed by Row Level Security and can view the cached records offline.

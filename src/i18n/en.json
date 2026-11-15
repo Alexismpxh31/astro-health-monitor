@@ -107,12 +107,12 @@
       "link": "Link cloud account",
       "working": "Connecting to Mission Control…",
       "notConfigured": "Supabase is not configured.",
-      "offline": "You are offline. Pending readings stay on this device.",
+      "offline": "You are offline. Pending records stay on this device.",
       "error": "Could not complete the operation. Try again.",
       "wrongProfile": "This account belongs to a different crew profile.",
       "linked": "Account linked. You can now sync records for your profile.",
       "linkRequired": "Link the Supabase account for your active crew profile.",
-      "summary": "Sent: {{pushed}} · Notes updated: {{pulled}} · Still pending: {{remaining}}"
+      "summary": "Sent: {{pushed}} · Notes updated: {{pulled}} · Readings and alerts received: {{crewRecords}} · Pending: {{remaining}}"
     },
     "loading": "Checking pending records…",
     "pendingCount_one": "{{count}} pending record for your profile",

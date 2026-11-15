@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { to: '/missions', labelKey: 'pages.missions', icon: 'missions', show: isFlightSurgeon },
   { to: '/crew', labelKey: 'pages.crew', icon: 'crew', show: canViewCrew },
   { to: '/sensors', labelKey: 'pages.sensors', icon: 'sensors' },
-  { to: '/comms', labelKey: 'pages.comms', icon: 'comms', show: isAstronautView },
+  { to: '/comms', labelKey: 'pages.comms', icon: 'comms' },
 ]
 
 // App shell: side navigation (bottom bar on phones) + top bar (title, connection,

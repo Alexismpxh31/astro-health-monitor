@@ -11,7 +11,7 @@
 // Name mapping client -> server: camelCase -> snake_case; reading.indicatorCode -> indicator_id
 // (catalog ids are the same fixed UUIDs on both sides, so the lookup is local).
 
-import { getSession } from '../auth/session.js'
+import { getSession, ROLE } from '../auth/session.js'
 import { db } from '../db/db.js'
 import { supabase } from './supabaseClient.js'
 
@@ -96,9 +96,12 @@ async function runSync(session) {
   pushed += await pushAlerts(userId, stillActive)
   pushed += await pushCheckins(userId, stillActive)
   pushed += await pushMessages(userId, stillActive)
+  const crewRecords = session.roleCode === ROLE.FLIGHT_SURGEON
+    ? await pullCrewRecords(userId, stillActive)
+    : 0
   const pulled = await pullMessages(userId, stillActive)
 
-  return { pushed, pulled, failed: 0 }
+  return { pushed, pulled, crewRecords, failed: 0 }
 }
 
 /** Upserts `rows` in batches. `options` are passed to supabase.upsert(). */
@@ -123,14 +126,14 @@ async function pushReadings(userId, stillActive) {
   if (readings.length === 0) return 0
 
   const { data: indicators, error: indicatorError } = await supabase
-  .from('indicators')
-  .select('id, code')
+    .from('indicators')
+    .select('id, code')
 
-if (indicatorError) throw indicatorError
+  if (indicatorError) throw indicatorError
 
-const indicatorIdByCode = new Map(
-  indicators.map((indicator) => [indicator.code, indicator.id]),
-)
+  const indicatorIdByCode = new Map(
+    indicators.map((indicator) => [indicator.code, indicator.id]),
+  )
 
   const rows = []
   for (const reading of readings) {
@@ -296,6 +299,75 @@ async function pushMessages(userId, stillActive) {
 
 // ---------- pull ----------
 
+async function pullCrewRecords(userId, stillActive) {
+  // RLS restricts the result to profiles the linked surgeon can view.
+  const readings = await pullCrewTable(
+    db.readings,
+    () => supabase.from('readings')
+      .select('id, user_id, value, measured_at, source, indicators(code, units(symbol))')
+      .neq('user_id', userId),
+    (row) => ({
+      id: row.id,
+      userId: row.user_id,
+      indicatorCode: row.indicators.code,
+      unit: row.indicators.units.symbol,
+      value: row.value,
+      measuredAt: new Date(row.measured_at).toISOString(),
+      source: row.source,
+      syncStatus: 'synced',
+    }),
+    stillActive,
+  )
+  const levels = new Map((await db.alertLevels.toArray()).map(({ id, code }) => [code, id]))
+  const alerts = await pullCrewTable(
+    db.alerts,
+    () => supabase.from('alerts')
+      .select('id, reading_id, recommendation_id, direction, generated_at, attended_at, alert_levels(code), readings!inner(user_id)')
+      .neq('readings.user_id', userId),
+    (row, local) => ({
+      id: row.id,
+      readingId: row.reading_id,
+      recommendationId: row.recommendation_id,
+      alertLevelId: levels.get(row.alert_levels?.code),
+      direction: row.direction,
+      generatedAt: new Date(row.generated_at).toISOString(),
+      attendedAt: row.attended_at ?? local?.attendedAt ?? null,
+      syncStatus: 'synced',
+    }),
+    stillActive,
+  )
+  return readings + alerts
+}
+
+async function pullCrewTable(table, createQuery, toLocal, stillActive) {
+  let cursor
+  let changed = 0
+  while (stillActive()) {
+    let query = createQuery().order('id').limit(BATCH_SIZE)
+    if (cursor) query = query.gt('id', cursor)
+    const { data, error } = await query
+    if (error) throw error
+    if (!data.length || !stillActive()) break
+
+    changed += await db.transaction('rw', table, async () => {
+      if (!stillActive()) return 0
+      const existing = await table.bulkGet(data.map(({ id }) => id))
+      const updates = data.flatMap((row, index) => {
+        const local = existing[index]
+        if (local?.syncStatus === 'pending') return []
+        const incoming = toLocal(row, local)
+        return local && Object.keys(incoming).every((key) => incoming[key] === local[key])
+          ? []
+          : [incoming]
+      })
+      await table.bulkPut(updates)
+      return updates.length
+    })
+    cursor = data.at(-1).id
+  }
+  return changed
+}
+
 const sinceKey = (userId) => `${PULL_SINCE_KEY}.${userId}`
 
 function readSince(userId) {
@@ -325,6 +397,7 @@ async function pullMessages(userId, stillActive) {
   let query = supabase
     .from('messages')
     .select('id, sender_id, recipient_id, content, sent_at, read_at, alert_id, updated_at')
+    .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
     .order('updated_at', { ascending: true })
     .limit(BATCH_SIZE)
   if (since) query = query.gt('updated_at', since)

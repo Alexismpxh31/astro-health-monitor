@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { getSession, ROLE, useSession } from '../auth/session.js'
+import { getSession, useSession } from '../auth/session.js'
 import { DEMO_ASTRONAUT_ID } from '../data/demoUser.js'
 import { db } from '../db/db.js'
 import { getLinkedProfileId, getProfilePendingCount, syncPending } from '../sync/queue.js'
@@ -59,7 +59,7 @@ export default function Comms() {
           : t('comms.pendingCount', { count: pendingCount })}
       </p>
 
-      {session?.roleCode === ROLE.ASTRONAUT && <CloudSync key={session.userId} session={session} />}
+      {session && <CloudSync key={session.userId} session={session} />}
 
       <section className="notes-panel" aria-labelledby="medical-notes-title">
         <h2 id="medical-notes-title">{t('comms.notes.title')}</h2>
@@ -147,9 +147,9 @@ function CloudSync({ session }) {
         setFeedback({ key: 'linkRequired' })
         return
       }
-      const { pushed, pulled } = await syncPending()
+      const { pushed, pulled, crewRecords } = await syncPending()
       const remaining = await getProfilePendingCount(session.userId)
-      setFeedback({ key: 'summary', pushed, pulled, remaining })
+      setFeedback({ key: 'summary', pushed, pulled, crewRecords, remaining })
     })
   }
 
