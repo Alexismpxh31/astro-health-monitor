@@ -340,6 +340,10 @@ button:hover {
   color: var(--warn);
 }
 
+.connection-reconnect {
+  white-space: normal;
+}
+
 .critical-alert-status:has(.critical-alert-link) {
   display: flex;
 }

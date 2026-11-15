@@ -19,6 +19,7 @@
     "missions": "Missions"
   },
   "connection": {
+    "reconnectSync": "Back online. Sign in with Google to sync.",
     "criticalAlerts_one": "{{count}} critical alert",
     "criticalAlerts_other": "{{count}} critical alerts",
     "online": "Online",

@@ -151,7 +151,7 @@ export async function login(userId, pin) {
 
   locks.delete(userId)
   saveLocks()
-  return startSession(user)
+  return startSession(user, 'pin')
 }
 
 export async function loginWithCloudSession() {
@@ -159,15 +159,16 @@ export async function loginWithCloudSession() {
   if (error) throw error
   const user = data ? await db.users.get(data) : null
   if (!user || user.active === false) return { ok: false, reason: 'unavailable' }
-  return startSession(user)
+  return startSession(user, 'google')
 }
 
-async function startSession(user) {
+async function startSession(user, loginMethod) {
   const userId = user.id
   const role = await db.roles.get(user.roleId)
   const crewRows = await db.crew.where('userId').equals(userId).toArray()
   const session = {
     userId,
+    loginMethod,
     roleCode: role?.code ?? null,
     isMedicalOfficer: crewRows.some((row) => row.isMedicalOfficer),
     startedAt: new Date().toISOString(),
