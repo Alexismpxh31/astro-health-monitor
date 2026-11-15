@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { getPendingCount } from '../sync/queue.js'
+import { useSession } from '../auth/session.js'
+import { getProfilePendingCount } from '../sync/queue.js'
 
 function subscribe(callback) {
   window.addEventListener('online', callback)
@@ -21,7 +22,12 @@ function getSnapshot() {
 export default function ConnectionStatus() {
   const { t } = useTranslation()
   const isOnline = useSyncExternalStore(subscribe, getSnapshot)
-  const pendingCount = useLiveQuery(getPendingCount, [], 0)
+  const userId = useSession()?.userId
+  const pending = useLiveQuery(async () => ({
+    userId,
+    count: userId ? await getProfilePendingCount(userId) : 0,
+  }), [userId])
+  const pendingCount = pending?.userId === userId ? pending?.count ?? 0 : 0
 
   return (
     <span
