@@ -122,8 +122,15 @@ async function pushReadings(userId, stillActive) {
     .toArray()
   if (readings.length === 0) return 0
 
-  const indicators = await db.indicators.toArray()
-  const indicatorIdByCode = new Map(indicators.map((indicator) => [indicator.code, indicator.id]))
+  const { data: indicators, error: indicatorError } = await supabase
+  .from('indicators')
+  .select('id, code')
+
+if (indicatorError) throw indicatorError
+
+const indicatorIdByCode = new Map(
+  indicators.map((indicator) => [indicator.code, indicator.id]),
+)
 
   const rows = []
   for (const reading of readings) {
