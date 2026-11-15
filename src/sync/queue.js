@@ -221,19 +221,35 @@ async function pushCheckins(userId, stillActive) {
   }))
   await upsertAll('daily_checkins', rows, { onConflict: 'id' })
 
+  const symptomsByCheckin = await Promise.all(pending.map((checkin) =>
+    db.checkinSymptoms.where('checkinId').equals(checkin.id).toArray(),
+  ))
   const symptomRows = []
-  for (const checkin of pending) {
-    const symptoms = await db.checkinSymptoms
-      .where('[checkinId+symptomId]')
-      .between([checkin.id, ''], [checkin.id, '￿'])
-      .toArray()
-    symptomRows.push(...symptoms.map((item) => ({ checkin_id: item.checkinId, symptom_id: item.symptomId })))
+  const blockedCheckins = new Set()
+  if (symptomsByCheckin.some((items) => items.length > 0)) {
+    const localSymptoms = await db.symptoms.toArray()
+    const { data: remoteSymptoms, error } = await supabase.from('symptoms').select('id, code')
+    if (error) throw error
+
+    const localCodeById = new Map(localSymptoms.map(({ id, code }) => [id, code]))
+    const remoteIdByCode = new Map(remoteSymptoms.map(({ id, code }) => [code, id]))
+    for (const item of symptomsByCheckin.flat()) {
+      const symptomId = remoteIdByCode.get(localCodeById.get(item.symptomId))
+      if (symptomId) {
+        symptomRows.push({ checkin_id: item.checkinId, symptom_id: symptomId })
+      } else {
+        blockedCheckins.add(item.checkinId)
+      }
+    }
   }
+
+  if (!stillActive()) return 0
   if (symptomRows.length > 0) {
     await upsertAll('checkin_symptoms', symptomRows, { onConflict: 'checkin_id,symptom_id', ignoreDuplicates: true })
   }
 
-  return markSynced('dailyCheckins', rows.map((row) => row.id))
+  const syncedIds = rows.map((row) => row.id).filter((id) => !blockedCheckins.has(id))
+  return syncedIds.length ? markSynced('dailyCheckins', syncedIds) : 0
 }
 
 /**
