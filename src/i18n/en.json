@@ -19,6 +19,8 @@
     "missions": "Missions"
   },
   "connection": {
+    "criticalAlerts_one": "{{count}} critical alert",
+    "criticalAlerts_other": "{{count}} critical alerts",
     "online": "Online",
     "offline": "No signal",
     "pending_one": "{{count}} pending",
