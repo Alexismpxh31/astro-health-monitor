@@ -22,9 +22,12 @@ const SCAN_LIMIT = 300
  * @param {Object[]} users - Crew members to include (astronauts).
  * @returns {Promise<{ items: CrewAlert[], unattended: number }>} newest first.
  */
-export async function loadCrewAlerts(users) {
+export async function loadCrewAlerts(users, { criticalOnly = false } = {}) {
   const userById = new Map(users.map((user) => [user.id, user]))
-  const recent = await db.alerts.orderBy('generatedAt').reverse().limit(SCAN_LIMIT).toArray()
+  const ordered = db.alerts.orderBy('generatedAt').reverse()
+  const recent = await (criticalOnly
+    ? ordered.filter((alert) => !alert.attendedAt)
+    : ordered.limit(SCAN_LIMIT)).toArray()
   if (recent.length === 0) return { items: [], unattended: 0 }
 
   const recommendationIds = [...new Set(recent.map((row) => row.recommendationId).filter(Boolean))]
@@ -53,13 +56,15 @@ export async function loadCrewAlerts(users) {
     const user = reading && userById.get(reading.userId)
     if (!user) return
     const recommendation = recommendationById.get(alert.recommendationId) ?? null
+    const levelCode = levelCodeById.get(alert.alertLevelId ?? recommendation?.alertLevelId) ?? null
+    if (criticalOnly && levelCode !== 'critical') return
     items.push({
       alert,
       reading,
       user,
       indicator: indicatorByCode.get(alert.indicatorCode ?? reading.indicatorCode) ?? null,
       recommendation,
-      levelCode: levelCodeById.get(alert.alertLevelId ?? recommendation?.alertLevelId) ?? null,
+      levelCode,
       direction: alert.direction ?? recommendation?.direction ?? null,
       note: noteByAlertId.get(alert.id) ?? null,
     })

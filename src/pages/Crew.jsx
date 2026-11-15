@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import TrafficLight from '../components/TrafficLight.jsx'
 import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
 import { useSession } from '../auth/session.js'
@@ -22,10 +22,13 @@ export default function Crew() {
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const userId = useSession()?.userId
   const canManage = useCanManageCrew()
+  const [searchParams] = useSearchParams()
+  const criticalOnly = canManage && searchParams.get('alerts') === 'critical'
   const currentMissionId = useCurrentMission(userId)
+  const missionFilter = criticalOnly ? null : currentMissionId
   const data = useLiveQuery(
-    () => (userId ? loadCrewData(userId, currentMissionId, canManage) : null),
-    [userId, currentMissionId, canManage],
+    () => (userId ? loadCrewData(userId, missionFilter, canManage) : null),
+    [userId, missionFilter, canManage],
   )
   const { isLive, hasError: liveFailed } = useLiveDemo()
   const [errorKey, setErrorKey] = useState(null)
@@ -74,6 +77,14 @@ export default function Crew() {
   }
 
   const { mission, missionCount, bodySystems, astronauts, rows } = data
+  if (criticalOnly) {
+    return (
+      <section className="page crew-page">
+        <Link to="/crew">{t('pages.crew')}</Link>
+        <CrewAlerts users={astronauts} criticalOnly />
+      </section>
+    )
+  }
   const hasSimulatedData = rows.some((row) => row.hasSimulatedData)
   const countByLevel = Object.fromEntries(
     SUMMARY_LEVELS.map((level) => [level, rows.filter((row) => row.overall === level).length]),
@@ -177,6 +188,9 @@ export default function Crew() {
                         {row.user.isMedicalOfficer && (
                           <span className="crew-officer-badge">{t('crew.medicalOfficer')}</span>
                         )}
+                        <div className="crew-member-mission muted">
+                          {row.user.missions.map(localName).join(' · ')}
+                        </div>
                       </th>
                       <td data-label={t('crew.overall')}>
                         <span className="crew-cell">

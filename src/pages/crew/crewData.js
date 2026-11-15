@@ -29,9 +29,14 @@ async function loadReferenceData() {
 /** Astronauts of one mission (with their medical officer flag). */
 function astronautsOf(missionId, ref) {
   const rows = ref.crew.filter((member) => member.missionId === missionId)
+  const missions = ref.missions.filter((mission) => mission.id === missionId)
   return ref.users
     .filter((user) => rows.some((row) => row.userId === user.id) && hasRole(ref.roles, user, ASTRONAUT_ROLE_CODE))
-    .map((user) => ({ ...user, isMedicalOfficer: rows.some((row) => row.userId === user.id && row.isMedicalOfficer) }))
+    .map((user) => ({
+      ...user,
+      missions: [...missions],
+      isMedicalOfficer: rows.some((row) => row.userId === user.id && row.isMedicalOfficer),
+    }))
 }
 
 /** Missions where this user is part of the crew (the flight surgeon is listed in crew too). */
@@ -39,6 +44,27 @@ function missionsOf(userId, ref) {
   return ref.missions.filter((mission) =>
     ref.crew.some((member) => member.missionId === mission.id && member.userId === userId),
   )
+}
+
+function astronautsAcrossMissions(missions, ref) {
+  const roster = new Map()
+  for (const mission of missions) {
+    for (const astronaut of astronautsOf(mission.id, ref)) {
+      const previous = roster.get(astronaut.id)
+      if (previous) {
+        previous.missions.push(mission)
+        previous.isMedicalOfficer ||= astronaut.isMedicalOfficer
+      } else {
+        roster.set(astronaut.id, astronaut)
+      }
+    }
+  }
+  return [...roster.values()]
+}
+
+export async function loadGroundCrew(userId) {
+  const ref = await loadReferenceData()
+  return astronautsAcrossMissions(missionsOf(userId, ref), ref)
 }
 
 async function statusRows(astronauts, ref) {
@@ -75,7 +101,7 @@ export async function loadCrewData(userId, preferredMissionId = null, showAllMis
     ? null
     : visibleMissions.find((item) => item.id === preferredMissionId) ?? visibleMissions[0] ?? null
   const astronauts = allMissions
-    ? [...new Map(mine.flatMap((item) => astronautsOf(item.id, ref)).map((user) => [user.id, user])).values()]
+    ? astronautsAcrossMissions(mine, ref)
     : mission ? astronautsOf(mission.id, ref) : []
 
   return {

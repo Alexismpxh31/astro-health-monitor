@@ -82,12 +82,11 @@ export default function Sensors() {
       heartRate.disconnect()
       return
     }
-    // Ask for notification permission here because it needs a user gesture.
-    requestNotificationPermission()
     try {
       const connecting = heartRate.connect() // stops the simulator
       setRunning(simulator.isRunning())
       await connecting
+      requestNotificationPermission()
     } catch (error) {
       // Closing the device picker is not an error worth showing.
       if (error?.code !== 'cancelled') setBleErrorCode(error?.code ?? 'failed')
