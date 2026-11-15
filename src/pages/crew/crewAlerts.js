@@ -1,4 +1,5 @@
 import { db } from '../../db/db.js'
+import { getSession } from '../../auth/session.js'
 
 // Recent alerts of the whole crew for the flight surgeon (offline, from IndexedDB).
 // Alerts come from the rules engine (indicatorCode / alertLevelId / direction stored on
@@ -23,6 +24,7 @@ const SCAN_LIMIT = 300
  * @returns {Promise<{ items: CrewAlert[], unattended: number }>} newest first.
  */
 export async function loadCrewAlerts(users, { criticalOnly = false } = {}) {
+  const observerId = getSession()?.userId
   const userById = new Map(users.map((user) => [user.id, user]))
   const ordered = db.alerts.orderBy('generatedAt').reverse()
   const recent = await (criticalOnly
@@ -55,6 +57,7 @@ export async function loadCrewAlerts(users, { criticalOnly = false } = {}) {
     const reading = readings[index]
     const user = reading && userById.get(reading.userId)
     if (!user) return
+    if (reading.userId !== observerId && reading.syncStatus !== 'synced') return
     const recommendation = recommendationById.get(alert.recommendationId) ?? null
     const levelCode = levelCodeById.get(alert.alertLevelId ?? recommendation?.alertLevelId) ?? null
     if (criticalOnly && levelCode !== 'critical') return

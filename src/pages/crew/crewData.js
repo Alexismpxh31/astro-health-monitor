@@ -1,4 +1,5 @@
 import { db } from '../../db/db.js'
+import { getSession } from '../../auth/session.js'
 import { loadCrewAlerts } from './crewAlerts.js'
 import { buildCrewStatus, hasRole, LEVEL } from './crewStatus.js'
 
@@ -68,8 +69,10 @@ export async function loadGroundCrew(userId) {
 }
 
 async function statusRows(astronauts, ref) {
+  const observerId = getSession()?.userId
   const readings = astronauts.length
-    ? await db.readings.where('userId').anyOf(astronauts.map((user) => user.id)).toArray()
+    ? await db.readings.where('userId').anyOf(astronauts.map((user) => user.id))
+      .filter((reading) => reading.userId === observerId || reading.syncStatus === 'synced').toArray()
     : []
   return buildCrewStatus({
     astronauts,

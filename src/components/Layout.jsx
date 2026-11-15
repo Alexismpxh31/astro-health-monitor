@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { to: '/checkin', labelKey: 'pages.checkin', icon: 'checkin', show: isAstronautView },
   { to: '/missions', labelKey: 'pages.missions', icon: 'missions', show: isFlightSurgeon },
   { to: '/crew', labelKey: 'pages.crew', icon: 'crew', show: canViewCrew },
-  { to: '/sensors', labelKey: 'pages.sensors', icon: 'sensors' },
+  { to: '/sensors', labelKey: 'pages.sensors', icon: 'sensors', show: isAstronautView },
   { to: '/comms', labelKey: 'pages.comms', icon: 'comms' },
 ]
 
