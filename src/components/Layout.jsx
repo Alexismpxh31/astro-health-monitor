@@ -113,7 +113,9 @@ export default function Layout() {
                 <span className="session-user" aria-label={t('auth.signedInAs')}>
                   <span className="session-name">{userName}</span>
                   {session.roleCode && (
-                    <span className="session-role">{t(`auth.roles.${session.roleCode}`, session.roleCode)}</span>
+                      <span className="session-role">
+                        {session.isMedicalOfficer ? t('crew.medicalOfficer') : t(`auth.roles.${session.roleCode}`, session.roleCode)}
+                      </span>
                   )}
                 </span>
                 <button type="button" className="icon-button" onClick={handleLogout} aria-label={t('auth.logout')} title={t('auth.logout')}>

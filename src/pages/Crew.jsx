@@ -6,7 +6,7 @@ import TrafficLight from '../components/TrafficLight.jsx'
 import { addDemoReadings, ensureDemoCrew } from '../data/demoCrew.js'
 import { useSession } from '../auth/session.js'
 import { loadCrewData } from './crew/crewData.js'
-import { useCurrentMission } from './missions/missionStore.js'
+import { clearCurrentMission, useCurrentMission } from './missions/missionStore.js'
 import { LEVEL } from './crew/crewStatus.js'
 import { DISPLAY_CODE } from './crew/display.js'
 import CrewAlerts from './crew/CrewAlerts.jsx'
@@ -21,13 +21,13 @@ export default function Crew() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const userId = useSession()?.userId
+  const canManage = useCanManageCrew()
   const currentMissionId = useCurrentMission(userId)
   const data = useLiveQuery(
-    () => (userId ? loadCrewData(userId, currentMissionId) : null),
-    [userId, currentMissionId],
+    () => (userId ? loadCrewData(userId, currentMissionId, canManage) : null),
+    [userId, currentMissionId, canManage],
   )
   const { isLive, hasError: liveFailed } = useLiveDemo()
-  const canManage = useCanManageCrew()
   const [errorKey, setErrorKey] = useState(null)
   const [isSimulating, setIsSimulating] = useState(false)
   const [levelFilter, setLevelFilter] = useState(null)
@@ -86,8 +86,13 @@ export default function Crew() {
         <div>
           <h1>{t('pages.crew')}</h1>
           <p className="muted">
-            {t('crew.subtitle', { count: rows.length, mission: mission ? localName(mission) : '' })}
+            {t('crew.subtitle', { count: rows.length, mission: mission ? localName(mission) : t('crew.allMissions') })}
           </p>
+          {canManage && currentMissionId && (
+            <button type="button" className="mission-switch" onClick={() => { clearCurrentMission(); setLevelFilter(null) }}>
+              {t('crew.allMissions')}
+            </button>
+          )}
           {canManage && missionCount > 1 && (
             <Link to="/missions" className="mission-switch">
               {t('missions.change')}

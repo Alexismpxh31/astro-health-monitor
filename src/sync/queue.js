@@ -96,7 +96,7 @@ async function runSync(session) {
   pushed += await pushAlerts(userId, stillActive)
   pushed += await pushCheckins(userId, stillActive)
   pushed += await pushMessages(userId, stillActive)
-  const crewRecords = session.roleCode === ROLE.FLIGHT_SURGEON
+  const crewRecords = session.roleCode === ROLE.FLIGHT_SURGEON || session.isMedicalOfficer
     ? await pullCrewRecords(userId, stillActive)
     : 0
   const pulled = await pullMessages(userId, stillActive)
