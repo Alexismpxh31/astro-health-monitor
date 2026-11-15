@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router-dom'
-import { getLockedUntil, homePathFor, login, useSession } from '../auth/session.js'
+import { getLockedUntil, homePathFor, login, loginWithCloudSession, useSession } from '../auth/session.js'
 import { db } from '../db/db.js'
+import { supabase } from '../sync/supabaseClient.js'
 import { clearCurrentMission } from './missions/missionStore.js'
 
 const PIN_LENGTH = 4
+const GOOGLE_LOGIN_PENDING = 'astrohealth.googleLoginPending'
 const DIGIT_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 /** Users that can log in on this device: active and with a PIN set. */
@@ -27,6 +29,49 @@ export default function Login() {
   const session = useSession()
   const users = useLiveQuery(loadLoginUsers)
   const [selectedId, setSelectedId] = useState(null)
+  const [cloudError, setCloudError] = useState(null)
+  const [cloudBusy, setCloudBusy] = useState(false)
+
+  async function signInWithGoogle() {
+    setCloudBusy(true)
+    setCloudError(null)
+    try {
+      sessionStorage.setItem(GOOGLE_LOGIN_PENDING, 'true')
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: new URL('/login', window.location.origin).href,
+          queryParams: { prompt: 'select_account' },
+        },
+      })
+      if (error) throw error
+    } catch {
+      sessionStorage.removeItem(GOOGLE_LOGIN_PENDING)
+      setCloudError('login.googleError')
+      setCloudBusy(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!supabase || session || !sessionStorage.getItem(GOOGLE_LOGIN_PENDING)) return undefined
+    let active = true
+    async function restoreCloudLogin() {
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (error) throw error
+        if (!active) return
+        if (!data.session) throw new Error('Missing Google session')
+        const result = await loginWithCloudSession()
+        if (active && !result.ok) setCloudError('login.googleUnlinked')
+      } catch {
+        if (active) setCloudError('login.googleError')
+      } finally {
+        if (active) sessionStorage.removeItem(GOOGLE_LOGIN_PENDING)
+      }
+    }
+    void restoreCloudLogin()
+    return () => { active = false }
+  }, [session])
 
   // A new login never reopens the mission picked in a previous session.
   useEffect(() => {
@@ -42,6 +87,12 @@ export default function Login() {
   return (
     <section className="page login-page">
       <h1>{t('pages.login')}</h1>
+      {supabase && !selected && (
+        <button type="button" disabled={cloudBusy} onClick={signInWithGoogle}>
+          {t('comms.cloud.link')}
+        </button>
+      )}
+      {cloudError && <p role="alert">{t(cloudError)}</p>}
 
       {selected ? (
         <PinStep

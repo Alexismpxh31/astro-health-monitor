@@ -5,6 +5,7 @@
 import { useSyncExternalStore } from 'react'
 import { db } from '../db/db.js'
 import { verifyPin } from './pin.js'
+import { supabase } from '../sync/supabaseClient.js'
 
 /**
  * @typedef {Object} Session
@@ -89,6 +90,7 @@ export async function getCurrentUser() {
 /** Ends the current session. */
 export function logout() {
   setSession(null)
+  if (supabase) void supabase.auth.signOut({ scope: 'local' })
 }
 
 // ---------- Failed attempts lock ----------
@@ -149,6 +151,19 @@ export async function login(userId, pin) {
 
   locks.delete(userId)
   saveLocks()
+  return startSession(user)
+}
+
+export async function loginWithCloudSession() {
+  const { data, error } = await supabase.rpc('app_user_id')
+  if (error) throw error
+  const user = data ? await db.users.get(data) : null
+  if (!user || user.active === false) return { ok: false, reason: 'unavailable' }
+  return startSession(user)
+}
+
+async function startSession(user) {
+  const userId = user.id
   const role = await db.roles.get(user.roleId)
   const crewRows = await db.crew.where('userId').equals(userId).toArray()
   const session = {
