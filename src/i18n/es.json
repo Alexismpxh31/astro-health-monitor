@@ -107,12 +107,12 @@
       "link": "Vincular cuenta de Supabase",
       "working": "Conectando con Control de Misión…",
       "notConfigured": "Falta configurar Supabase.",
-      "offline": "Sin conexión. Las lecturas pendientes se conservan en este dispositivo.",
+      "offline": "Sin conexión. Los registros pendientes se conservan en este dispositivo.",
       "error": "No se pudo completar la operación. Inténtalo de nuevo.",
       "wrongProfile": "Esta cuenta pertenece a otro perfil de tripulación.",
       "linked": "Cuenta vinculada. Ya puedes sincronizar los registros de tu perfil.",
       "linkRequired": "Vincula la cuenta de Supabase de tu perfil activo.",
-      "summary": "Enviados: {{pushed}} · Notas actualizadas: {{pulled}} · Aún pendientes: {{remaining}}"
+      "summary": "Enviados: {{pushed}} · Notas actualizadas: {{pulled}} · Lecturas y alertas recibidas: {{crewRecords}} · Pendientes: {{remaining}}"
     },
     "loading": "Consultando registros pendientes…",
     "pendingCount_one": "{{count}} registro pendiente de tu perfil",

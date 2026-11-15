@@ -31,8 +31,8 @@ export default function App() {
               <Route path="/system/:id" element={<SystemDetail />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/checkin" element={<Checkin />} />
-              <Route path="/comms" element={<Comms />} />
             </Route>
+            <Route path="/comms" element={<Comms />} />
             <Route path="/sensors" element={<Sensors />} />
             {/* Flight surgeon, plus the crew medical officer in read-only mode.
                 Other astronauts are sent back to the home page. */}
