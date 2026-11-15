@@ -102,9 +102,7 @@
   "comms": {
     "cloud": {
       "syncNow": "Sync now",
-      "email": "Email",
-      "password": "Password",
-      "link": "Link cloud account",
+      "link": "Continue with Google",
       "working": "Connecting to Mission Control…",
       "notConfigured": "Supabase is not configured.",
       "offline": "You are offline. Pending records stay on this device.",

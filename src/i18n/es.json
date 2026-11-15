@@ -102,9 +102,7 @@
   "comms": {
     "cloud": {
       "syncNow": "Sincronizar ahora",
-      "email": "Correo",
-      "password": "Contraseña",
-      "link": "Vincular cuenta de Supabase",
+      "link": "Continuar con Google",
       "working": "Conectando con Control de Misión…",
       "notConfigured": "Falta configurar Supabase.",
       "offline": "Sin conexión. Los registros pendientes se conservan en este dispositivo.",
