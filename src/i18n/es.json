@@ -165,6 +165,9 @@
         "insecure": "El Bluetooth solo funciona si la app se abre por https://.",
         "unsupported": "Este navegador no es compatible con Web Bluetooth (Safari y Firefox no lo permiten). Usa Chrome o Edge en computadora o Android.",
         "failed": "No se pudo conectar con el pulsómetro. Comprueba que esté encendido y cerca, e inténtalo de nuevo.",
+        "gatt": "El dispositivo apareció, pero no abrió la conexión Bluetooth. Desconéctalo de otros equipos y reinicia el anuncio conectable del teléfono.",
+        "heartRateService": "El dispositivo se conectó, pero no expone la medición de pulso. En nRF Connect, deja solo el servicio Heart Rate predefinido con la característica 0x2A37.",
+        "notifications": "El dispositivo expone la medición de pulso, pero no pudo iniciar las notificaciones Bluetooth. Comprueba que 0x2A37 tenga NOTIFY y vuelve a conectar.",
         "lost": "Se perdió la conexión con el pulsómetro y el reintento falló. Vuelve a conectarlo."
       },
       "exclusiveNote": "El pulsómetro y el simulador no funcionan a la vez: al conectar uno se detiene el otro."
@@ -272,6 +275,7 @@
     "signedInAs": "Usuario con sesión iniciada"
   },
   "crewAlerts": {
+    "criticalTitle": "Alertas críticas pendientes",
     "title": "Alertas de la tripulación",
     "unattended_one": "{{count}} alerta sin atender",
     "unattended_other": "{{count}} alertas sin atender",

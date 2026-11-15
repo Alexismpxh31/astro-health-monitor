@@ -34,7 +34,7 @@ const RECONNECT_DELAY_MS = 1000
 
 /** Error with a stable `code` the UI maps to an i18n message (sensors.ble.errors.<code>). */
 export class HeartRateError extends Error {
-  /** @param {'insecure'|'unsupported'|'cancelled'|'failed'} code */
+  /** @param {'insecure'|'unsupported'|'cancelled'|'failed'|'gatt'|'heartRateService'|'notifications'} code */
   constructor(code, cause) {
     super(`[bluetooth] Heart rate sensor: ${code}`, { cause })
     this.name = 'HeartRateError'
@@ -113,11 +113,18 @@ async function handleMeasurement(event) {
 
 /** Opens the GATT connection and starts the heart rate notifications. */
 async function openConnection() {
-  const server = await device.gatt.connect()
-  const service = await server.getPrimaryService(HEART_RATE_SERVICE)
-  characteristic = await service.getCharacteristic(HEART_RATE_MEASUREMENT)
-  characteristic.addEventListener('characteristicvaluechanged', handleMeasurement)
-  await characteristic.startNotifications()
+  let stage = 'gatt'
+  try {
+    const server = await device.gatt.connect()
+    stage = 'heartRateService'
+    const service = await server.getPrimaryService(HEART_RATE_SERVICE)
+    characteristic = await service.getCharacteristic(HEART_RATE_MEASUREMENT)
+    stage = 'notifications'
+    characteristic.addEventListener('characteristicvaluechanged', handleMeasurement)
+    await characteristic.startNotifications()
+  } catch (error) {
+    throw new HeartRateError(stage, error)
+  }
 }
 
 function releaseDevice() {
@@ -183,6 +190,7 @@ export async function connect(forUserId) {
     }
     releaseDevice()
     setState({ status: 'disconnected', deviceName: null })
+    if (error instanceof HeartRateError) throw error
     throw new HeartRateError(cancelled ? 'cancelled' : 'failed', error)
   }
 }

@@ -165,6 +165,9 @@
         "insecure": "Bluetooth only works when the app is opened over https://.",
         "unsupported": "This browser does not support Web Bluetooth (Safari and Firefox do not allow it). Use Chrome or Edge on a computer or Android.",
         "failed": "Could not connect to the heart rate monitor. Check that it is on and nearby, then try again.",
+        "gatt": "The device was found, but the Bluetooth connection could not open. Disconnect it from other devices and restart connectable advertising on the phone.",
+        "heartRateService": "The device connected, but heart rate measurement was unavailable. In nRF Connect, keep only the predefined Heart Rate service with characteristic 0x2A37.",
+        "notifications": "The device exposes heart rate measurement, but Bluetooth notifications could not start. Check that 0x2A37 supports NOTIFY and reconnect.",
         "lost": "The connection to the heart rate monitor was lost and the retry failed. Connect it again."
       },
       "exclusiveNote": "The heart rate monitor and the simulator never run together: connecting one stops the other."
@@ -272,6 +275,7 @@
     "signedInAs": "Logged-in user"
   },
   "crewAlerts": {
+    "criticalTitle": "Open critical alerts",
     "title": "Crew alerts",
     "unattended_one": "{{count}} unattended alert",
     "unattended_other": "{{count}} unattended alerts",

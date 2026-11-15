@@ -88,8 +88,8 @@ export default function Layout() {
           </div>
           <div className="top-bar-actions">
             <ConnectionStatus />
-            {session && isAstronautView(session) && (
-              <CriticalAlertStatus key={session.userId} userId={session.userId} />
+            {session && (
+              <CriticalAlertStatus key={session.userId} userId={session.userId} ground={isFlightSurgeon(session)} />
             )}
             <ThemeToggle />
             <div className="lang-switch" role="group" aria-label={t('common.language')}>

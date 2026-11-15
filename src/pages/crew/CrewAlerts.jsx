@@ -20,12 +20,12 @@ const LEVEL_FROM_CODE = { caution: 'WARNING', critical: 'CRITICAL' }
  * @param {Object[]} props.users - Astronauts shown in the crew table.
  * @param {boolean} [props.canSendNotes=true] - false for the read-only medical officer view.
  */
-export default function CrewAlerts({ users, canSendNotes = true }) {
+export default function CrewAlerts({ users, canSendNotes = true, criticalOnly = false }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const lang = i18n.resolvedLanguage === 'en' ? 'en' : 'es'
   const userKey = users.map((user) => user.id).join('|')
-  const data = useLiveQuery(() => loadCrewAlerts(users), [userKey])
+  const data = useLiveQuery(() => loadCrewAlerts(users, { criticalOnly }), [userKey, criticalOnly])
   const [onlyOpen, setOnlyOpen] = useState(false)
 
   const timeFormat = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' })
@@ -36,16 +36,16 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
   }
 
   const items = (data?.items ?? []).filter((item) => !onlyOpen || !item.alert.attendedAt)
-  const visible = items.slice(0, MAX_VISIBLE)
+  const visible = criticalOnly ? items : items.slice(0, MAX_VISIBLE)
 
   return (
     <section className="crew-alerts" aria-labelledby="crew-alerts-title">
       <header className="crew-alerts-header">
         <div>
-          <h2 id="crew-alerts-title">{t('crewAlerts.title')}</h2>
+          <h2 id="crew-alerts-title">{t(criticalOnly ? 'crewAlerts.criticalTitle' : 'crewAlerts.title')}</h2>
           {data && <p className="muted">{t('crewAlerts.unattended', { count: data.unattended })}</p>}
         </div>
-        <label className="crew-alerts-toggle" htmlFor="crew-alerts-only-open">
+        {!criticalOnly && <label className="crew-alerts-toggle" htmlFor="crew-alerts-only-open">
           <input
             id="crew-alerts-only-open"
             type="checkbox"
@@ -53,13 +53,13 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
             onChange={(event) => setOnlyOpen(event.target.checked)}
           />
           {t('crewAlerts.onlyOpen')}
-        </label>
+        </label>}
       </header>
 
       {data === undefined ? (
         <p className="muted">{t('crew.loading')}</p>
       ) : visible.length === 0 ? (
-        <p className="crew-alerts-empty muted">{onlyOpen ? t('crewAlerts.emptyOpen') : t('crewAlerts.empty')}</p>
+        <p className="crew-alerts-empty muted">{onlyOpen || criticalOnly ? t('crewAlerts.emptyOpen') : t('crewAlerts.empty')}</p>
       ) : (
         <ol className="crew-alerts-list">
           {visible.map((item) => {
@@ -112,7 +112,7 @@ export default function CrewAlerts({ users, canSendNotes = true }) {
           })}
         </ol>
       )}
-      {items.length > MAX_VISIBLE && (
+      {!criticalOnly && items.length > MAX_VISIBLE && (
         <p className="muted crew-alerts-more">{t('crewAlerts.more', { count: items.length - MAX_VISIBLE })}</p>
       )}
     </section>

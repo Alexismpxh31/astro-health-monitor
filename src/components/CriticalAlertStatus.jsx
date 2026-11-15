@@ -3,6 +3,8 @@ import { AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { db } from '../db/db.js'
+import { loadGroundCrew } from '../pages/crew/crewData.js'
+import { loadCrewAlerts } from '../pages/crew/crewAlerts.js'
 
 async function countCriticalAlerts(userId) {
   const [levels, openAlerts] = await Promise.all([
@@ -19,14 +21,18 @@ async function countCriticalAlerts(userId) {
   return readings.filter((reading) => reading?.userId === userId).length
 }
 
-export default function CriticalAlertStatus({ userId }) {
+export default function CriticalAlertStatus({ userId, ground = false }) {
   const { t } = useTranslation()
-  const count = useLiveQuery(() => countCriticalAlerts(userId), [userId], 0)
+  const count = useLiveQuery(async () => {
+    if (!ground) return countCriticalAlerts(userId)
+    const { unattended } = await loadCrewAlerts(await loadGroundCrew(userId), { criticalOnly: true })
+    return unattended
+  }, [userId, ground], 0)
 
   return (
     <div className="critical-alert-status" role="status">
       {count > 0 && (
-        <Link className="connection-status critical-alert-link" to="/alerts">
+        <Link className="connection-status critical-alert-link" to={ground ? '/crew?alerts=critical' : '/alerts'}>
           <AlertCircle size={18} aria-hidden="true" />
           {t('connection.criticalAlerts', { count })}
         </Link>
