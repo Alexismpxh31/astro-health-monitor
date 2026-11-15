@@ -9,6 +9,7 @@ import { SUPPORTED_LANGUAGES } from '../i18n/index.js'
 import { clearCurrentMission } from '../pages/missions/missionStore.js'
 import BrandMark from './BrandMark.jsx'
 import ConnectionStatus from './ConnectionStatus.jsx'
+import CriticalAlertStatus from './CriticalAlertStatus.jsx'
 import Icon from './icons.jsx'
 import InsecureContextWarning from './InsecureContextWarning.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
@@ -87,6 +88,9 @@ export default function Layout() {
           </div>
           <div className="top-bar-actions">
             <ConnectionStatus />
+            {session && isAstronautView(session) && (
+              <CriticalAlertStatus key={session.userId} userId={session.userId} />
+            )}
             <ThemeToggle />
             <div className="lang-switch" role="group" aria-label={t('common.language')}>
               {SUPPORTED_LANGUAGES.map((lang) => (
