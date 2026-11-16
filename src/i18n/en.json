@@ -249,6 +249,8 @@
     "low": "low"
   },
   "login": {
+    "demoAccessTitle": "Demo access (PIN)",
+    "cloudSyncTitle": "Cloud sync (optional)",
     "googleError": "Could not sign in with Google. Try again.",
     "googleUnlinked": "Your Google account is not yet linked to an AstroSalud profile.",
     "chooseUser": "Choose your user to continue.",

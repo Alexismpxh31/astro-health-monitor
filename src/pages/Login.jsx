@@ -29,7 +29,8 @@ export default function Login() {
   const { t } = useTranslation()
   const session = useSession()
   const isOnline = useOnlineStatus()
-  const users = useLiveQuery(() => isOnline ? [] : loadLoginUsers(), [isOnline])
+  // PIN profiles are always available: a reviewer without a linked Google account can still enter.
+  const users = useLiveQuery(loadLoginUsers, [])
   const [selectedId, setSelectedId] = useState(null)
   const [cloudError, setCloudError] = useState(null)
   const [cloudBusy, setCloudBusy] = useState(false)
@@ -83,24 +84,13 @@ export default function Login() {
   // Also covers the moment right after a successful login.
   if (session) return <Navigate to={homePathFor(session.roleCode)} replace />
 
-  if (isOnline) return (
-    <section className="page login-page">
-      <h1>{t('pages.login')}</h1>
-      {supabase ? (
-        <button type="button" disabled={cloudBusy} onClick={signInWithGoogle}>
-          {t('comms.cloud.link')}
-        </button>
-      ) : <p role="status">{t('comms.cloud.notConfigured')}</p>}
-      {cloudError && <p role="alert">{t(cloudError)}</p>}
-    </section>
-  )
-
   const selected = users?.find((user) => user.id === selectedId)
   const roleLabel = (user) => (user.roleCode ? t(`auth.roles.${user.roleCode}`, user.roleCode) : '')
 
   return (
     <section className="page login-page">
       <h1>{t('pages.login')}</h1>
+      {isOnline && <h2 className="card-title">{t('login.demoAccessTitle')}</h2>}
       {selected ? (
         <PinStep
           key={selected.id}
@@ -130,7 +120,18 @@ export default function Login() {
         </>
       )}
 
-      <p className="login-offline">{t('login.offlineNote')}</p>
+      {!isOnline && <p className="login-offline">{t('login.offlineNote')}</p>}
+
+      {/* Online only: Google sign-in for linked accounts, below the demo PIN access. */}
+      {isOnline && supabase && (
+        <section aria-labelledby="login-cloud-title" style={{ marginTop: '2rem' }}>
+          <h2 id="login-cloud-title" className="card-title">{t('login.cloudSyncTitle')}</h2>
+          <button type="button" style={{ minHeight: 48 }} disabled={cloudBusy} onClick={signInWithGoogle}>
+            {t('comms.cloud.link')}
+          </button>
+        </section>
+      )}
+      {isOnline && cloudError && <p role="alert">{t(cloudError)}</p>}
     </section>
   )
 }
