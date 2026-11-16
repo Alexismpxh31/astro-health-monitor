@@ -249,6 +249,8 @@
     "low": "bajo"
   },
   "login": {
+    "demoAccessTitle": "Acceso de demostración (PIN)",
+    "cloudSyncTitle": "Sincronización en la nube (opcional)",
     "googleError": "No se pudo iniciar sesión con Google. Inténtalo de nuevo.",
     "googleUnlinked": "Tu cuenta de Google todavía no está vinculada a un perfil de AstroSalud.",
     "chooseUser": "Elige tu usuario para continuar.",
